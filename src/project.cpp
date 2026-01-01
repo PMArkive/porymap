@@ -1023,10 +1023,9 @@ bool Project::saveWildMonData() {
                 }
                 monInfoObject["mons"] = monArray;
                 OrderedJson::append(&monInfoObject, monInfo.customData);
-
                 encounterObject[fieldName] = monInfoObject;
-                OrderedJson::append(&encounterObject, encounterHeader.customData);
             }
+            OrderedJson::append(&encounterObject, encounterHeader.customData);
             encountersArray.push_back(encounterObject);
         }
     }
