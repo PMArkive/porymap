@@ -14,17 +14,25 @@ public:
     int maxLevel;
     QString species;
     OrderedJson::object customData;
+
+    static WildPokemon fromJson(const OrderedJson::object &json);
+    OrderedJson::object toJson() const;
 };
 
-struct WildMonInfo {
+// Represents a single set of encounters, e.g. all the "land" encounters for one map.
+// This includes the list of WildPokemon that are possible and the rate at which encounters trigger.
+struct WildEncounters {
     bool active = false;
     int encounterRate = 0;
     QVector<WildPokemon> wildPokemon;
     OrderedJson::object customData;
+
+    static WildEncounters fromJson(const OrderedJson::object &json, int numEncountersExpected = 0);
+    OrderedJson::object toJson() const;
 };
 
 struct WildPokemonHeader {
-    OrderedMap<QString, WildMonInfo> wildMons;
+    OrderedMap<QString, WildEncounters> wildMons;
     OrderedJson::object customData;
 };
 
@@ -33,13 +41,16 @@ struct EncounterField {
     QVector<int> encounterRates;
     OrderedMap<QString, QVector<int>> groups; // Ex: "good_rod", {2, 3, 4}
     OrderedJson::object customData;
+
+    static EncounterField fromJson(const OrderedJson::object &json);
+    OrderedJson::object toJson() const;
 };
 
 typedef QVector<EncounterField> EncounterFields;
 
 void setDefaultEncounterRate(QString fieldName, int rate);
-WildMonInfo getDefaultMonInfo(const EncounterField &field);
+WildEncounters getDefaultEncounters(const EncounterField &field);
 QVector<double> getWildEncounterPercentages(const EncounterField &field);
-void combineEncounters(WildMonInfo &to, WildMonInfo from);
+void combineEncounters(WildEncounters &to, WildEncounters from);
 
 #endif // GUARD_WILDMONINFO_H

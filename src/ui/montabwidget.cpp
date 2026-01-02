@@ -7,7 +7,7 @@
 
 
 
-static WildMonInfo encounterClipboard;
+static WildEncounters encounterClipboard;
 
 MonTabWidget::MonTabWidget(Editor *editor, QWidget *parent) : QTabWidget(parent) {
     this->editor = editor;
@@ -64,9 +64,9 @@ void MonTabWidget::paste(int index) {
     if (!encounterClipboard.active) return;
 
     clearTableAt(index);
-    WildMonInfo newInfo = getDefaultMonInfo(this->editor->project->wildMonFields.at(index));
-    combineEncounters(newInfo, encounterClipboard);
-    populateTab(index, newInfo);
+    WildEncounters encounters = getDefaultEncounters(this->editor->project->wildMonFields.at(index));
+    combineEncounters(encounters, encounterClipboard);
+    populateTab(index, encounters);
     emit edited();
 }
 
@@ -93,7 +93,7 @@ void MonTabWidget::actionAddDeleteTab(int index) {
         deactivateTab(index);
     } else {
         // add tab
-        populateTab(index, getDefaultMonInfo(editor->project->wildMonFields.at(index)));
+        populateTab(index, getDefaultEncounters(editor->project->wildMonFields.at(index)));
         setCurrentIndex(index);
     }
     emit edited();
@@ -111,18 +111,18 @@ void MonTabWidget::deactivateTab(int tabIndex) {
     QTableView *speciesTable = tableAt(tabIndex);
 
     EncounterTableModel *oldModel = static_cast<EncounterTableModel *>(speciesTable->model());
-    WildMonInfo monInfo = oldModel->encounterData();
-    monInfo.active = false;
-    EncounterTableModel *newModel = new EncounterTableModel(monInfo, editor->project->wildMonFields[tabIndex], this);
+    WildEncounters encounters = oldModel->encounterData();
+    encounters.active = false;
+    EncounterTableModel *newModel = new EncounterTableModel(encounters, editor->project->wildMonFields[tabIndex], this);
     speciesTable->setModel(newModel);
 
     setTabActive(tabIndex, false);
 }
 
-void MonTabWidget::populateTab(int tabIndex, WildMonInfo monInfo) {
+void MonTabWidget::populateTab(int tabIndex, const WildEncounters &encounters) {
     QTableView *speciesTable = tableAt(tabIndex);
 
-    EncounterTableModel *model = new EncounterTableModel(monInfo, editor->project->wildMonFields[tabIndex], this);
+    EncounterTableModel *model = new EncounterTableModel(encounters, editor->project->wildMonFields[tabIndex], this);
     connect(model, &EncounterTableModel::edited, this, &MonTabWidget::edited);
     speciesTable->setModel(model);
 

@@ -74,11 +74,11 @@ QList<WildMonSearch::RowData> WildMonSearch::search(const QString &species) cons
         for (const auto &grouplLabelPair : this->project->wildMonData[mapConstant]) {
             QString groupName = grouplLabelPair.first;
             WildPokemonHeader encounterHeader = this->project->wildMonData[mapConstant][groupName];
-            for (const auto &fieldNamePair : encounterHeader.wildMons) {
-                QString fieldName = fieldNamePair.first;
-                WildMonInfo monInfo = encounterHeader.wildMons[fieldName];
-                for (int slot = 0; slot < monInfo.wildPokemon.length(); slot++) {
-                    const WildPokemon wildMon = monInfo.wildPokemon.at(slot);
+            for (const auto &wildMonsPair : encounterHeader.wildMons) {
+                const QString fieldName = wildMonsPair.first;
+                const WildEncounters encounters = wildMonsPair.second;
+                for (int slot = 0; slot < encounters.wildPokemon.length(); slot++) {
+                    const WildPokemon wildMon = encounters.wildPokemon.at(slot);
                     if (wildMon.species == species) {
                         RowData rowData;
                         rowData.groupName = groupName;

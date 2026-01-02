@@ -413,10 +413,10 @@ void Editor::addNewWildMonGroup(QWidget *window) {
                         header.wildMons[fieldName] = model->encounterData();
                     }
                     else {
-                        header.wildMons[fieldName] = getDefaultMonInfo(monField);
+                        header.wildMons[fieldName] = getDefaultEncounters(monField);
                     }
                 } else {
-                    header.wildMons[fieldName] = getDefaultMonInfo(monField);
+                    header.wildMons[fieldName] = getDefaultEncounters(monField);
                 }
                 tabWidget->populateTab(tabIndex, header.wildMons[fieldName]);
             } else {

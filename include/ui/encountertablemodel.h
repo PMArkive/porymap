@@ -14,7 +14,7 @@ class EncounterTableModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    EncounterTableModel(const WildMonInfo &monInfo, const EncounterField &field, QObject *parent = nullptr);
+    EncounterTableModel(const WildEncounters &encounters, const EncounterField &field, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -28,14 +28,14 @@ public:
         Slot, Group, Species, MinLevel, MaxLevel, EncounterChance, SlotRatio, EncounterRate, Count
     };
 
-    WildMonInfo encounterData() const { return m_monInfo; }
+    WildEncounters encounterData() const { return m_encounters; }
     EncounterField encounterField() const { return m_encounterField; }
     QVector<double> percentages() const { return m_slotPercentages; }
 
 private:
     int m_numRows = 0;
     int m_numCols = 0;
-    WildMonInfo m_monInfo;
+    WildEncounters m_encounters;
     EncounterField m_encounterField;
     QMap<int,QString> m_groupNames;
     QVector<double> m_slotPercentages;

@@ -3,11 +3,11 @@
 
 
 
-EncounterTableModel::EncounterTableModel(const WildMonInfo &info, const EncounterField &field, QObject *parent)
+EncounterTableModel::EncounterTableModel(const WildEncounters &encounters, const EncounterField &field, QObject *parent)
     : QAbstractTableModel(parent),
-      m_numRows(info.wildPokemon.size()),
+      m_numRows(encounters.wildPokemon.size()),
       m_numCols(ColumnType::Count),
-      m_monInfo(info),
+      m_encounters(encounters),
       m_encounterField(field),
       m_slotPercentages(getWildEncounterPercentages(field))
 {
@@ -39,13 +39,13 @@ QVariant EncounterTableModel::data(const QModelIndex &index, int role) const {
             return m_groupNames.value(row);
 
         case ColumnType::Species:
-            return m_monInfo.wildPokemon.value(row).species;
+            return m_encounters.wildPokemon.value(row).species;
 
         case ColumnType::MinLevel:
-            return m_monInfo.wildPokemon.value(row).minLevel;
+            return m_encounters.wildPokemon.value(row).minLevel;
 
         case ColumnType::MaxLevel:
-            return m_monInfo.wildPokemon.value(row).maxLevel;
+            return m_encounters.wildPokemon.value(row).maxLevel;
 
         case ColumnType::EncounterChance:
             return QString::number(m_slotPercentages.value(row, 0) * 100, 'f', 2) + "%";
@@ -55,7 +55,7 @@ QVariant EncounterTableModel::data(const QModelIndex &index, int role) const {
 
         case ColumnType::EncounterRate:
             if (row == 0) {
-                return m_monInfo.encounterRate;
+                return m_encounters.encounterRate;
             } else {
                 return QVariant();
             }
@@ -67,17 +67,17 @@ QVariant EncounterTableModel::data(const QModelIndex &index, int role) const {
     else if (role == Qt::EditRole) {
         switch (col) {
         case ColumnType::Species:
-            return m_monInfo.wildPokemon.value(row).species;
+            return m_encounters.wildPokemon.value(row).species;
 
         case ColumnType::MinLevel:
-            return m_monInfo.wildPokemon.value(row).minLevel;
+            return m_encounters.wildPokemon.value(row).minLevel;
 
         case ColumnType::MaxLevel:
-            return m_monInfo.wildPokemon.value(row).maxLevel;
+            return m_encounters.wildPokemon.value(row).maxLevel;
 
         case ColumnType::EncounterRate:
             if (row == 0) {
-                return m_monInfo.encounterRate;
+                return m_encounters.encounterRate;
             } else {
                 return QVariant();
             }
@@ -124,7 +124,7 @@ bool EncounterTableModel::setData(const QModelIndex &index, const QVariant &valu
 
     int row = index.row();
     int col = index.column();
-    auto wildMon = &m_monInfo.wildPokemon[row];
+    auto wildMon = &m_encounters.wildPokemon[row];
 
     switch (col) {
     case ColumnType::Species: {
@@ -158,8 +158,8 @@ bool EncounterTableModel::setData(const QModelIndex &index, const QVariant &valu
 
     case ColumnType::EncounterRate: {
         int encounterRate = value.toInt();
-        if (m_monInfo.encounterRate != encounterRate) {
-            m_monInfo.encounterRate = encounterRate;
+        if (m_encounters.encounterRate != encounterRate) {
+            m_encounters.encounterRate = encounterRate;
             emit edited();
         }
         break;

@@ -209,6 +209,7 @@ public:
     bool readFieldmapProperties();
     bool readFieldmapMasks();
     bool readGlobalConstants();
+    bool readWildMonConstants();
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
     QPixmap getEventPixmap(const QString &gfxName, const QString &movementName);

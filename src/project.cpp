@@ -210,6 +210,7 @@ bool Project::load() {
                 && readTilesetMetatileLabels()
                 && readMiscellaneousConstants()
                 && readSpeciesIconPaths()
+                && readWildMonConstants()
                 && readWildMonData()
                 && readEventScriptLabels()
                 && readObjEventGfxConstants()
@@ -968,65 +969,29 @@ bool Project::saveWildMonData() {
     monHeadersObject["label"] = this->wildMonTableName;
     monHeadersObject["for_maps"] = true;
 
-    OrderedJson::array fieldsInfoArray;
-    for (EncounterField fieldInfo : this->wildMonFields) {
-        OrderedJson::object fieldObject;
-        OrderedJson::array rateArray;
-
-        for (int rate : fieldInfo.encounterRates) {
-            rateArray.push_back(rate);
-        }
-
-        fieldObject["type"] = fieldInfo.name;
-        fieldObject["encounter_rates"] = rateArray;
-
-        OrderedJson::object groupsObject;
-        for (auto groupNamePair : fieldInfo.groups) {
-            QString groupName = groupNamePair.first;
-            OrderedJson::array subGroupIndices;
-            std::sort(fieldInfo.groups[groupName].begin(), fieldInfo.groups[groupName].end());
-            for (int slotIndex : fieldInfo.groups[groupName]) {
-                subGroupIndices.push_back(slotIndex);
-            }
-            groupsObject[groupName] = subGroupIndices;
-        }
-        if (!groupsObject.empty()) fieldObject["groups"] = groupsObject;
-
-        OrderedJson::append(&fieldObject, fieldInfo.customData);
-        fieldsInfoArray.append(fieldObject);
+    OrderedJson::array fieldsArray;
+    for (const EncounterField &field : this->wildMonFields) {
+        fieldsArray.append(field.toJson());
     }
-    monHeadersObject["fields"] = fieldsInfoArray;
+    if (!fieldsArray.empty()) monHeadersObject["fields"] = fieldsArray;
 
     OrderedJson::array encountersArray;
     for (auto keyPair : this->wildMonData) {
         QString key = keyPair.first;
         for (auto grouplLabelPair : this->wildMonData[key]) {
             QString groupLabel = grouplLabelPair.first;
-            OrderedJson::object encounterObject;
-            encounterObject["map"] = key;
-            encounterObject["base_label"] = groupLabel;
+            OrderedJson::object encountersMapObject;
+            encountersMapObject["map"] = key;
+            encountersMapObject["base_label"] = groupLabel;
 
             WildPokemonHeader encounterHeader = this->wildMonData[key][groupLabel];
-            for (auto fieldNamePair : encounterHeader.wildMons) {
-                QString fieldName = fieldNamePair.first;
-                OrderedJson::object monInfoObject;
-                WildMonInfo monInfo = encounterHeader.wildMons[fieldName];
-                monInfoObject["encounter_rate"] = monInfo.encounterRate;
-                OrderedJson::array monArray;
-                for (WildPokemon wildMon : monInfo.wildPokemon) {
-                    OrderedJson::object monEntry;
-                    monEntry["min_level"] = wildMon.minLevel;
-                    monEntry["max_level"] = wildMon.maxLevel;
-                    monEntry["species"] = wildMon.species;
-                    OrderedJson::append(&monEntry, wildMon.customData);
-                    monArray.push_back(monEntry);
-                }
-                monInfoObject["mons"] = monArray;
-                OrderedJson::append(&monInfoObject, monInfo.customData);
-                encounterObject[fieldName] = monInfoObject;
+            for (auto wildMonsPair : encounterHeader.wildMons) {
+                const QString fieldName = wildMonsPair.first;
+                const WildEncounters encounters = wildMonsPair.second;
+                encountersMapObject[fieldName] = encounters.toJson();
             }
-            OrderedJson::append(&encounterObject, encounterHeader.customData);
-            encountersArray.push_back(encounterObject);
+            OrderedJson::append(&encountersMapObject, encounterHeader.customData);
+            encountersArray.push_back(encountersMapObject);
         }
     }
     monHeadersObject["encounters"] = encountersArray;
@@ -1729,18 +1694,11 @@ bool Project::appendTextFile(const QString &path, const QString &text) {
     return true;
 }
 
-bool Project::readWildMonData() {
-    this->extraEncounterGroups.clear();
-    this->wildMonFields.clear();
-    this->wildMonData.clear();
-    this->wildMonTableName.clear();
-    this->encounterGroupLabels.clear();
+bool Project::readWildMonConstants() {
     this->pokemonMinLevel = 0;
     this->pokemonMaxLevel = 100;
     this->maxEncounterRate = 2880/16;
-    this->wildEncountersLoaded = false;
-    this->customWildMonData = OrderedJson::object();
-    this->customWildMonGroupData = OrderedJson::object();
+
     if (!userConfig.useEncounterJson) {
         return true;
     }
@@ -1758,15 +1716,30 @@ bool Project::readWildMonData() {
     const QString levelRangeFile = projectConfig.getFilePath(ProjectFilePath::constants_pokemon);
     const QString minLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_min_level);
     const QString maxLevelName = projectConfig.getIdentifier(ProjectIdentifier::define_max_level);
+
     watchFile(levelRangeFile);
     defines = parser.readCDefinesByName(levelRangeFile, {minLevelName, maxLevelName});
-    if (defines.contains(minLevelName))
-        this->pokemonMinLevel = defines.value(minLevelName);
-    if (defines.contains(maxLevelName))
-        this->pokemonMaxLevel = defines.value(maxLevelName);
+    if (defines.contains(minLevelName)) this->pokemonMinLevel = defines.value(minLevelName);
+    if (defines.contains(maxLevelName)) this->pokemonMaxLevel = defines.value(maxLevelName);
 
     this->pokemonMinLevel = qMin(this->pokemonMinLevel, this->pokemonMaxLevel);
     this->pokemonMaxLevel = qMax(this->pokemonMinLevel, this->pokemonMaxLevel);
+
+    return true;
+}
+
+bool Project::readWildMonData() {
+    this->extraEncounterGroups.clear();
+    this->wildMonFields.clear();
+    this->wildMonData.clear();
+    this->wildMonTableName.clear();
+    this->encounterGroupLabels.clear();
+    this->wildEncountersLoaded = false;
+    this->customWildMonData = OrderedJson::object();
+    this->customWildMonGroupData = OrderedJson::object();
+    if (!userConfig.useEncounterJson) {
+        return true;
+    }
 
     // Read encounter data
     const QString wildMonJsonFilepath = projectConfig.getFilePath(ProjectFilePath::json_wild_encounters);
@@ -1817,27 +1790,7 @@ bool Project::readWildMonData() {
         // and whether the encounters are divided into groups (like fishing rods).
         OrderedJson::array fieldsArray = mainArrayObject.take("fields").array_items();
         for (const OrderedJson &fieldJson : fieldsArray) {
-            OrderedJson::object fieldObject = fieldJson.object_items();
-
-            EncounterField encounterField;
-            encounterField.name = fieldObject.take("type").toString();
-
-            OrderedJson::array encounterRatesArray = fieldObject.take("encounter_rates").array_items();
-            for (const auto &val : encounterRatesArray) {
-                encounterField.encounterRates.append(val.toInt());
-            }
-
-            // Each element of the "groups" array is an object with the group name as the key (e.g. "old_rod")
-            // and an array of slot numbers indicating which encounter slots in this encounter type belong to that group.
-            OrderedJson::object groups = fieldObject.take("groups").object_items();
-            for (auto groupPair : groups) {
-                const QString groupName = groupPair.first;
-                for (auto slotNum : groupPair.second.array_items()) {
-                    encounterField.groups[groupName].append(slotNum.toInt());
-                }
-            }
-            encounterField.customData = fieldObject;
-
+            auto encounterField = EncounterField::fromJson(fieldJson.object_items());
             encounterRateFrequencyMaps.insert(encounterField.name, QMap<int, int>());
             this->wildMonFields.append(encounterField);
         }
@@ -1848,49 +1801,27 @@ bool Project::readWildMonData() {
         // pokémon associated with any of the encounter types described by the data we parsed above.
         OrderedJson::array encountersArray = mainArrayObject.take("encounters").array_items();
         for (const auto &encounterJson : encountersArray) {
-            OrderedJson::object encounterObj = encounterJson.object_items();
+            OrderedJson::object encountersMapObject = encounterJson.object_items();
 
             WildPokemonHeader header;
 
             // Check for each possible encounter type.
             for (const EncounterField &monField : this->wildMonFields) {
                 const QString field = monField.name;
-                if (!encounterObj.contains(field)) {
+                if (!encountersMapObject.contains(field)) {
                     // Encounter type isn't present
                     continue;
                 }
-                OrderedJson::object encounterFieldObj = encounterObj.take(field).object_items();
+                int numExpectedEncounters = monField.encounterRates.length();
+                header.wildMons[field] = WildEncounters::fromJson(encountersMapObject.take(field).object_items(), numExpectedEncounters);
 
-                WildMonInfo monInfo;
-                monInfo.active = true;
-
-                // Read encounter rate
-                monInfo.encounterRate = encounterFieldObj.take("encounter_rate").toInt();
-                encounterRateFrequencyMaps[field][monInfo.encounterRate]++;
-
-                // Read wild pokémon list
-                OrderedJson::array monsArray = encounterFieldObj.take("mons").array_items();
-                for (const auto &monJson : monsArray) {
-                    OrderedJson::object monObj = monJson.object_items();
-
-                    WildPokemon newMon;
-                    newMon.minLevel = monObj.take("min_level").toInt();
-                    newMon.maxLevel = monObj.take("max_level").toInt();
-                    newMon.species = monObj.take("species").toString();
-                    newMon.customData = monObj;
-                    monInfo.wildPokemon.append(newMon);
-                }
-                monInfo.customData = encounterFieldObj;
-
-                // If the user supplied too few pokémon for this group then we fill in the rest with default values.
-                for (int i = monInfo.wildPokemon.length(); i < monField.encounterRates.length(); i++) {
-                    monInfo.wildPokemon.append(WildPokemon());
-                }
-                header.wildMons[field] = monInfo;
+                // Record the value of the encounter rate to help build a default value.
+                auto encounterRate = header.wildMons[field].encounterRate;
+                encounterRateFrequencyMaps[field][encounterRate]++;
             }
-            const QString mapConstant = encounterObj.take("map").toString();
-            const QString baseLabel = encounterObj.take("base_label").toString();
-            header.customData = encounterObj;
+            const QString mapConstant = encountersMapObject.take("map").toString();
+            const QString baseLabel = encountersMapObject.take("base_label").toString();
+            header.customData = encountersMapObject;
             this->wildMonData[mapConstant].insert({baseLabel, header});
             this->encounterGroupLabels.append(baseLabel);
         }

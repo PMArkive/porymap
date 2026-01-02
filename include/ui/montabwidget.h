@@ -17,7 +17,7 @@ public:
     ~MonTabWidget();
 
     void populate();
-    void populateTab(int tabIndex, WildMonInfo monInfo);
+    void populateTab(int tabIndex, const WildEncounters &encounters);
     void clear();
 
     void clearTableAt(int index);
