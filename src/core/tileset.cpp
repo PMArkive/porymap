@@ -563,7 +563,11 @@ bool Tileset::loadTilesImage(QImage *importedImage) {
         imported = true;
     } else if (QFile::exists(this->tilesImagePath)) {
         // No image provided, load from file path.
-        image = QImage(this->tilesImagePath).convertToFormat(QImage::Format_Indexed8, Qt::ThresholdDither);
+        image = QImage(this->tilesImagePath);
+        if (!image.isNull() && image.format() != QImage::Format_Indexed8) {
+            logWarn(QString("Tiles image '%1' is not indexed. Converting to indexed format.").arg(this->tilesImagePath));
+            image.convertTo(QImage::Format_Indexed8, Qt::ThresholdDither);
+        }
     }
 
     if (image.isNull()) {
