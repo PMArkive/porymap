@@ -184,7 +184,7 @@ bool RegionMapEditor::buildConfigDialog() {
         for (auto o : mapsObject["region_maps"].array_items()) {
             poryjson::Json::object object = o.object_items();
             QListWidgetItem *newItem = new QListWidgetItem;
-            newItem->setText(object["alias"].string_value());
+            newItem->setText(object["alias"].toString());
             QString objectString;
             int i = 0;
             o.dump(objectString, &i);
@@ -245,7 +245,7 @@ bool RegionMapEditor::buildConfigDialog() {
         resultJson.dump(resultStr, &tab);
 
         QListWidgetItem *newItem = new QListWidgetItem;
-        newItem->setText(resultObj["alias"].string_value());
+        newItem->setText(resultObj["alias"].toString());
         newItem->setData(Qt::UserRole, resultStr);
         regionMapList->addItem(newItem);
         updateJsonFromList();
@@ -398,7 +398,7 @@ bool RegionMapEditor::setup() {
     // load the region maps into this->region_maps
     poryjson::Json::object regionMapObjectCopy = this->rmConfigJson.object_items();
     for (auto o : regionMapObjectCopy["region_maps"].array_items()) {
-        QString alias = o.object_items().at("alias").string_value();
+        QString alias = o.object_items().at("alias").toString();
 
         RegionMap *newMap = new RegionMap(this->project);
         newMap->setEntries(&this->region_map_entries);

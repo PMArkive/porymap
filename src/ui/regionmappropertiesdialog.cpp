@@ -44,30 +44,30 @@ void RegionMapPropertiesDialog::setProperties(poryjson::Json json) {
     poryjson::Json::object object = json.object_items();
 
     // Region Map Properties
-    ui->config_alias->setText(object["alias"].string_value());
+    ui->config_alias->setText(object["alias"].toString());
 
     // Tilemap properties
     poryjson::Json::object tilemap = object["tilemap"].object_items();
-    ui->config_tilemapFormat->setCurrentText(tilemap["format"].string_value());
-    ui->config_tilemapWidth->setValue(tilemap["width"].int_value());
-    ui->config_tilemapHeight->setValue(tilemap["height"].int_value());
+    ui->config_tilemapFormat->setCurrentText(tilemap["format"].toString());
+    ui->config_tilemapWidth->setValue(tilemap["width"].toInt());
+    ui->config_tilemapHeight->setValue(tilemap["height"].toInt());
 
-    ui->config_tilemapImagePath->setText(tilemap["tileset_path"].string_value());
-    ui->config_tilemapBinPath->setText(tilemap["tilemap_path"].string_value());
+    ui->config_tilemapImagePath->setText(tilemap["tileset_path"].toString());
+    ui->config_tilemapBinPath->setText(tilemap["tilemap_path"].toString());
     if (tilemap.contains("palette"))
-        ui->config_tilemapPalettePath->setText(tilemap["palette"].string_value());
+        ui->config_tilemapPalettePath->setText(tilemap["palette"].toString());
 
     // Layout props
     if (object["layout"].is_null()) {
         ui->group_layout->setChecked(false);
     } else {
         poryjson::Json::object layout = object["layout"].object_items();
-        ui->config_layoutFormat->setCurrentText(layout["format"].string_value());
-        ui->config_layoutPath->setText(layout["path"].string_value());
-        ui->config_layoutWidth->setValue(layout["width"].int_value());
-        ui->config_layoutHeight->setValue(layout["height"].int_value());
-        ui->config_leftOffs->setValue(layout["offset_left"].int_value());
-        ui->config_topOffs->setValue(layout["offset_top"].int_value());
+        ui->config_layoutFormat->setCurrentText(layout["format"].toString());
+        ui->config_layoutPath->setText(layout["path"].toString());
+        ui->config_layoutWidth->setValue(layout["width"].toInt());
+        ui->config_layoutHeight->setValue(layout["height"].toInt());
+        ui->config_leftOffs->setValue(layout["offset_left"].toInt());
+        ui->config_topOffs->setValue(layout["offset_top"].toInt());
     }
 }
 

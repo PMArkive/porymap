@@ -183,6 +183,12 @@ public:
     // Return a reference to obj[key] if this is an object, Json() otherwise.
     const Json & operator[](const QString &key) const;
 
+    // Equivalent to string_value(), int_value(), and bool_value(),
+    // but will attempt to convert the internal value if it's of a different type.
+    QString toString() const;
+    int toInt() const;
+    bool toBool() const;
+
     // Serialize.
     void dump(QString &out, int *) const;
     QString dump(int *indent = nullptr) const {
@@ -251,8 +257,11 @@ protected:
     virtual void dump(QString &out, int *indent) const = 0;
     virtual double number_value() const;
     virtual int int_value() const;
+    virtual int toInt() const;
     virtual bool bool_value() const;
+    virtual bool toBool() const;
     virtual const QString &string_value() const;
+    virtual QString toString() const;
     virtual const Json::array &array_items() const;
     virtual const Json &operator[](int i) const;
     virtual const Json::object &object_items() const;

@@ -1792,7 +1792,7 @@ bool Project::readWildMonData() {
         // We're only interested in wild encounter data that's associated with maps ("for_maps" == true).
         // Any other wild encounter data (e.g. for Battle Pike / Battle Pyramid) will be ignored.
         // We'll record any data that's not for maps in extraEncounterGroups to be outputted when we save.
-        if (!mainArrayObject["for_maps"].bool_value()) {
+        if (!mainArrayObject["for_maps"].toBool()) {
             this->extraEncounterGroups.push_back(mainArrayObject);
             continue;
         } else {
@@ -1802,7 +1802,7 @@ bool Project::readWildMonData() {
         }
 
         // If multiple "for_maps" data sets are found they will be collapsed into a single set.
-        QString label = mainArrayObject.take("label").string_value();
+        QString label = mainArrayObject.take("label").toString();
         if (this->wildMonTableName.isEmpty()) {
             this->wildMonTableName = label;
         } else {
@@ -1820,11 +1820,11 @@ bool Project::readWildMonData() {
             OrderedJson::object fieldObject = fieldJson.object_items();
 
             EncounterField encounterField;
-            encounterField.name = fieldObject.take("type").string_value();
+            encounterField.name = fieldObject.take("type").toString();
 
             OrderedJson::array encounterRatesArray = fieldObject.take("encounter_rates").array_items();
             for (const auto &val : encounterRatesArray) {
-                encounterField.encounterRates.append(val.int_value());
+                encounterField.encounterRates.append(val.toInt());
             }
 
             // Each element of the "groups" array is an object with the group name as the key (e.g. "old_rod")
@@ -1833,7 +1833,7 @@ bool Project::readWildMonData() {
             for (auto groupPair : groups) {
                 const QString groupName = groupPair.first;
                 for (auto slotNum : groupPair.second.array_items()) {
-                    encounterField.groups[groupName].append(slotNum.int_value());
+                    encounterField.groups[groupName].append(slotNum.toInt());
                 }
             }
             encounterField.customData = fieldObject;
@@ -1865,7 +1865,7 @@ bool Project::readWildMonData() {
                 monInfo.active = true;
 
                 // Read encounter rate
-                monInfo.encounterRate = encounterFieldObj.take("encounter_rate").int_value();
+                monInfo.encounterRate = encounterFieldObj.take("encounter_rate").toInt();
                 encounterRateFrequencyMaps[field][monInfo.encounterRate]++;
 
                 // Read wild pokémon list
@@ -1874,9 +1874,9 @@ bool Project::readWildMonData() {
                     OrderedJson::object monObj = monJson.object_items();
 
                     WildPokemon newMon;
-                    newMon.minLevel = monObj.take("min_level").int_value();
-                    newMon.maxLevel = monObj.take("max_level").int_value();
-                    newMon.species = monObj.take("species").string_value();
+                    newMon.minLevel = monObj.take("min_level").toInt();
+                    newMon.maxLevel = monObj.take("max_level").toInt();
+                    newMon.species = monObj.take("species").toString();
                     newMon.customData = monObj;
                     monInfo.wildPokemon.append(newMon);
                 }
@@ -1888,8 +1888,8 @@ bool Project::readWildMonData() {
                 }
                 header.wildMons[field] = monInfo;
             }
-            const QString mapConstant = encounterObj.take("map").string_value();
-            const QString baseLabel = encounterObj.take("base_label").string_value();
+            const QString mapConstant = encounterObj.take("map").toString();
+            const QString baseLabel = encounterObj.take("base_label").toString();
             header.customData = encounterObj;
             this->wildMonData[mapConstant].insert({baseLabel, header});
             this->encounterGroupLabels.append(baseLabel);

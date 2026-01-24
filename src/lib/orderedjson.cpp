@@ -162,6 +162,8 @@ protected:
 class JsonDouble final : public Value<Json::NUMBER, double> {
     double number_value() const override { return m_value; }
     int int_value() const override { return static_cast<int>(m_value); }
+    QString toString() const override { return QString::number(m_value); }
+    bool toBool() const override { return m_value != 0; }
     bool equals(const JsonValue * other) const override { return m_value == other->number_value(); }
     bool less(const JsonValue * other)   const override { return m_value <  other->number_value(); }
 public:
@@ -171,6 +173,8 @@ public:
 class JsonInt final : public Value<Json::NUMBER, int> {
     double number_value() const override { return m_value; }
     int int_value() const override { return m_value; }
+    QString toString() const override { return QString::number(m_value); }
+    bool toBool() const override { return m_value != 0; }
     bool equals(const JsonValue * other) const override { return m_value == other->number_value(); }
     bool less(const JsonValue * other)   const override { return m_value <  other->number_value(); }
 public:
@@ -179,12 +183,20 @@ public:
 
 class JsonBoolean final : public Value<Json::BOOL, bool> {
     bool bool_value() const override { return m_value; }
+    QString toString() const override { return m_value ? "true" : "false"; }
+    int toInt() const override { return m_value ? 1 : 0; }
 public:
     explicit JsonBoolean(bool value) : Value(value) {}
 };
 
 class JsonString final : public Value<Json::STRING, QString> {
     const QString &string_value() const override { return m_value; }
+    int toInt() const override {
+        if (QString::compare(m_value, "true", Qt::CaseInsensitive) == 0) return 1;
+        if (QString::compare(m_value, "false", Qt::CaseInsensitive) == 0) return 0;
+        return m_value.toInt(nullptr, 0);
+    }
+    bool toBool() const override { return toInt() != 0; }
 public:
     explicit JsonString(const QString &value) : Value(value) {}
     explicit JsonString(QString &&value)      : Value(std::move(value)) {}
@@ -244,8 +256,8 @@ Json::Json(std::nullptr_t) noexcept    : m_ptr(statics().null) {}
 Json::Json(double value)               : m_ptr(make_shared<JsonDouble>(value)) {}
 Json::Json(int value)                  : m_ptr(make_shared<JsonInt>(value)) {}
 Json::Json(bool value)                 : m_ptr(value ? statics().t : statics().f) {}
-Json::Json(const QString &value)        : m_ptr(make_shared<JsonString>(value)) {}
-Json::Json(QString &&value)             : m_ptr(make_shared<JsonString>(std::move(value))) {}
+Json::Json(const QString &value)       : m_ptr(make_shared<JsonString>(value)) {}
+Json::Json(QString &&value)            : m_ptr(make_shared<JsonString>(std::move(value))) {}
 Json::Json(const char * value)         : m_ptr(make_shared<JsonString>(value)) {}
 Json::Json(const Json::array &values)  : m_ptr(make_shared<JsonArray>(values)) {}
 Json::Json(Json::array &&values)       : m_ptr(make_shared<JsonArray>(std::move(values))) {}
@@ -256,24 +268,30 @@ Json::Json(Json::object &&values)      : m_ptr(make_shared<JsonObject>(std::move
  * Accessors
  */
 
-Json::Type Json::type()                           const { return m_ptr->type();         }
-double Json::number_value()                       const { return m_ptr->number_value(); }
-int Json::int_value()                             const { return m_ptr->int_value();    }
-bool Json::bool_value()                           const { return m_ptr->bool_value();   }
-const QString & Json::string_value()               const { return m_ptr->string_value(); }
-const QVector<Json> & Json::array_items()          const { return m_ptr->array_items();  }
-const Json::object & Json::object_items()    const { return m_ptr->object_items(); }
-const Json & Json::operator[] (int i)          const { return (*m_ptr)[i];           }
-const Json & Json::operator[] (const QString &key) const { return (*m_ptr)[key];         }
+Json::Type            Json::type()                            const { return m_ptr->type();         }
+double                Json::number_value()                    const { return m_ptr->number_value(); }
+int                   Json::int_value()                       const { return m_ptr->int_value();    }
+int                   Json::toInt()                           const { return m_ptr->toInt();        }
+bool                  Json::bool_value()                      const { return m_ptr->bool_value();   }
+bool                  Json::toBool()                          const { return m_ptr->toBool();   }
+const QString &       Json::string_value()                    const { return m_ptr->string_value(); }
+QString               Json::toString()                        const { return m_ptr->toString(); }
+const QVector<Json> & Json::array_items()                     const { return m_ptr->array_items();  }
+const Json::object &  Json::object_items()                    const { return m_ptr->object_items(); }
+const Json &          Json::operator[] (int i)                const { return (*m_ptr)[i];           }
+const Json &          Json::operator[] (const QString &key)   const { return (*m_ptr)[key];         }
 
-double                    JsonValue::number_value()              const { return 0; }
-int                       JsonValue::int_value()                 const { return 0; }
-bool                      JsonValue::bool_value()                const { return false; }
-const QString &            JsonValue::string_value()              const { return statics().empty_string; }
-const QVector<Json> &      JsonValue::array_items()               const { return statics().empty_vector; }
-const Json::object & JsonValue::object_items()              const { return statics().empty_map; }
-const Json &              JsonValue::operator[] (int)         const { return static_null(); }
-const Json &              JsonValue::operator[] (const QString &) const { return static_null(); }
+double                JsonValue::number_value()               const { return 0; }
+int                   JsonValue::int_value()                  const { return 0; }
+int                   JsonValue::toInt()                      const { return int_value(); }
+bool                  JsonValue::bool_value()                 const { return false; }
+bool                  JsonValue::toBool()                     const { return bool_value(); }
+const QString &       JsonValue::string_value()               const { return statics().empty_string; }
+QString               JsonValue::toString()                   const { return string_value(); }
+const QVector<Json> & JsonValue::array_items()                const { return statics().empty_vector; }
+const Json::object &  JsonValue::object_items()               const { return statics().empty_map; }
+const Json &          JsonValue::operator[] (int)             const { return static_null(); }
+const Json &          JsonValue::operator[] (const QString &) const { return static_null(); }
 
 const Json & JsonObject::operator[] (const QString &key) const {
     static auto iter = m_value.find(key);

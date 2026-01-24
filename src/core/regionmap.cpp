@@ -27,7 +27,7 @@ RegionMap::RegionMap(Project *project) :
 bool RegionMap::loadMapData(poryjson::Json data) {
     poryjson::Json::object mapObject = data.object_items();
 
-    this->alias = mapObject["alias"].string_value();
+    this->alias = mapObject["alias"].toString();
 
     poryjson::Json tilemapJson = mapObject["tilemap"];
     poryjson::Json layoutJson = mapObject["layout"];
@@ -63,19 +63,19 @@ bool RegionMap::loadTilemap(poryjson::Json tilemapJson) {
 
     poryjson::Json::object tilemapObject = tilemapJson.object_items();
 
-    this->tilemap_width = tilemapObject["width"].int_value();
-    this->tilemap_height = tilemapObject["height"].int_value();
+    this->tilemap_width = tilemapObject["width"].toInt();
+    this->tilemap_height = tilemapObject["height"].toInt();
 
 
-    QString tilemapFormat = tilemapObject["format"].string_value();
+    QString tilemapFormat = tilemapObject["format"].toString();
     QMap<QString, TilemapFormat> formatsMap = { {"plain", TilemapFormat::Plain}, {"4bpp", TilemapFormat::BPP_4}, {"8bpp", TilemapFormat::BPP_8} };
     this->tilemap_format = formatsMap[tilemapFormat];
 
-    this->tileset_path = tilemapObject["tileset_path"].string_value();
-    this->tilemap_path = tilemapObject["tilemap_path"].string_value();
+    this->tileset_path = tilemapObject["tileset_path"].toString();
+    this->tilemap_path = tilemapObject["tilemap_path"].toString();
 
     if (tilemapObject.contains("palette")) {
-        this->palette_path = tilemapObject["palette"].string_value();
+        this->palette_path = tilemapObject["palette"].toString();
     }
 
     QImage tilesetFile(fullPath(this->tileset_path));
@@ -118,16 +118,16 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
 
     poryjson::Json::object layoutObject = layoutJson.object_items();
 
-    QString layoutFormat = layoutObject["format"].string_value();
+    QString layoutFormat = layoutObject["format"].toString();
     QMap<QString, LayoutFormat> layoutFormatMap = { {"binary", LayoutFormat::Binary}, {"C array", LayoutFormat::CArray} };
     this->layout_format = layoutFormatMap[layoutFormat];
 
-    this->layout_path = layoutObject["path"].string_value();
-    this->layout_width = layoutObject["width"].int_value();
-    this->layout_height = layoutObject["height"].int_value();
+    this->layout_path = layoutObject["path"].toString();
+    this->layout_width = layoutObject["width"].toInt();
+    this->layout_height = layoutObject["height"].toInt();
 
-    this->offset_left = layoutObject["offset_left"].int_value();
-    this->offset_top = layoutObject["offset_top"].int_value();
+    this->offset_left = layoutObject["offset_left"].toInt();
+    this->offset_top = layoutObject["offset_top"].toInt();
 
     bool errored = false;
 
