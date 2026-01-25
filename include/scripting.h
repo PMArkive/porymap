@@ -72,6 +72,7 @@ public:
     static QJSValue position(int x, int y);
     static const QImage * getImage(const QString &filepath, bool useCache);
     static QJSValue dialogInput(QJSValue input, bool selectedOk);
+    static QJSValue fileResponse(const QString &s, bool isError);
 
 private:
     MainWindow *mainWindow;

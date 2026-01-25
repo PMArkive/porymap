@@ -33,6 +33,11 @@ public:
     Q_INVOKABLE void showWarning(QString text, QString informativeText = "", QString detailedText = "");
     Q_INVOKABLE void showError(QString text, QString informativeText = "", QString detailedText = "");
     Q_INVOKABLE bool showQuestion(QString text, QString informativeText = "", QString detailedText = "");
+    Q_INVOKABLE QString showOpenFileDialog(const QString &caption = QString(), const QString &dir = QString(), const QStringList &filters = QStringList()) const;
+    Q_INVOKABLE QString showSaveFileDialog(const QString &caption = QString(), const QString &dir = QString(), const QStringList &filters = QStringList()) const;
+    Q_INVOKABLE QString showOpenDirectoryDialog(const QString &caption = QString(), const QString &dir = QString()) const;
+    Q_INVOKABLE QJSValue readTextFile(const QString &path) const;
+    Q_INVOKABLE QString writeTextFile(const QString &path, const QString &content, bool append = false) const;
     Q_INVOKABLE QJSValue getInputText(QString title, QString label, QString defaultValue = "");
     Q_INVOKABLE QJSValue getInputNumber(QString title, QString label, double defaultValue = 0, double min = INT_MIN, double max = INT_MAX, int decimals = 0, double step = 1);
     Q_INVOKABLE QJSValue getInputItem(QString title, QString label, QStringList items, int defaultValue = 0, bool editable = false);
@@ -72,6 +77,7 @@ public:
 private:
     void callTimeoutFunction(QJSValue callback);
     void runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon);
+    QString detectProjectPath(const QString &path) const;
 
     MainWindow *window;
     QList<QAction *> registeredActions;

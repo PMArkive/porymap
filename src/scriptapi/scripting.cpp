@@ -405,6 +405,13 @@ QJSValue Scripting::dialogInput(QJSValue input, bool selectedOk) {
     return obj;
 }
 
+QJSValue Scripting::fileResponse(const QString &s, bool isError) {
+    QJSValue obj = instance->engine->newObject();
+    obj.setProperty("content", isError ? QString() : s);
+    obj.setProperty("error", isError ? s : QString());
+    return obj;
+}
+
 QJSEngine *Scripting::getEngine() {
     return instance->engine;
 }

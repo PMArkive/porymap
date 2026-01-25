@@ -2012,6 +2012,74 @@ All utility functions are callable via the global ``utility`` object.
    :returns: ``true`` if ``Yes`` was selected, ``false`` if ``No`` was selected or if the window was closed without selection
    :rtype: boolean
 
+.. |describe-file-dialog-caption|
+   replace:: Title bar text for the dialog. Not shown on all platforms. Defaults to ``""``.
+
+.. |describe-file-dialog-dir|
+   replace:: The dialog's working directory. If empty, the dialog will open to the most recent file dialog directory. Defaults to ``""``.
+
+.. |describe-file-dialog-filter|
+   replace:: A list of options for file types to use. For example, ``["Text files (*.txt *.md)", "JSON files (*.json)"]``. If empty, any file type can be used. Defaults to ``[]``.
+
+.. js:function:: utility.showOpenFileDialog(caption = "", dir = "", filter = [])
+
+   Displays a native file dialog for choosing an existing file.
+
+   :param caption: |describe-file-dialog-caption|
+   :type caption: string
+   :param dir: |describe-file-dialog-dir|
+   :type dir: string
+   :param filter: |describe-file-dialog-filter|
+   :type filter: array
+   :returns: The path of the selected file, or an empty string if the dialog was closed without selection.
+   :rtype: string
+
+.. js:function:: utility.showSaveFileDialog(caption = "", dir = "", filter = [])
+
+   Displays a native file dialog for saving a file.
+
+   :param caption: |describe-file-dialog-caption|
+   :type caption: string
+   :param dir: |describe-file-dialog-dir|
+   :type dir: string
+   :param filter: |describe-file-dialog-filter|
+   :type filter: array
+   :returns: The path of the selected file, or an empty string if the dialog was closed without selection.
+   :rtype: string
+
+.. js:function:: utility.showOpenDirectoryDialog(caption = "", dir = "")
+
+   Displays a native file dialog for choosing an existing directory.
+
+   :param caption: |describe-file-dialog-caption|
+   :type caption: string
+   :param dir: |describe-file-dialog-dir|
+   :type dir: string
+   :returns: The path of the selected directory, or an empty string if the dialog was closed without selection.
+   :rtype: string
+
+.. js:function:: utility.readTextFile(path)
+
+   Reads the contents of the file specified by ``path``.
+
+   :param path: The path of the file to read. The path may either be relative to the project directory or absolute.
+   :type path: string
+   :returns: If reading the file was successful ``content`` will contain the contents of the file and ``error`` will be empty. Otherwise ``content`` will be empty and ``error`` will contain an error message.
+   :rtype: object (``{content, error}``)
+
+.. js:function:: utility.writeTextFile(path, content, append = false)
+
+   Writes ``content`` to the file specified by ``path``. The file is created if it does not already exist.
+
+   :param path: The path of the file to write. The path to an existing file may either be relative to the project directory or absolute. If the file does not already exist the path must be absolute.
+   :type path: string
+   :param content: The text to write to the file.
+   :type content: string
+   :param append: If ``true``, content is added to the end of the existing file content. If ``false``, the old file contents are replaced. Defaults to ``false``.
+   :type append: boolean
+   :returns: An error message, or empty string if no error occurred.
+   :rtype: string
+
 .. js:function:: utility.getInputText(title, label, default)
 
    Displays a text input dialog with an ``OK`` and a ``Cancel`` button. Execution stops while the window is open.

@@ -4,6 +4,7 @@
 #include "ui_mainwindow.h"
 #include "scripting.h"
 #include "config.h"
+#include "filedialog.h"
 
 ScriptUtility::~ScriptUtility() {
     if (window && window->ui && window->ui->menuTools) {
@@ -120,6 +121,49 @@ bool ScriptUtility::showQuestion(QString text, QString informativeText, QString 
     messageBox.setIcon(QMessageBox::Question);
     messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     return messageBox.exec() == QMessageBox::Yes;
+}
+
+QString ScriptUtility::showOpenFileDialog(const QString &caption, const QString &dir, const QStringList &filters) const {
+    const QString filter = filters.join(";;");
+    return FileDialog::getOpenFileName(window, caption, dir, filter);
+}
+
+QString ScriptUtility::showSaveFileDialog(const QString &caption, const QString &dir, const QStringList &filters) const {
+    const QString filter = filters.join(";;");
+    return FileDialog::getSaveFileName(window, caption, dir, filter);
+}
+
+QString ScriptUtility::showOpenDirectoryDialog(const QString &caption, const QString &dir) const {
+    return FileDialog::getExistingDirectory(window, caption, dir);
+}
+
+QString ScriptUtility::detectProjectPath(const QString &path) const {
+    if (!window || !window->editor || !window->editor->project) return path;
+    const QString projectPath = window->editor->project->getExistingFilepath(path);
+    return projectPath.isEmpty() ? path : projectPath;
+}
+
+QJSValue ScriptUtility::readTextFile(const QString &path) const {
+    QFile file(detectProjectPath(path));
+    if (!file.exists()) {
+        return Scripting::fileResponse(QString("Failed to open file '%1' for reading: No such file.").arg(path), true);
+    }
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return Scripting::fileResponse(QString("Failed to open file '%1' for reading.").arg(path), true);
+    }
+    return Scripting::fileResponse(QString(file.readAll()), false);
+}
+
+QString ScriptUtility::writeTextFile(const QString &path, const QString &content, bool append) const {
+    QFile file(detectProjectPath(path));
+    QIODeviceBase::OpenMode flags = QIODevice::WriteOnly | QIODevice::Text;
+    if (append) flags |= QIODeviceBase::Append;
+    if (!file.open(flags)) {
+        return QString("Failed to open file '%1' for writing.").arg(path);
+    }
+    QTextStream out(&file);
+    out << content;
+    return QString();
 }
 
 QJSValue ScriptUtility::getInputText(QString title, QString label, QString defaultValue) {
