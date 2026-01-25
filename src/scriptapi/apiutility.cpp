@@ -156,8 +156,8 @@ QJSValue ScriptUtility::readTextFile(const QString &path) const {
 
 QString ScriptUtility::writeTextFile(const QString &path, const QString &content, bool append) const {
     QFile file(detectProjectPath(path));
-    QIODeviceBase::OpenMode flags = QIODevice::WriteOnly | QIODevice::Text;
-    if (append) flags |= QIODeviceBase::Append;
+    QIODevice::OpenMode flags = QIODevice::WriteOnly | QIODevice::Text;
+    if (append) flags |= QIODevice::Append;
     if (!file.open(flags)) {
         return QString("Failed to open file '%1' for writing.").arg(path);
     }
