@@ -144,9 +144,15 @@ QString ScriptUtility::detectProjectPath(const QString &path) const {
 }
 
 QJSValue ScriptUtility::readTextFile(const QString &path) const {
-    QFile file(detectProjectPath(path));
+    if (path.isEmpty()) return Scripting::fileResponse(QStringLiteral("Failed to open file for reading: No path specified."), true);
+
+    const QString fullPath = detectProjectPath(path);
+    QFile file(fullPath);
     if (!file.exists()) {
         return Scripting::fileResponse(QString("Failed to open file '%1' for reading: No such file.").arg(path), true);
+    }
+    if (!Scripting::checkFilePermissions(fullPath)) {
+        return Scripting::fileResponse(QString("Failed to open file '%1' for reading: Permission denied.").arg(path), true);
     }
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return Scripting::fileResponse(QString("Failed to open file '%1' for reading.").arg(path), true);
@@ -155,7 +161,14 @@ QJSValue ScriptUtility::readTextFile(const QString &path) const {
 }
 
 QString ScriptUtility::writeTextFile(const QString &path, const QString &content, bool append) const {
-    QFile file(detectProjectPath(path));
+    if (path.isEmpty()) return QStringLiteral("Failed to open file for writing: No path specified.");
+
+    const QString fullPath = detectProjectPath(path);
+    if (!Scripting::checkFilePermissions(fullPath)) {
+        return QString("Failed to open file '%1' for writing: Permission denied.").arg(path);
+    }
+
+    QFile file(fullPath);
     QIODevice::OpenMode flags = QIODevice::WriteOnly | QIODevice::Text;
     if (append) flags |= QIODevice::Append;
     if (!file.open(flags)) {

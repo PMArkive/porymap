@@ -150,6 +150,7 @@ public:
     QFont applicationFont;
     QFont mapListFont;
     int imageExportColorSpaceId;
+    QMap<QString,QString> trustedScriptHashes;
 
 protected:
     virtual void parseConfigKeyValue(QString key, QString value) override;

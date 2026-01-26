@@ -4,6 +4,7 @@
 #include <QRegularExpression>
 #include <QFileInfo>
 #include <QDir>
+#include <QCryptographicHash>
 
 // Sometimes we want to sort names alphabetically to make them easier to find in large combo box lists.
 // QStringList::sort (as of writing) can only sort numbers in lexical order, which has an undesirable
@@ -160,4 +161,12 @@ QString Util::mkpath(const QString& dirPath) {
         return QString("Directory '%1' already exists and is not empty").arg(dirPath);
     }
     return QString();
+}
+
+QString Util::getFileHash(const QString &filepath) {
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return QString();
+
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    return hash.addData(&file) ? QString(hash.result().toHex()) : QString();
 }

@@ -2062,6 +2062,8 @@ All utility functions are callable via the global ``utility`` object.
 
    Reads the contents of the file specified by ``path``.
 
+   If ``path`` refers to a file outside the project directory the user will be warned about this and may choose to cancel the read.
+
    :param path: The path of the file to read. The path may either be relative to the project directory or absolute.
    :type path: string
    :returns: If reading the file was successful ``content`` will contain the contents of the file and ``error`` will be empty. Otherwise ``content`` will be empty and ``error`` will contain an error message.
@@ -2070,6 +2072,8 @@ All utility functions are callable via the global ``utility`` object.
 .. js:function:: utility.writeTextFile(path, content, append = false)
 
    Writes ``content`` to the file specified by ``path``. The file is created if it does not already exist.
+
+   If ``path`` refers to a file outside the project directory the user will be warned about this and may choose to cancel the write.
 
    :param path: The path of the file to write. The path to an existing file may either be relative to the project directory or absolute. If the file does not already exist the path must be absolute.
    :type path: string

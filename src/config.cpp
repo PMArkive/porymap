@@ -386,6 +386,7 @@ void PorymapConfig::reset() {
     // so we export images without one and let them handle it.
     this->imageExportColorSpaceId = 0;
 #endif
+    this->trustedScriptHashes.clear();
 }
 
 void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
@@ -576,6 +577,8 @@ void PorymapConfig::parseConfigKeyValue(QString key, QString value) {
             LogType type = static_cast<LogType>(getConfigInteger(key, typeString, 0, 2));
             this->statusBarLogTypes.insert(type);
         }
+    } else if (key.startsWith("trusted_script_hash/")) {
+        this->trustedScriptHashes.insert(key.mid(QStringLiteral("trusted_script_hash/").length()), value);
     } else if (key == "application_font") {
         this->applicationFont = QFont();
         this->applicationFont.fromString(value);
@@ -681,7 +684,10 @@ QMap<QString, QString> PorymapConfig::getKeyValueMap() {
     map.insert("application_font", this->applicationFont.toString());
     map.insert("map_list_font", this->mapListFont.toString());
     map.insert("image_export_color_space_id", QString::number(this->imageExportColorSpaceId));
-    
+    for (auto it = this->trustedScriptHashes.constBegin(); it != this->trustedScriptHashes.constEnd(); it++) {
+        if (it.value().isEmpty() || it.key().isEmpty()) continue;
+        map.insert("trusted_script_hash/" + it.key(), it.value());
+    }
     return map;
 }
 

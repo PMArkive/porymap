@@ -18,6 +18,7 @@
 class Message : public QMessageBox {
 public:
     Message(QMessageBox::Icon icon, const QString &text, QMessageBox::StandardButtons buttons, QWidget *parent);
+    void addStandardButtons(QMessageBox::StandardButtons buttons) { setStandardButtons(standardButtons() | buttons); }
 };
 
 // Basic error message with an 'Ok' button.

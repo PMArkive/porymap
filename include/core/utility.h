@@ -20,6 +20,7 @@ namespace Util {
     void show(QWidget *w);
     QColorSpace toColorSpace(int colorSpaceInt);
     QString mkpath(const QString& dirPath);
+    QString getFileHash(const QString &filepath);
 }
 
 #endif // UTILITY_H

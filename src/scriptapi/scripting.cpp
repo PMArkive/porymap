@@ -44,9 +44,8 @@ Scripting::Scripting(MainWindow *mainWindow) {
     const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
     for (int i = 0; i < paths.length(); i++) {
         if (enabled.value(i, true))
-            this->filepaths.append(paths.at(i));
+            loadScript(paths.at(i));
     }
-    this->loadModules(this->filepaths);
     this->scriptUtility = new ScriptUtility(mainWindow);
 }
 
@@ -54,33 +53,35 @@ Scripting::~Scripting() {
     if (mainWindow) mainWindow->clearOverlay();
     this->engine->setInterrupted(true);
     qDeleteAll(this->imageCache);
+    this->scripts.clear();
+    this->scriptExecutionStack.clear();
     delete this->engine;
     delete this->scriptUtility;
 }
 
-void Scripting::loadModules(const QStringList &moduleFiles) {
-    for (const auto &filepath : moduleFiles) {
-        if (filepath.isEmpty()) continue;
-        QJSValue module;
-        QString validPath = Project::getExistingFilepath(filepath);
-        if (validPath.isEmpty()) {
-            logError(QString("Failed to find script file '%1'.").arg(filepath));
-        } else {
-            module = this->engine->importModule(validPath);
-        }
-        if (validPath.isEmpty() || tryErrorJS(module)) {
-            QMessageBox messageBox(this->mainWindow);
-            messageBox.setText("Failed to load script");
-            messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
-            messageBox.setDetailedText(getMostRecentError());
-            messageBox.setIcon(QMessageBox::Warning);
-            messageBox.addButton(QMessageBox::Ok);
-            messageBox.exec();
-            continue;
-        }
-        logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
-        this->modules.append(module);
+void Scripting::loadScript(const QString &filepath) {
+    if (filepath.isEmpty()) return;
+
+    auto script = QSharedPointer<Script>(new Script());
+    script->setFilepath(Project::getExistingFilepath(filepath));
+    if (script->filepath().isEmpty()) {
+        logError(QString("Failed to find script file '%1'.").arg(filepath));
+    } else {
+        script->setModule(this->engine->importModule(script->filepath()));
     }
+    if (script->filepath().isEmpty() || tryErrorJS(script->module())) {
+        QMessageBox messageBox(this->mainWindow);
+        messageBox.setText("Failed to load script");
+        messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
+        messageBox.setDetailedText(getMostRecentError());
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.addButton(QMessageBox::Ok);
+        messageBox.exec();
+        return;
+    }
+
+    logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
+    this->scripts.append(script);
 }
 
 void Scripting::populateGlobalObject(MainWindow *mainWindow) {
@@ -158,15 +159,19 @@ bool Scripting::tryErrorJS(QJSValue js) {
     return true;
 }
 
-void Scripting::invokeCallback(CallbackType type, QJSValueList args) {
-    for (QJSValue module : this->modules) {
-        QString functionName = callbackFunctions[type];
-        QJSValue callbackFunction = module.property(functionName);
-        if (tryErrorJS(callbackFunction)) continue;
-
-        QJSValue result = callbackFunction.call(args);
-        if (tryErrorJS(result)) continue;
+void Scripting::invokeCallback(CallbackType type, const QJSValueList &args) {
+    for (const auto& script : this->scripts) {
+        this->scriptExecutionStack.push(script);
+        invokeCallback(script, type, args);
+        this->scriptExecutionStack.pop();
     }
+}
+
+void Scripting::invokeCallback(QSharedPointer<const Script> script, CallbackType type, const QJSValueList &args) {
+    QString functionName = callbackFunctions[type];
+    QJSValue callbackFunction = script->module().property(functionName);
+    if (tryErrorJS(callbackFunction)) return;
+    tryErrorJS(callbackFunction.call(args));
 }
 
 void Scripting::invokeAction(int actionIndex) {
@@ -175,15 +180,10 @@ void Scripting::invokeAction(int actionIndex) {
     if (functionName.isEmpty()) return;
 
     bool foundFunction = false;
-    for (QJSValue module : instance->modules) {
-        QJSValue callbackFunction = module.property(functionName);
-        if (callbackFunction.isUndefined() || !callbackFunction.isCallable())
-            continue;
-        foundFunction = true;
-        if (tryErrorJS(callbackFunction)) continue;
-
-        QJSValue result = callbackFunction.call(QJSValueList());
-        if (tryErrorJS(result)) continue;
+    for (const auto& script : instance->scripts) {
+        instance->scriptExecutionStack.push(script);
+        if (instance->invokeAction(script, functionName)) foundFunction = true;
+        instance->scriptExecutionStack.pop();
     }
     if (!foundFunction) {
         logError(QString("Unknown custom script function '%1'").arg(functionName));
@@ -194,6 +194,21 @@ void Scripting::invokeAction(int actionIndex) {
         messageBox.addButton(QMessageBox::Ok);
         messageBox.exec();
     }
+}
+
+// Returns true if the script had the specified function and tried to execute it (whether successful or not),
+// returns false if the script did not have the specified function.
+// TODO: Now that we can individually identify scripts, this should never happen.
+//       We can always call the function using the script that registered this action.
+bool Scripting::invokeAction(QSharedPointer<const Script> script, const QString &functionName) {
+    QJSValue callbackFunction = script->module().property(functionName);
+    if (callbackFunction.isUndefined() || !callbackFunction.isCallable())
+        return false;
+    if (tryErrorJS(callbackFunction)) return true;
+
+    QJSValue result = callbackFunction.call(QJSValueList());
+    tryErrorJS(result);
+    return true;
 }
 
 void Scripting::cb_ProjectOpened(QString projectPath) {
@@ -410,6 +425,39 @@ QJSValue Scripting::fileResponse(const QString &s, bool isError) {
     obj.setProperty("content", isError ? QString() : s);
     obj.setProperty("error", isError ? s : QString());
     return obj;
+}
+
+QSharedPointer<Scripting::Script> Scripting::getActiveScript() const {
+    return this->scriptExecutionStack.isEmpty() ? nullptr : this->scriptExecutionStack.top();
+}
+
+bool Scripting::checkFilePermissions(const QString &filepath) {
+    // Scripts are allowed to read/write files inside the project directory without explicit permission.
+    // Normal file permission rules will still apply.
+    if (QDir::cleanPath(filepath).startsWith(QDir::cleanPath(projectConfig.root()))) return true;
+
+    if (!instance) return false;
+    QSharedPointer<Script> script = instance->getActiveScript();
+    if (!script || script->hash().isEmpty()) return false;
+
+    if (porymapConfig.trustedScriptHashes.contains(script->hash()))
+        return true; // User has already opted to trust this script
+
+    QString reason = QString("'%1' would like to access files outside your project folder.").arg(script->filepath());
+    return instance->askForTrust(script, reason);
+}
+
+bool Scripting::askForTrust(QSharedPointer<Script> script, const QString &reason) {
+    QuestionMessage messageBox(QString("Allow '%1' to continue?").arg(script->fileName()), this->mainWindow);
+    messageBox.setInformativeText(reason);
+    if (messageBox.exec() == QMessageBox::Yes) {
+        // User has opted to trust this script. If this script had an old hash saved, remove that first.
+        QList<QString> oldHashes = porymapConfig.trustedScriptHashes.keys(script->filepath());
+        for (const auto& oldHash : oldHashes) porymapConfig.trustedScriptHashes.remove(oldHash);
+        porymapConfig.trustedScriptHashes.insert(script->hash(), script->filepath());
+        return true;
+    }
+    return false;
 }
 
 QJSEngine *Scripting::getEngine() {
