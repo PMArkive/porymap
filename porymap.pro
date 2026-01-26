@@ -108,7 +108,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/maplistmodels.cpp \
     src/ui/maplisttoolbar.cpp \
     src/ui/message.cpp \
-    src/ui/graphicsview.cpp \
+    src/ui/mapview.cpp \
     src/ui/imageproviders.cpp \
     src/ui/layoutpixmapitem.cpp \
     src/ui/prefabcreationdialog.cpp \

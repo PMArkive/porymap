@@ -1,4 +1,3 @@
-#include "graphicsview.h"
 #include "mapview.h"
 #include "editor.h"
 
@@ -18,11 +17,9 @@ void MapView::keyPressEvent(QKeyEvent *event) {
 }
 
 void MapView::drawForeground(QPainter *painter, const QRectF&) {
-    for (auto i = this->overlayMap.constBegin(); i != this->overlayMap.constEnd(); i++) {
-        i.value()->renderItems(painter);
-    }
-
     if (!editor) return;
+
+    renderOverlay(painter);
 
     QStyleOptionGraphicsItem option;
 
@@ -49,27 +46,21 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
         editor->cursorMapTileRect->paint(painter, &option, this);
 }
 
-void MapView::clearOverlayMap() {
-    for (auto i = this->overlayMap.constBegin(); i != this->overlayMap.constEnd(); i++) {
-        delete i.value();
+void MapView::renderOverlay(QPainter *painter) {
+#ifdef QT_QML_LIB
+    for (auto outerIt = this->overlayMap.constBegin(); outerIt != this->overlayMap.constEnd(); outerIt++)
+    for (auto innerIt = outerIt.value().constBegin(); innerIt != outerIt.value().constEnd(); innerIt++) {
+        innerIt.value()->renderItems(painter);
+    }
+#endif
+}
+
+void MapView::clearOverlay() {
+#ifdef QT_QML_LIB
+    for (auto outerIt = this->overlayMap.constBegin(); outerIt != this->overlayMap.constEnd(); outerIt++)
+    for (auto innerIt = outerIt.value().constBegin(); innerIt != outerIt.value().constEnd(); innerIt++) {
+        delete innerIt.value();
     }
     this->overlayMap.clear();
-}
-
-Overlay * MapView::getOverlay(int layer) {
-    Overlay * overlay = this->overlayMap.value(layer, nullptr);
-    if (!overlay) {
-        overlay = new Overlay();
-        this->overlayMap.insert(layer, overlay);
-    }
-    return overlay;
-}
-
-void ConnectionsView::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
-        emit pressedDelete();
-        event->accept();
-    } else {
-        QGraphicsView::keyPressEvent(event);
-    }
+#endif
 }

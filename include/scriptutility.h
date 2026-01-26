@@ -75,13 +75,11 @@ public:
     static bool validateMetatileLayerOrder(const QList<int> &order);
 
 private:
-    void callTimeoutFunction(QJSValue callback);
     void runMessageBox(QString text, QString informativeText, QString detailedText, QMessageBox::Icon icon);
     QString detectProjectPath(const QString &path) const;
 
     MainWindow *window;
     QList<QAction *> registeredActions;
-    QSet<QTimer *> activeTimers;
     QHash<int, QString> actionMap;
 };
 

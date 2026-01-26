@@ -12,10 +12,6 @@ ScriptUtility::~ScriptUtility() {
             window->ui->menuTools->removeAction(action);
         }
     }
-    for (auto timer : this->activeTimers) {
-        timer->stop();
-        delete timer;
-    }
 }
 
 bool ScriptUtility::registerAction(QString functionName, QString actionName, QString shortcut) {
@@ -60,24 +56,7 @@ QString ScriptUtility::getActionFunctionName(int actionIndex) {
 }
 
 void ScriptUtility::setTimeout(QJSValue callback, int milliseconds) {
-  if (!callback.isCallable() || milliseconds < 0)
-      return;
-
-    QTimer *timer = new QTimer();
-    connect(timer, &QTimer::timeout, [=](){
-        if (this->activeTimers.remove(timer)) {
-            this->callTimeoutFunction(callback);
-            timer->deleteLater();
-        }
-    });
-
-    this->activeTimers.insert(timer);
-    timer->setSingleShot(true);
-    timer->start(milliseconds);
-}
-
-void ScriptUtility::callTimeoutFunction(QJSValue callback) {
-    Scripting::tryErrorJS(callback.call());
+    Scripting::setTimeout(callback, milliseconds);
 }
 
 void ScriptUtility::log(QString message) {

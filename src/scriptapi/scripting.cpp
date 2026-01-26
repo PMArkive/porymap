@@ -50,8 +50,12 @@ Scripting::Scripting(MainWindow *mainWindow) {
 }
 
 Scripting::~Scripting() {
-    if (mainWindow) mainWindow->clearOverlay();
     this->engine->setInterrupted(true);
+    for (auto timer : this->activeTimers) {
+        timer->stop();
+        delete timer;
+    }
+    if (mainWindow) mainWindow->clearOverlay();
     qDeleteAll(this->imageCache);
     this->scripts.clear();
     this->scriptExecutionStack.clear();
@@ -159,19 +163,21 @@ bool Scripting::tryErrorJS(QJSValue js) {
     return true;
 }
 
-void Scripting::invokeCallback(CallbackType type, const QJSValueList &args) {
-    for (const auto& script : this->scripts) {
-        this->scriptExecutionStack.push(script);
-        invokeCallback(script, type, args);
-        this->scriptExecutionStack.pop();
-    }
+QJSValue Scripting::call(QSharedPointer<Script> script, QJSValue func, const QJSValueList &args) {
+    this->scriptExecutionStack.push(script);
+    QJSValue result = func.call(args);
+    tryErrorJS(result);
+    this->scriptExecutionStack.pop();
+    return result;
 }
 
-void Scripting::invokeCallback(QSharedPointer<const Script> script, CallbackType type, const QJSValueList &args) {
-    QString functionName = callbackFunctions[type];
-    QJSValue callbackFunction = script->module().property(functionName);
-    if (tryErrorJS(callbackFunction)) return;
-    tryErrorJS(callbackFunction.call(args));
+void Scripting::invokeCallback(CallbackType type, const QJSValueList &args) {
+    for (const auto& script : this->scripts) {
+        QString functionName = callbackFunctions[type];
+        QJSValue callbackFunction = script->module().property(functionName);
+        if (tryErrorJS(callbackFunction)) return;
+        call(script, callbackFunction, args);
+    }
 }
 
 void Scripting::invokeAction(int actionIndex) {
@@ -181,9 +187,11 @@ void Scripting::invokeAction(int actionIndex) {
 
     bool foundFunction = false;
     for (const auto& script : instance->scripts) {
-        instance->scriptExecutionStack.push(script);
-        if (instance->invokeAction(script, functionName)) foundFunction = true;
-        instance->scriptExecutionStack.pop();
+        QJSValue callbackFunction = script->module().property(functionName);
+        if (callbackFunction.isUndefined() || !callbackFunction.isCallable()) continue;
+        foundFunction = true;
+        if (tryErrorJS(callbackFunction)) continue;
+        instance->call(script, callbackFunction);
     }
     if (!foundFunction) {
         logError(QString("Unknown custom script function '%1'").arg(functionName));
@@ -196,19 +204,22 @@ void Scripting::invokeAction(int actionIndex) {
     }
 }
 
-// Returns true if the script had the specified function and tried to execute it (whether successful or not),
-// returns false if the script did not have the specified function.
-// TODO: Now that we can individually identify scripts, this should never happen.
-//       We can always call the function using the script that registered this action.
-bool Scripting::invokeAction(QSharedPointer<const Script> script, const QString &functionName) {
-    QJSValue callbackFunction = script->module().property(functionName);
-    if (callbackFunction.isUndefined() || !callbackFunction.isCallable())
-        return false;
-    if (tryErrorJS(callbackFunction)) return true;
+void Scripting::setTimeout(QJSValue callback, int milliseconds) {
+  if (!instance || !callback.isCallable() || milliseconds < 0)
+      return;
 
-    QJSValue result = callbackFunction.call(QJSValueList());
-    tryErrorJS(result);
-    return true;
+    auto script = instance->getActiveScript();
+    QTimer *timer = new QTimer();
+    QObject::connect(timer, &QTimer::timeout, [=](){
+        if (instance->activeTimers.remove(timer)) {
+            instance->call(script, callback);
+            timer->deleteLater();
+        }
+    });
+
+    instance->activeTimers.insert(timer);
+    timer->setSingleShot(true);
+    timer->start(milliseconds);
 }
 
 void Scripting::cb_ProjectOpened(QString projectPath) {
@@ -458,6 +469,12 @@ bool Scripting::askForTrust(QSharedPointer<Script> script, const QString &reason
         return true;
     }
     return false;
+}
+
+QString Scripting::getCurrentScriptHash() {
+    if (!instance) return QString();
+    auto script = instance->getActiveScript();
+    return script ? script->hash() : QString();
 }
 
 QJSEngine *Scripting::getEngine() {

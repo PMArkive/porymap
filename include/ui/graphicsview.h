@@ -125,7 +125,14 @@ signals:
     void pressedDelete();
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual void keyPressEvent(QKeyEvent *event) override {
+        if (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace) {
+            emit pressedDelete();
+            event->accept();
+        } else {
+            QGraphicsView::keyPressEvent(event);
+        }
+    }
 };
 
 #endif // GRAPHICSVIEW_H

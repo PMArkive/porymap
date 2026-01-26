@@ -3240,7 +3240,7 @@ bool MainWindow::askToFixRegionMapEditor() {
 
 void MainWindow::clearOverlay() {
     if (ui->graphicsView_Map)
-        ui->graphicsView_Map->clearOverlayMap();
+        ui->graphicsView_Map->clearOverlay();
 }
 
 bool MainWindow::closeSupplementaryWindows() {

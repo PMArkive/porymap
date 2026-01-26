@@ -48,7 +48,9 @@ public:
     static void stop();
     static void populateGlobalObject(MainWindow *mainWindow);
     static QJSEngine *getEngine();
+    static QString getCurrentScriptHash();
     static void invokeAction(int actionIndex);
+    static void setTimeout(QJSValue callback, int milliseconds);
 
     static void cb_ProjectOpened(QString projectPath);
     static void cb_ProjectClosed(QString projectPath);
@@ -82,32 +84,33 @@ private:
     MainWindow *mainWindow;
     QJSEngine *engine;
 
-    class Script {
-        public:
-            Script() {};
+    class Script
+    {
+    public:
+        Script() {};
 
-            QString filepath() const { return m_filepath; }
-            QString fileName() const {
-                QFileInfo fileInfo(m_filepath);
-                return fileInfo.fileName();
+        QString filepath() const { return m_filepath; }
+        QString fileName() const {
+            QFileInfo fileInfo(m_filepath);
+            return fileInfo.fileName();
+        }
+        void setFilepath(const QString &filepath) { m_filepath = filepath; }
+
+        QJSValue module() const { return m_module; }
+        void setModule(const QJSValue &module) { m_module = module; }
+
+        QString hash() {
+            if (m_hash.isEmpty()) {
+                // We won't need to check whether most scripts are trusted,
+                // so only calculate the hash when it's first requested.
+                m_hash = Util::getFileHash(m_filepath);
             }
-            void setFilepath(const QString &filepath) { m_filepath = filepath; }
-
-            QJSValue module() const { return m_module; }
-            void setModule(const QJSValue &module) { m_module = module; }
-
-            QString hash() {
-                if (m_hash.isEmpty()) {
-                    // We won't need to check whether most scripts are trusted,
-                    // so only calculate the hash when it's first requested.
-                    m_hash = Util::getFileHash(m_filepath);
-                }
-                return m_hash;
-            }
-        private:
-            QString m_filepath;
-            QJSValue m_module;
-            QString m_hash;
+            return m_hash;
+        }
+    private:
+        QString m_filepath;
+        QJSValue m_module;
+        QString m_hash;
     };
     QList<QSharedPointer<Script>> scripts;
 
@@ -119,14 +122,14 @@ private:
     // track of multiple scripts executing at once.
     QStack<QSharedPointer<Script>> scriptExecutionStack;
 
+    QSet<QTimer *> activeTimers;
     QMap<QString, const QImage*> imageCache;
     ScriptUtility *scriptUtility;
 
     void loadScript(const QString &filepath);
     void invokeCallback(CallbackType type, const QJSValueList &args);
-    void invokeCallback(QSharedPointer<const Script> script, CallbackType type, const QJSValueList &args);
-    bool invokeAction(QSharedPointer<const Script> script, const QString &functionName);
     QSharedPointer<Script> getActiveScript() const;
+    QJSValue call(QSharedPointer<Script> script, QJSValue func, const QJSValueList &args = QJSValueList());
     bool askForTrust(QSharedPointer<Script> script, const QString &reason);
 };
 

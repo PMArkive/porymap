@@ -125,17 +125,6 @@ private:
     QRectF *clippingRect;
 };
 
-#else
-
-class Overlay
-{
-public:
-    Overlay() {}
-    ~Overlay() {}
-
-    void renderItems(QPainter *) {}
-};
-
 #endif // QT_QML_LIB
 
 #endif // OVERLAY_H

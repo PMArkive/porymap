@@ -23,8 +23,8 @@ public:
 
     Editor *editor;
 
-    Overlay * getOverlay(int layer);
-    void clearOverlayMap();
+    void clearOverlay();
+    void renderOverlay(QPainter*);
 
     // Overlay scripting API
 #ifdef QT_QML_LIB
@@ -80,6 +80,7 @@ public:
     Q_INVOKABLE void addTileImage(int x, int y, int tileId, bool xflip, bool yflip, int paletteId, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addTileImage(int x, int y, QJSValue tileObj, bool setTransparency = false, int layer = 0);
     Q_INVOKABLE void addMetatileImage(int x, int y, int metatileId, bool setTransparency = false, int layer = 0);
+    Q_INVOKABLE void setRenderPriority(int priority);
 #endif // QT_QML_LIB
 
 protected:
@@ -87,10 +88,34 @@ protected:
     virtual void keyPressEvent(QKeyEvent*) override;
     virtual void moveEvent(QMoveEvent *event) override;
 private:
-    QMap<int, Overlay*> overlayMap;
+#ifdef QT_QML_LIB
+    // Maps a layer number to the overlay items.
+    // We specifically use a QMap because we guarantee a sorted
+    // order for the layers so that users can predict rendering.
+    typedef QMap<int, Overlay*> OverlayLayers;
 
+    // Maps a script's file hash to a priority value.
+    // This priority value is the order in which all layers
+    // belonging to that script will be rendered relative to
+    // the layers belonging to other scripts.
+    // These are normally unique and automatically assigned,
+    // but users may set this value manually to render scripts
+    // in an explicit order relative to one another, or even
+    // to have multiple scripts share layers.
+    // This is a QMap vs a QHash solely for performance,
+    // given most users will have relatively few scripts.
+    QMap<QString, int> hashToPriority;
+
+    // Maps a render priority provided by 'hashToPriority'
+    // to the corresponding overlay layers.
+    // A QMap is used once again to guarantee render order.
+    QMap<int, OverlayLayers> overlayMap;
+
+    OverlayLayers* getCurrentScriptLayers();
+    Overlay * getOverlay(int layer);
     void updateScene();
     void addTileImage(int x, int y, const Tile &tile, bool setTransparency, int layer = 0);
+#endif
 };
 
 #endif // GRAPHICSVIEW_H

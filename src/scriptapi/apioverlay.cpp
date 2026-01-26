@@ -4,6 +4,39 @@
 #include "imageproviders.h"
 #include "editor.h"
 
+void MapView::setRenderPriority(int priority) {
+    const QString hash = Scripting::getCurrentScriptHash();
+    if (!hash.isEmpty()) this->hashToPriority[hash] = priority;
+}
+
+MapView::OverlayLayers* MapView::getCurrentScriptLayers() {
+    int priority = 1;
+    const QString hash = Scripting::getCurrentScriptHash();
+    auto it = this->hashToPriority.find(hash);
+    if (it == this->hashToPriority.end()) {
+        // This script does not have a priority, which means
+        // the user has not assigned it one and we haven't
+        // retrieved layers for it before.
+        // Assign it a new unique priority, starting from 1.
+        QList<int> renderIds = this->hashToPriority.values();
+        while (renderIds.contains(priority)) priority++;
+        this->hashToPriority[hash] = priority;
+    } else {
+        priority = *it;
+    }
+    return &this->overlayMap[priority];
+}
+
+Overlay* MapView::getOverlay(int layer) {
+    OverlayLayers *layers = getCurrentScriptLayers();
+    Overlay *overlay = layers->value(layer, nullptr);
+    if (!overlay) {
+        overlay = new Overlay();
+        layers->insert(layer, overlay);
+    }
+    return overlay;
+}
+
 void MapView::updateScene() {
     if (this->scene()) {
         this->scene()->update();
@@ -17,7 +50,7 @@ void MapView::clear(int layer) {
 
 // Overload. No layer provided, clear all layers
 void MapView::clear() {
-    this->clearOverlayMap();
+    this->clearOverlay();
     this->updateScene();
 }
 
@@ -50,7 +83,7 @@ void MapView::setVisibility(bool visible, int layer) {
 
 // Overload. No layer provided, set visibility of all layers
 void MapView::setVisibility(bool visible) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setHidden(!visible);
     this->updateScene();
 }
@@ -70,7 +103,7 @@ void MapView::setX(int x, int layer) {
 
 // Overload. No layer provided, set x of all layers
 void MapView::setX(int x) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setX(x);
     this->updateScene();
 }
@@ -82,7 +115,7 @@ void MapView::setY(int y, int layer) {
 
 // Overload. No layer provided, set y of all layers
 void MapView::setY(int y) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setY(y);
     this->updateScene();
 }
@@ -94,7 +127,7 @@ void MapView::setClippingRect(int x, int y, int width, int height, int layer) {
 
 void MapView::setClippingRect(int x, int y, int width, int height) {
     QRectF rect = QRectF(x, y, width, height);
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setClippingRect(rect);
     this->updateScene();
 }
@@ -105,7 +138,7 @@ void MapView::clearClippingRect(int layer) {
 }
 
 void MapView::clearClippingRect() {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->clearClippingRect();
     this->updateScene();
 }
@@ -122,7 +155,7 @@ void MapView::setPosition(int x, int y, int layer) {
 
 // Overload. No layer provided, set position of all layers
 void MapView::setPosition(int x, int y) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setPosition(x, y);
     this->updateScene();
 }
@@ -134,7 +167,7 @@ void MapView::move(int deltaX, int deltaY, int layer) {
 
 // Overload. No layer provided, move all layers
 void MapView::move(int deltaX, int deltaY) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->move(deltaX, deltaY);
     this->updateScene();
 }
@@ -150,7 +183,7 @@ void MapView::setOpacity(int opacity, int layer) {
 
 // Overload. No layer provided, set opacity of all layers
 void MapView::setOpacity(int opacity) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setOpacity(opacity);
     this->updateScene();
 }
@@ -170,7 +203,7 @@ void MapView::setHorizontalScale(qreal scale, int layer) {
 
 // Overload. No layer provided, set horizontal scale of all layers
 void MapView::setHorizontalScale(qreal scale) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setHScale(scale);
     this->updateScene();
 }
@@ -182,7 +215,7 @@ void MapView::setVerticalScale(qreal scale, int layer) {
 
 // Overload. No layer provided, set vertical scale of all layers
 void MapView::setVerticalScale(qreal scale) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setVScale(scale);
     this->updateScene();
 }
@@ -194,7 +227,7 @@ void MapView::setScale(qreal hScale, qreal vScale, int layer) {
 
 // Overload. No layer provided, set scale of all layers
 void MapView::setScale(qreal hScale, qreal vScale) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setScale(hScale, vScale);
     this->updateScene();
 }
@@ -210,7 +243,7 @@ void MapView::setRotation(int angle, int layer) {
 
 // Overload. No layer provided, set rotation of all layers
 void MapView::setRotation(int angle) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->setRotation(angle);
     this->updateScene();
 }
@@ -222,7 +255,7 @@ void MapView::rotate(int degrees, int layer) {
 
 // Overload. No layer provided, rotate all layers
 void MapView::rotate(int degrees) {
-    foreach (Overlay * layer, this->overlayMap)
+    for (const auto& layer : *getCurrentScriptLayers())
         layer->rotate(degrees);
     this->updateScene();
 }
