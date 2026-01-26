@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui widgets
 
 qtHaveModule(charts) {
     QT += charts
@@ -22,7 +22,10 @@ qtHaveModule(network) {
     warning("Qt module 'network' not found, disabling network features.")
 }
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+# Overwrite the available modules for a minimal build test
+minimal {
+    QT = core gui widgets
+}
 
 TARGET = porymap
 TEMPLATE = app
