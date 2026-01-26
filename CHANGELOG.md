@@ -9,6 +9,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Add API functions for reading and writing text files.
 
 ### Fixed
+- Fix degraded image quality in exported timelapse gifs.
 - Fix custom top-level data in the `encounters` object of `wild_encounters.json` being discarded if no `fields` data is present.
 
 ## [6.3.0] - 2025-12-26

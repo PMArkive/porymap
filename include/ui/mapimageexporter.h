@@ -114,6 +114,8 @@ private:
     void on_pushButton_Reset_pressed();
     void on_spinBox_TimelapseDelay_editingFinished();
     void on_spinBox_FrameSkip_editingFinished();
+
+    QImage::Format imageFormat() const;
 };
 
 #endif // MAPIMAGEEXPORTER_H

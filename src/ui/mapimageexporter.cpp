@@ -285,11 +285,15 @@ bool MapImageExporter::currentHistoryAppliesToFrame(QUndoStack *historyStack) {
     }
 }
 
+QImage::Format MapImageExporter::imageFormat() const {
+    return (m_mode == ImageExporterMode::Timelapse) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
+}
+
 QImage MapImageExporter::getExpandedImage(const QImage &image, const QSize &targetSize, const QColor &fillColor) {
     if (image.width() >= targetSize.width() && image.height() >= targetSize.height())
         return image;
 
-    QImage resizedImage(targetSize, QImage::Format_RGBA8888);
+    QImage resizedImage(targetSize, imageFormat());
     QPainter painter(&resizedImage);
     resizedImage.fill(fillColor);
 
@@ -448,7 +452,7 @@ QImage MapImageExporter::getStitchedImage(QProgressDialog *progress) {
         dimensions |= (QRect(map.x, map.y, map.map->pixelWidth(), map.map->pixelHeight()) + getMargins(map.map));
     }
 
-    QImage stitchedImage(dimensions.width(), dimensions.height(), QImage::Format_RGBA8888);
+    QImage stitchedImage(dimensions.width(), dimensions.height(), imageFormat());
     stitchedImage.fill(m_settings.fillColor);
 
     QPainter painter(&stitchedImage);
@@ -583,7 +587,7 @@ QImage MapImageExporter::getFormattedMapImage() {
     QMargins margins = getMargins(m_map);
     QImage image(m_layout->image.width() + margins.left() + margins.right(),
                  m_layout->image.height() + margins.top() + margins.bottom(),
-                 QImage::Format_RGBA8888);
+                 imageFormat());
     image.fill(m_settings.fillColor);
 
     QPainter painter(&image);
