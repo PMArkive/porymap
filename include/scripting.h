@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <QStack>
 #include <QFileInfo>
+#include <QPointer>
 #include "scriptutility.h"
 #include "utility.h"
 
@@ -21,36 +22,18 @@ class MainWindow;
 
 // !! New callback functions or changes to existing callback function names/arguments
 //    should be synced to resources/text/script_template.txt and docsrc/manual/scripting-capabilities.rst
-enum CallbackType {
-    OnProjectOpened,
-    OnProjectClosed,
-    OnBlockChanged,
-    OnBorderMetatileChanged,
-    OnBlockHoverChanged,
-    OnBlockHoverCleared,
-    OnMapOpened,
-    OnLayoutOpened,
-    OnMapResized,
-    OnBorderResized,
-    OnMapShifted,
-    OnTilesetUpdated,
-    OnMainTabChanged,
-    OnMapViewTabChanged,
-    OnBorderVisibilityToggled,
-    OnEventSpriteLoading,
-};
-
-class Scripting
+class Scripting : public QObject
 {
+    Q_OBJECT
 public:
     Scripting(MainWindow *mainWindow);
     ~Scripting();
     static void init(MainWindow *mainWindow);
     static void stop();
-    static void populateGlobalObject(MainWindow *mainWindow);
-    static QJSEngine *getEngine();
+    static void populateGlobalObject();
+    static QJSEngine* getEngine();
     static QString getCurrentScriptHash();
-    static void invokeAction(int actionIndex);
+    static QAction* registerAction(const QString &functionName, const QString &actionName);
     static void setTimeout(QJSValue callback, int milliseconds);
 
     static void cb_ProjectOpened(QString projectPath);
@@ -74,6 +57,7 @@ public:
     static QJSValue fromBlock(Block block);
     static QJSValue fromTile(Tile tile);
     static Tile toTile(QJSValue obj);
+    static QImage toImage(const QJSValue &obj);
     static QJSValue dimensions(int width, int height);
     static QJSValue margins(const QMargins &margins);
     static QJSValue position(int x, int y);
@@ -83,8 +67,9 @@ public:
     static bool checkFilePermissions(const QString &filepath);
 
 private:
-    MainWindow *mainWindow;
-    QJSEngine *engine;
+    QPointer<MainWindow> mainWindow;
+    QPointer<QJSEngine> engine;
+    bool populated = false;
 
     class Script
     {
@@ -124,12 +109,18 @@ private:
     // track of multiple scripts executing at once.
     QStack<QSharedPointer<Script>> scriptExecutionStack;
 
-    QSet<QTimer *> activeTimers;
+    struct ActionScript {
+        QSharedPointer<Script> script;
+        QPointer<QAction> action;
+        QString functionName;
+    };
+    QList<ActionScript> actionScripts;
+    QSet<QTimer*> activeTimers;
     QMap<QString, const QImage*> imageCache;
-    ScriptUtility *scriptUtility;
 
     void loadScript(const QString &filepath);
-    QJSValue invokeCallback(CallbackType type, const QJSValueList &args);
+    QJSValue invokeCallback(const QString &functionName, const QJSValueList &args);
+    void invokeAction(int actionIndex);
     QSharedPointer<Script> getActiveScript() const;
     QJSValue call(QSharedPointer<Script> script, QJSValue func, const QJSValueList &args = QJSValueList());
     bool askForTrust(QSharedPointer<Script> script, const QString &reason);
@@ -144,7 +135,7 @@ public:
     ~Scripting() {}
     static void init(MainWindow *) {}
     static void stop() {}
-    static void populateGlobalObject(MainWindow *) {}
+    static void populateGlobalObject() {}
 
     static void cb_ProjectOpened(QString) {};
     static void cb_ProjectClosed(QString) {};

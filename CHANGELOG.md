@@ -11,6 +11,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Fixed
 - Fix degraded image quality in exported timelapse gifs.
 - Fix custom top-level data in the `encounters` object of `wild_encounters.json` being discarded if no `fields` data is present.
+- Fix actions triggered with the use of `utility.registerAction` calling all functions across plug-ins with the registered name, rather than just the function in the script that registered it.
 
 ## [6.3.0] - 2025-12-26
 ### Added

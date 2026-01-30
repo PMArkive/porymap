@@ -869,7 +869,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
 bool MainWindow::loadProjectData() {
     porysplash->showLoadingMessage("project");
     bool success = editor->project->load();
-    Scripting::populateGlobalObject(this);
+    Scripting::populateGlobalObject();
     return success;
 }
 
@@ -3126,7 +3126,7 @@ void MainWindow::initCustomScriptsEditor() {
 
 void MainWindow::reloadScriptEngine() {
     Scripting::init(this);
-    Scripting::populateGlobalObject(this);
+    Scripting::populateGlobalObject();
     // Lying to the scripts here, simulating a project reload
     Scripting::cb_ProjectOpened(projectConfig.projectDir());
     if (this->editor) {

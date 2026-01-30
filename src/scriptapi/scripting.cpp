@@ -6,25 +6,6 @@
 #include "config.h"
 #include "mainwindow.h"
 
-const QMap<CallbackType, QString> callbackFunctions = {
-    {OnProjectOpened, "onProjectOpened"},
-    {OnProjectClosed, "onProjectClosed"},
-    {OnBlockChanged, "onBlockChanged"},
-    {OnBorderMetatileChanged, "onBorderMetatileChanged"},
-    {OnBlockHoverChanged, "onBlockHoverChanged"},
-    {OnBlockHoverCleared, "onBlockHoverCleared"},
-    {OnMapOpened, "onMapOpened"},
-    {OnLayoutOpened, "onLayoutOpened"},
-    {OnMapResized, "onMapResized"},
-    {OnBorderResized, "onBorderResized"},
-    {OnMapShifted, "onMapShifted"},
-    {OnTilesetUpdated, "onTilesetUpdated"},
-    {OnMainTabChanged, "onMainTabChanged"},
-    {OnMapViewTabChanged, "onMapViewTabChanged"},
-    {OnBorderVisibilityToggled, "onBorderVisibilityToggled"},
-    {OnEventSpriteLoading, "onEventSpriteLoading"},
-};
-
 Scripting *instance = nullptr;
 
 void Scripting::stop() {
@@ -37,9 +18,9 @@ void Scripting::init(MainWindow *mainWindow) {
     instance = new Scripting(mainWindow);
 }
 
-Scripting::Scripting(MainWindow *mainWindow) {
-    this->mainWindow = mainWindow;
-    this->engine = new QJSEngine();
+Scripting::Scripting(MainWindow *mainWindow)
+    : QObject(mainWindow), mainWindow(mainWindow), engine(new QJSEngine(this))
+{
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
     const QStringList paths = userConfig.getCustomScriptPaths();
     const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
@@ -47,7 +28,6 @@ Scripting::Scripting(MainWindow *mainWindow) {
         if (enabled.value(i, true))
             loadScript(paths.at(i));
     }
-    this->scriptUtility = new ScriptUtility(mainWindow);
 }
 
 Scripting::~Scripting() {
@@ -56,12 +36,15 @@ Scripting::~Scripting() {
         timer->stop();
         delete timer;
     }
-    if (mainWindow) mainWindow->clearOverlay();
+    if (this->mainWindow) {
+        if (this->mainWindow->ui && this->mainWindow->ui->menuTools) {
+            for (const auto &actionScript : this->actionScripts) {
+                this->mainWindow->ui->menuTools->removeAction(actionScript.action);
+            }
+        }
+        this->mainWindow->clearOverlay();
+    }
     qDeleteAll(this->imageCache);
-    this->scripts.clear();
-    this->scriptExecutionStack.clear();
-    delete this->engine;
-    delete this->scriptUtility;
 }
 
 void Scripting::loadScript(const QString &filepath) {
@@ -89,17 +72,20 @@ void Scripting::loadScript(const QString &filepath) {
     this->scripts.append(script);
 }
 
-void Scripting::populateGlobalObject(MainWindow *mainWindow) {
-    if (!instance || !instance->engine) return;
+void Scripting::populateGlobalObject() {
+    if (!instance || instance->populated) return;
+    Q_ASSERT(instance->mainWindow);
+    Q_ASSERT(instance->engine);
 
-    instance->engine->globalObject().setProperty("map", instance->engine->newQObject(mainWindow));
-    instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(mainWindow->ui->graphicsView_Map));
-    instance->engine->globalObject().setProperty("utility", instance->engine->newQObject(instance->scriptUtility));
+    auto scriptUtility = new ScriptUtility(instance->mainWindow, instance);
+    instance->engine->globalObject().setProperty("map", instance->engine->newQObject(instance->mainWindow));
+    instance->engine->globalObject().setProperty("overlay", instance->engine->newQObject(instance->mainWindow->ui->graphicsView_Map));
+    instance->engine->globalObject().setProperty("utility", instance->engine->newQObject(scriptUtility));
 
     // Note: QJSEngine also has these functions, but not in Qt 5.15.
-    QQmlEngine::setObjectOwnership(mainWindow, QQmlEngine::CppOwnership);
-    QQmlEngine::setObjectOwnership(mainWindow->ui->graphicsView_Map, QQmlEngine::CppOwnership);
-    QQmlEngine::setObjectOwnership(instance->scriptUtility, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(instance->mainWindow, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(instance->mainWindow->ui->graphicsView_Map, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(scriptUtility, QQmlEngine::CppOwnership);
 
     QJSValue constants = instance->engine->newObject();
 
@@ -124,7 +110,7 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
 
     // Read out behavior values into constants object
     QJSValue behaviorsArray = instance->engine->newObject();
-    const QMap<QString, uint32_t> * map = &mainWindow->editor->project->metatileBehaviorMap;
+    const QMap<QString, uint32_t> * map = &instance->mainWindow->editor->project->metatileBehaviorMap;
     for (auto i = map->cbegin(), end = map->cend(); i != end; i++)
         behaviorsArray.setProperty(i.key(), i.value());
     constants.setProperty("metatile_behaviors", behaviorsArray);
@@ -135,6 +121,7 @@ void Scripting::populateGlobalObject(MainWindow *mainWindow) {
     instance->engine->evaluate("Object.freeze(constants.metatile_behaviors);");
     instance->engine->evaluate("Object.freeze(constants.version);");
     instance->engine->evaluate("Object.freeze(constants);");
+    instance->populated = true;
 }
 
 bool Scripting::tryErrorJS(QJSValue js) {
@@ -172,8 +159,7 @@ QJSValue Scripting::call(QSharedPointer<Script> script, QJSValue func, const QJS
     return error ? QJSValue() : result;
 }
 
-QJSValue Scripting::invokeCallback(CallbackType type, const QJSValueList &args) {
-    const QString functionName = callbackFunctions[type];
+QJSValue Scripting::invokeCallback(const QString &functionName, const QJSValueList &args) {
     for (const auto& script : this->scripts) {
         QJSValue callbackFunction = script->module().property(functionName);
         if (tryErrorJS(callbackFunction)) return QJSValue();
@@ -183,28 +169,56 @@ QJSValue Scripting::invokeCallback(CallbackType type, const QJSValueList &args) 
     return QJSValue();
 }
 
-void Scripting::invokeAction(int actionIndex) {
-    if (!instance || !instance->scriptUtility) return;
-    QString functionName = instance->scriptUtility->getActionFunctionName(actionIndex);
-    if (functionName.isEmpty()) return;
-
-    bool foundFunction = false;
-    for (const auto& script : instance->scripts) {
-        QJSValue callbackFunction = script->module().property(functionName);
-        if (callbackFunction.isUndefined() || !callbackFunction.isCallable()) continue;
-        foundFunction = true;
-        if (tryErrorJS(callbackFunction)) continue;
-        instance->call(script, callbackFunction);
+QAction* Scripting::registerAction(const QString &functionName, const QString &actionName) {
+    if (functionName.isEmpty() || actionName.isEmpty()) {
+        logError("Failed to register script action. 'functionName' and 'actionName' must be non-empty.");
+        return nullptr;
     }
-    if (!foundFunction) {
-        logError(QString("Unknown custom script function '%1'").arg(functionName));
-        QMessageBox messageBox(instance->mainWindow);
+
+    if (!instance) return nullptr;
+    Q_ASSERT(instance->mainWindow);
+    Q_ASSERT(instance->mainWindow->ui);
+    Q_ASSERT(instance->mainWindow->ui->menuTools);
+
+    auto menu = instance->mainWindow->ui->menuTools;
+    if (instance->actionScripts.isEmpty()) {
+        instance->actionScripts.append({.action = menu->addSection("Custom Actions")});
+    }
+
+    const int actionIndex = instance->actionScripts.size();
+    QAction *action = menu->addAction(actionName, [actionIndex](){
+       if (instance) instance->invokeAction(actionIndex);
+    });
+
+    instance->actionScripts.append({
+        .script = instance->getActiveScript(),
+        .action = action,
+        .functionName = functionName
+    });
+    return action;
+}
+
+void Scripting::invokeAction(int actionIndex) {
+    const ActionScript actionScript = this->actionScripts.value(actionIndex);
+    if (!actionScript.script || actionScript.functionName.isEmpty()) return;
+
+    QJSValue callbackFunction = actionScript.script->module().property(actionScript.functionName);
+    if (callbackFunction.isUndefined()) {
+        logError(QString("Unknown custom script function '%1'").arg(actionScript.functionName));
+        QMessageBox messageBox(this->mainWindow);
         messageBox.setText("Failed to run custom action");
         messageBox.setInformativeText(getMostRecentError());
         messageBox.setIcon(QMessageBox::Warning);
         messageBox.addButton(QMessageBox::Ok);
         messageBox.exec();
+        return;
     }
+    if (!callbackFunction.isCallable()) {
+        logError("TODO: Not callable");
+        return;
+    }
+    if (tryErrorJS(callbackFunction)) return;
+    call(actionScript.script, callbackFunction);
 }
 
 void Scripting::setTimeout(QJSValue callback, int milliseconds) {
@@ -231,7 +245,7 @@ void Scripting::cb_ProjectOpened(QString projectPath) {
     QJSValueList args {
         projectPath,
     };
-    instance->invokeCallback(OnProjectOpened, args);
+    instance->invokeCallback(QStringLiteral("onProjectOpened"), args);
 }
 
 void Scripting::cb_ProjectClosed(QString projectPath) {
@@ -240,7 +254,7 @@ void Scripting::cb_ProjectClosed(QString projectPath) {
     QJSValueList args {
         projectPath,
     };
-    instance->invokeCallback(OnProjectClosed, args);
+    instance->invokeCallback(QStringLiteral("onProjectClosed"), args);
 }
 
 void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock) {
@@ -252,7 +266,7 @@ void Scripting::cb_MetatileChanged(int x, int y, Block prevBlock, Block newBlock
         instance->fromBlock(prevBlock),
         instance->fromBlock(newBlock),
     };
-    instance->invokeCallback(OnBlockChanged, args);
+    instance->invokeCallback(QStringLiteral("onBlockChanged"), args);
 }
 
 void Scripting::cb_BorderMetatileChanged(int x, int y, uint16_t prevMetatileId, uint16_t newMetatileId) {
@@ -264,7 +278,7 @@ void Scripting::cb_BorderMetatileChanged(int x, int y, uint16_t prevMetatileId, 
         prevMetatileId,
         newMetatileId,
     };
-    instance->invokeCallback(OnBorderMetatileChanged, args);
+    instance->invokeCallback(QStringLiteral("onBorderMetatileChanged"), args);
 }
 
 void Scripting::cb_BlockHoverChanged(int x, int y) {
@@ -274,12 +288,12 @@ void Scripting::cb_BlockHoverChanged(int x, int y) {
         x,
         y,
     };
-    instance->invokeCallback(OnBlockHoverChanged, args);
+    instance->invokeCallback(QStringLiteral("onBlockHoverChanged"), args);
 }
 
 void Scripting::cb_BlockHoverCleared() {
     if (!instance) return;
-    instance->invokeCallback(OnBlockHoverCleared, QJSValueList());
+    instance->invokeCallback(QStringLiteral("onBlockHoverCleared"), QJSValueList());
 }
 
 void Scripting::cb_MapOpened(QString mapName) {
@@ -288,7 +302,7 @@ void Scripting::cb_MapOpened(QString mapName) {
     QJSValueList args {
         mapName,
     };
-    instance->invokeCallback(OnMapOpened, args);
+    instance->invokeCallback(QStringLiteral("onMapOpened"), args);
 }
 
 void Scripting::cb_LayoutOpened(QString layoutName) {
@@ -297,7 +311,7 @@ void Scripting::cb_LayoutOpened(QString layoutName) {
     QJSValueList args {
         layoutName,
     };
-    instance->invokeCallback(OnLayoutOpened, args);
+    instance->invokeCallback(QStringLiteral("onLayoutOpened"), args);
 }
 
 void Scripting::cb_MapResized(int oldWidth, int oldHeight, const QMargins &delta) {
@@ -308,7 +322,7 @@ void Scripting::cb_MapResized(int oldWidth, int oldHeight, const QMargins &delta
         oldHeight,
         Scripting::margins(delta),
     };
-    instance->invokeCallback(OnMapResized, args);
+    instance->invokeCallback(QStringLiteral("onMapResized"), args);
 }
 
 void Scripting::cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int newHeight) {
@@ -320,7 +334,7 @@ void Scripting::cb_BorderResized(int oldWidth, int oldHeight, int newWidth, int 
         newWidth,
         newHeight,
     };
-    instance->invokeCallback(OnBorderResized, args);
+    instance->invokeCallback(QStringLiteral("onBorderResized"), args);
 }
 
 void Scripting::cb_MapShifted(int xDelta, int yDelta) {
@@ -330,7 +344,7 @@ void Scripting::cb_MapShifted(int xDelta, int yDelta) {
         xDelta,
         yDelta,
     };
-    instance->invokeCallback(OnMapShifted, args);
+    instance->invokeCallback(QStringLiteral("onMapShifted"), args);
 }
 
 void Scripting::cb_TilesetUpdated(const QString &tilesetName) {
@@ -339,7 +353,7 @@ void Scripting::cb_TilesetUpdated(const QString &tilesetName) {
     QJSValueList args {
         tilesetName,
     };
-    instance->invokeCallback(OnTilesetUpdated, args);
+    instance->invokeCallback(QStringLiteral("onTilesetUpdated"), args);
 }
 
 void Scripting::cb_MainTabChanged(int oldTab, int newTab) {
@@ -349,7 +363,7 @@ void Scripting::cb_MainTabChanged(int oldTab, int newTab) {
         oldTab,
         newTab,
     };
-    instance->invokeCallback(OnMainTabChanged, args);
+    instance->invokeCallback(QStringLiteral("onMainTabChanged"), args);
 }
 
 void Scripting::cb_MapViewTabChanged(int oldTab, int newTab) {
@@ -359,7 +373,7 @@ void Scripting::cb_MapViewTabChanged(int oldTab, int newTab) {
         oldTab,
         newTab,
     };
-    instance->invokeCallback(OnMapViewTabChanged, args);
+    instance->invokeCallback(QStringLiteral("onMapViewTabChanged"), args);
 }
 
 void Scripting::cb_BorderVisibilityToggled(bool visible) {
@@ -368,7 +382,7 @@ void Scripting::cb_BorderVisibilityToggled(bool visible) {
     QJSValueList args {
         visible,
     };
-    instance->invokeCallback(OnBorderVisibilityToggled, args);
+    instance->invokeCallback(QStringLiteral("onBorderVisibilityToggled"), args);
 }
 
 QImage Scripting::cb_EventSpriteLoading(const QString &gfxName, const QString &directionName) {
@@ -378,24 +392,7 @@ QImage Scripting::cb_EventSpriteLoading(const QString &gfxName, const QString &d
         gfxName,
         directionName,
     };
-    QJSValue settings = instance->invokeCallback(OnEventSpriteLoading, args);
-    if (!settings.hasProperty("path")) return QImage();
-
-    const QString path = settings.property("path").toString();
-    QImage image(Project::getExistingFilepath(path));
-    if (image.isNull()) return image;
-
-    int x = settings.hasProperty("x") ? settings.property("x").toInt() : 0;
-    int y = settings.hasProperty("y") ? settings.property("y").toInt() : 0;
-    int width = settings.hasProperty("width") ? settings.property("width").toInt() : image.width();
-    int height = settings.hasProperty("height") ? settings.property("height").toInt() : image.height();
-    double xScale = settings.hasProperty("xScale") ? settings.property("xScale").toNumber() : 1;
-    double yScale = settings.hasProperty("yScale") ? settings.property("yScale").toNumber() : 1;
-
-    QTransform transform = QTransform().scale(xScale, yScale);
-    image = image.copy(x, y, width, height).transformed(transform);
-    image.setColor(0, qRgba(0, 0, 0, 0));
-    return image;
+    return toImage(instance->invokeCallback(QStringLiteral("onEventSpriteLoading"), args));
 }
 
 QJSValue Scripting::fromBlock(Block block) {
@@ -443,6 +440,29 @@ Tile Scripting::toTile(QJSValue obj) {
         tile.palette = obj.property("palette").toInt();
 
     return tile;
+}
+
+QImage Scripting::toImage(const QJSValue &obj) {
+    if (!obj.hasProperty("path")) return QImage();
+
+    const QString path = obj.property("path").toString();
+    QImage image(Project::getExistingFilepath(path));
+    if (image.isNull()) return image;
+
+    int x = obj.hasProperty("x") ? obj.property("x").toInt() : 0;
+    int y = obj.hasProperty("y") ? obj.property("y").toInt() : 0;
+    int width = obj.hasProperty("width") ? obj.property("width").toInt() : image.width();
+    int height = obj.hasProperty("height") ? obj.property("height").toInt() : image.height();
+    double xScale = obj.hasProperty("xScale") ? obj.property("xScale").toNumber() : 1;
+    double yScale = obj.hasProperty("yScale") ? obj.property("yScale").toNumber() : 1;
+    bool setTransparency = obj.hasProperty("setTransparency") ? obj.property("setTransparency").toBool() : true;
+
+    QTransform transform = QTransform().scale(xScale, yScale);
+    image = image.copy(x, y, width, height).transformed(transform);
+    if (setTransparency) {
+        image.setColor(0, qRgba(0, 0, 0, 0));
+    }
+    return image;
 }
 
 QJSValue Scripting::fromTile(Tile tile) {

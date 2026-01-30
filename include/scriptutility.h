@@ -19,10 +19,9 @@ class ScriptUtility : public QObject
 {
     Q_OBJECT
 public:
-    ScriptUtility(MainWindow *mainWindow) : window(mainWindow) {}
-    ~ScriptUtility();
+    ScriptUtility(MainWindow *mainWindow, QObject *parent = nullptr) : QObject(parent), window(mainWindow) {}
+    ~ScriptUtility() {};
 
-    QString getActionFunctionName(int actionIndex);
     Q_INVOKABLE bool registerAction(QString functionName, QString actionName, QString shortcut = "");
     Q_INVOKABLE bool registerToggleAction(QString functionName, QString actionName, QString shortcut = "", bool checked = false);
     Q_INVOKABLE void setTimeout(QJSValue callback, int milliseconds);
@@ -79,8 +78,6 @@ private:
     QString detectProjectPath(const QString &path) const;
 
     MainWindow *window;
-    QList<QAction *> registeredActions;
-    QHash<int, QString> actionMap;
 };
 
 #endif // QT_QML_LIB
