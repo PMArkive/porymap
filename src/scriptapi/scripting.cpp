@@ -200,21 +200,23 @@ QAction* Scripting::registerAction(const QString &functionName, const QString &a
 
 void Scripting::invokeAction(int actionIndex) {
     const ActionScript actionScript = this->actionScripts.value(actionIndex);
-    if (!actionScript.script || actionScript.functionName.isEmpty()) return;
+    if (!actionScript.script || !actionScript.action || actionScript.functionName.isEmpty()) return;
 
     QJSValue callbackFunction = actionScript.script->module().property(actionScript.functionName);
     if (callbackFunction.isUndefined()) {
-        logError(QString("Unknown custom script function '%1'").arg(actionScript.functionName));
-        QMessageBox messageBox(this->mainWindow);
-        messageBox.setText("Failed to run custom action");
-        messageBox.setInformativeText(getMostRecentError());
-        messageBox.setIcon(QMessageBox::Warning);
-        messageBox.addButton(QMessageBox::Ok);
-        messageBox.exec();
+        logError(QString("Function '%1' is not defined and exported in '%2'")
+                        .arg(actionScript.functionName)
+                        .arg(actionScript.script->filepath()));
+        const QString message = QString("Failed to run '%1'").arg(actionScript.action->text());
+        RecentErrorMessage::show(message, this->mainWindow);
         return;
     }
     if (!callbackFunction.isCallable()) {
-        logError("TODO: Not callable");
+        logError(QString("'%1' in '%2' is not a callable function.")
+                        .arg(actionScript.functionName)
+                        .arg(actionScript.script->filepath()));
+        const QString message = QString("Failed to run '%1'").arg(actionScript.action->text());
+        RecentErrorMessage::show(message, this->mainWindow);
         return;
     }
     if (tryErrorJS(callbackFunction)) return;
