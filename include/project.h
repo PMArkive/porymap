@@ -213,7 +213,6 @@ public:
     QMap<QString, QMap<QString, QString>> readObjEventGfxInfo();
 
     QPixmap getEventPixmap(const QString &gfxName, const QString &movementName);
-    QPixmap getEventPixmap(const QString &gfxName, int frame, bool hFlip);
     QPixmap getEventPixmap(Event::Group group);
     void loadEventPixmap(Event *event, bool forceLoad = false);
 
@@ -360,6 +359,7 @@ private:
     bool appendTextFile(const QString &path, const QString &text);
 
     QString findSpeciesIconPath(const QStringList &names) const;
+    QPixmap getEventPixmap(const QString &gfxName, int frame, bool hFlip);
 
     int maxObjectEvents;
     int maxMapDataSize;

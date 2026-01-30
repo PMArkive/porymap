@@ -37,6 +37,7 @@ enum CallbackType {
     OnMainTabChanged,
     OnMapViewTabChanged,
     OnBorderVisibilityToggled,
+    OnEventSpriteLoading,
 };
 
 class Scripting
@@ -67,6 +68,7 @@ public:
     static void cb_MainTabChanged(int oldTab, int newTab);
     static void cb_MapViewTabChanged(int oldTab, int newTab);
     static void cb_BorderVisibilityToggled(bool visible);
+    static QImage cb_EventSpriteLoading(const QString &gfxName, const QString &direction);
 
     static bool tryErrorJS(QJSValue js);
     static QJSValue fromBlock(Block block);
@@ -127,7 +129,7 @@ private:
     ScriptUtility *scriptUtility;
 
     void loadScript(const QString &filepath);
-    void invokeCallback(CallbackType type, const QJSValueList &args);
+    QJSValue invokeCallback(CallbackType type, const QJSValueList &args);
     QSharedPointer<Script> getActiveScript() const;
     QJSValue call(QSharedPointer<Script> script, QJSValue func, const QJSValueList &args = QJSValueList());
     bool askForTrust(QSharedPointer<Script> script, const QString &reason);
@@ -159,6 +161,7 @@ public:
     static void cb_MainTabChanged(int, int) {};
     static void cb_MapViewTabChanged(int, int) {};
     static void cb_BorderVisibilityToggled(bool) {};
+    static QImage cb_EventSpriteLoading(const QString &, const QString &) {};
 };
 
 #endif // QT_QML_LIB

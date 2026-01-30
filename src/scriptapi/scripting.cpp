@@ -22,6 +22,7 @@ const QMap<CallbackType, QString> callbackFunctions = {
     {OnMainTabChanged, "onMainTabChanged"},
     {OnMapViewTabChanged, "onMapViewTabChanged"},
     {OnBorderVisibilityToggled, "onBorderVisibilityToggled"},
+    {OnEventSpriteLoading, "onEventSpriteLoading"},
 };
 
 Scripting *instance = nullptr;
@@ -166,18 +167,20 @@ bool Scripting::tryErrorJS(QJSValue js) {
 QJSValue Scripting::call(QSharedPointer<Script> script, QJSValue func, const QJSValueList &args) {
     this->scriptExecutionStack.push(script);
     QJSValue result = func.call(args);
-    tryErrorJS(result);
+    bool error = tryErrorJS(result);
     this->scriptExecutionStack.pop();
-    return result;
+    return error ? QJSValue() : result;
 }
 
-void Scripting::invokeCallback(CallbackType type, const QJSValueList &args) {
+QJSValue Scripting::invokeCallback(CallbackType type, const QJSValueList &args) {
+    const QString functionName = callbackFunctions[type];
     for (const auto& script : this->scripts) {
-        QString functionName = callbackFunctions[type];
         QJSValue callbackFunction = script->module().property(functionName);
-        if (tryErrorJS(callbackFunction)) return;
-        call(script, callbackFunction, args);
+        if (tryErrorJS(callbackFunction)) return QJSValue();
+        QJSValue result = call(script, callbackFunction, args);
+        if (!result.isNull() && !result.isUndefined()) return result;
     }
+    return QJSValue();
 }
 
 void Scripting::invokeAction(int actionIndex) {
@@ -366,6 +369,33 @@ void Scripting::cb_BorderVisibilityToggled(bool visible) {
         visible,
     };
     instance->invokeCallback(OnBorderVisibilityToggled, args);
+}
+
+QImage Scripting::cb_EventSpriteLoading(const QString &gfxName, const QString &directionName) {
+    if (!instance) return QImage();
+
+    QJSValueList args {
+        gfxName,
+        directionName,
+    };
+    QJSValue settings = instance->invokeCallback(OnEventSpriteLoading, args);
+    if (!settings.hasProperty("path")) return QImage();
+
+    const QString path = settings.property("path").toString();
+    QImage image(Project::getExistingFilepath(path));
+    if (image.isNull()) return image;
+
+    int x = settings.hasProperty("x") ? settings.property("x").toInt() : 0;
+    int y = settings.hasProperty("y") ? settings.property("y").toInt() : 0;
+    int width = settings.hasProperty("width") ? settings.property("width").toInt() : image.width();
+    int height = settings.hasProperty("height") ? settings.property("height").toInt() : image.height();
+    double xScale = settings.hasProperty("xScale") ? settings.property("xScale").toNumber() : 1;
+    double yScale = settings.hasProperty("yScale") ? settings.property("yScale").toNumber() : 1;
+
+    QTransform transform = QTransform().scale(xScale, yScale);
+    image = image.copy(x, y, width, height).transformed(transform);
+    image.setColor(0, qRgba(0, 0, 0, 0));
+    return image;
 }
 
 QJSValue Scripting::fromBlock(Block block) {

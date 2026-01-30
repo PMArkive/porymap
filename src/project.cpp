@@ -11,6 +11,7 @@
 #include "validator.h"
 #include "orderedjson.h"
 #include "utility.h"
+#include "scripting.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -3102,6 +3103,19 @@ bool Project::readEventGraphics() {
 }
 
 QPixmap Project::getEventPixmap(const QString &gfxName, const QString &movementName) {
+    QPixmap pixmap;
+    const QString direction = this->facingDirections.value(movementName, "DIR_SOUTH");
+    const QString cacheKey = QString("EVENT#%1#%2").arg(gfxName).arg(direction);
+    if (QPixmapCache::find(cacheKey, &pixmap)) return pixmap;
+
+    // Users may intercept the sprite loading with a scripting callback.
+    QImage scriptImage = Scripting::cb_EventSpriteLoading(gfxName, direction);
+    if (!scriptImage.isNull()) {
+        pixmap = QPixmap::fromImage(scriptImage);
+        QPixmapCache::insert(cacheKey, pixmap);
+        return pixmap;
+    }
+
     struct FrameData {
         int index;
         bool hFlip;
@@ -3117,18 +3131,13 @@ QPixmap Project::getEventPixmap(const QString &gfxName, const QString &movementN
         {"DIR_WEST",  { 2, false }},
         {"DIR_EAST",  { 2,  true }}, // East-facing sprite is just the West-facing sprite mirrored
     };
-    const QString direction = this->facingDirections.value(movementName, "DIR_SOUTH");
     auto frameData = directionToFrameData.value(direction);
-    return getEventPixmap(gfxName, frameData.index, frameData.hFlip);
+    pixmap = getEventPixmap(gfxName, frameData.index, frameData.hFlip);
+    QPixmapCache::insert(cacheKey, pixmap);
+    return pixmap;
 }
 
 QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
-    QPixmap pixmap;
-    const QString cacheKey = QString("EVENT#%1#%2#%3").arg(gfxName).arg(frame).arg(hFlip ? "1" : "0");
-    if (QPixmapCache::find(cacheKey, &pixmap)) {
-        return pixmap;
-    }
-
     EventGraphics* gfx = this->eventGraphicsMap.value(gfxName, nullptr);
     if (!gfx) {
         // Invalid gfx constant. If this is a number, try to use that instead.
@@ -3177,10 +3186,7 @@ QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
     }
     // Set first palette color fully transparent.
     img.setColor(0, qRgba(0, 0, 0, 0));
-
-    pixmap = QPixmap::fromImage(img);
-    QPixmapCache::insert(cacheKey, pixmap);
-    return pixmap;
+    return QPixmap::fromImage(img);
 }
 
 QPixmap Project::getEventPixmap(Event::Group group) {

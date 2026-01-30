@@ -62,5 +62,6 @@ void MapView::clearOverlay() {
         delete innerIt.value();
     }
     this->overlayMap.clear();
+    this->hashToPriority.clear();
 #endif
 }
