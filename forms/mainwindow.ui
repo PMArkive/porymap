@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1298</width>
+    <width>1328</width>
     <height>963</height>
    </rect>
   </property>
@@ -335,7 +335,7 @@
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
-                    <widget class="MapView" name="graphicsView_Map" native="true">
+                    <widget class="MapView" name="graphicsView_Map">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                        <horstretch>0</horstretch>
@@ -668,22 +668,6 @@
                       <number>3</number>
                      </property>
                      <item row="3" column="0">
-                      <widget class="QSlider" name="horizontalSlider_MetatileZoom">
-                       <property name="minimum">
-                        <number>10</number>
-                       </property>
-                       <property name="maximum">
-                        <number>90</number>
-                       </property>
-                       <property name="value">
-                        <number>30</number>
-                       </property>
-                       <property name="orientation">
-                        <enum>Qt::Orientation::Horizontal</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="2" column="0">
                       <widget class="QFrame" name="frame_Metatiles">
                        <property name="frameShape">
                         <enum>QFrame::Shape::NoFrame</enum>
@@ -763,8 +747,8 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>424</width>
-                                 <height>79</height>
+                                 <width>433</width>
+                                 <height>74</height>
                                 </rect>
                                </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -882,8 +866,8 @@
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>424</width>
-                                 <height>79</height>
+                                 <width>433</width>
+                                 <height>74</height>
                                 </rect>
                                </property>
                                <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -986,8 +970,8 @@
                              <rect>
                               <x>8</x>
                               <y>0</y>
-                              <width>412</width>
-                              <height>446</height>
+                              <width>421</width>
+                              <height>409</height>
                              </rect>
                             </property>
                             <property name="sizePolicy">
@@ -1082,28 +1066,40 @@
                       </widget>
                      </item>
                      <item row="1" column="0">
-                      <widget class="QFrame" name="frame_Tilesets">
+                      <widget class="QGroupBox" name="groupBox_Layout">
                        <property name="sizePolicy">
-                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                          <horstretch>0</horstretch>
                          <verstretch>0</verstretch>
                         </sizepolicy>
                        </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::StyledPanel</enum>
+                       <property name="title">
+                        <string>Layout</string>
                        </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                       <layout class="QFormLayout" name="formLayout">
-                        <item row="1" column="0">
-                         <widget class="QLabel" name="label_PrimaryTileset">
-                          <property name="text">
-                           <string>Primary Tileset</string>
+                       <layout class="QVBoxLayout" name="verticalLayout_10">
+                        <item>
+                         <widget class="NoScrollComboBox" name="comboBox_LayoutSelector">
+                          <property name="editable">
+                           <bool>true</bool>
                           </property>
                          </widget>
                         </item>
-                        <item row="1" column="1">
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QGroupBox" name="groupBox_Tilesets">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="title">
+                        <string>Tilesets</string>
+                       </property>
+                       <layout class="QVBoxLayout" name="verticalLayout_22">
+                        <item>
                          <widget class="NoScrollComboBox" name="comboBox_PrimaryTileset">
                           <property name="toolTip">
                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Primary Tileset&lt;/p&gt;&lt;p&gt;Defines the first 0x200 metatiles available for the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1113,14 +1109,7 @@
                           </property>
                          </widget>
                         </item>
-                        <item row="2" column="0">
-                         <widget class="QLabel" name="label_SecondaryTileset">
-                          <property name="text">
-                           <string>Secondary Tileset</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="2" column="1">
+                        <item>
                          <widget class="NoScrollComboBox" name="comboBox_SecondaryTileset">
                           <property name="toolTip">
                            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Secondary Tileset&lt;/p&gt;&lt;p&gt;Defines the second 0x200 metatiles available for the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1130,21 +1119,23 @@
                           </property>
                          </widget>
                         </item>
-                        <item row="0" column="1">
-                         <widget class="NoScrollComboBox" name="comboBox_LayoutSelector">
-                          <property name="editable">
-                           <bool>true</bool>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="0" column="0">
-                         <widget class="QLabel" name="label_Layout">
-                          <property name="text">
-                           <string>Layout</string>
-                          </property>
-                         </widget>
-                        </item>
                        </layout>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QSlider" name="horizontalSlider_MetatileZoom">
+                       <property name="minimum">
+                        <number>10</number>
+                       </property>
+                       <property name="maximum">
+                        <number>90</number>
+                       </property>
+                       <property name="value">
+                        <number>30</number>
+                       </property>
+                       <property name="orientation">
+                        <enum>Qt::Orientation::Horizontal</enum>
+                       </property>
                       </widget>
                      </item>
                     </layout>
@@ -1195,7 +1186,7 @@
                          <rect>
                           <x>0</x>
                           <y>0</y>
-                          <width>428</width>
+                          <width>437</width>
                           <height>633</height>
                          </rect>
                         </property>
@@ -1415,7 +1406,7 @@
                             <rect>
                              <x>0</x>
                              <y>0</y>
-                             <width>383</width>
+                             <width>392</width>
                              <height>744</height>
                             </rect>
                            </property>
@@ -2212,7 +2203,7 @@
                 <property name="bottomMargin">
                  <number>0</number>
                 </property>
-                <item row="0">
+                <item>
                  <widget class="QFrame" name="frame_HeaderData">
                   <property name="enabled">
                    <bool>false</bool>
@@ -2221,7 +2212,7 @@
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
-                  </sizepolicy>
+                   </sizepolicy>
                   </property>
                   <property name="frameShape">
                    <enum>QFrame::Shape::StyledPanel</enum>
@@ -2236,14 +2227,14 @@
                   </layout>
                  </widget>
                 </item>
-                <item row="1">
+                <item>
                  <widget class="QScrollArea" name="scrollArea_CustomAttributes">
                   <property name="frameShape">
                    <enum>QFrame::Shape::NoFrame</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Shadow::Plain</enum>
-                   </property>
+                  </property>
                   <property name="widgetResizable">
                    <bool>true</bool>
                   </property>
@@ -2252,8 +2243,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>1011</width>
-                     <height>806</height>
+                     <width>72</width>
+                     <height>20</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -2304,8 +2295,7 @@
                 </item>
                </layout>
               </widget>
-              <widget class="QWidget" name="widget_HeaderRightColumn">
-              </widget>
+              <widget class="QWidget" name="widget_HeaderRightColumn" native="true"/>
              </widget>
             </item>
            </layout>
@@ -2842,7 +2832,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1298</width>
+     <width>1328</width>
      <height>37</height>
     </rect>
    </property>

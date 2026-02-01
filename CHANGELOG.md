@@ -8,6 +8,9 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Added
 - Add API functions for reading and writing text files.
 
+### Changed
+- Move the tileset/layout labels to prioritize horizontal space for the map.
+
 ### Fixed
 - Fix degraded image quality in exported timelapse gifs.
 - Fix custom top-level data in the `encounters` object of `wild_encounters.json` being discarded if no `fields` data is present.
