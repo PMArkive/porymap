@@ -5,6 +5,9 @@
 #include <QObject>
 #include <QSize>
 
+// TODO: Replace once config refactoring is complete.
+extern bool ConfigDisplayIdsHexadecimal;
+
 class Tile
 {
 public:
@@ -23,6 +26,9 @@ public:
     void flip(QImage *image) const;
 
     static int getIndexInTileset(int);
+
+    QString toString() const;
+    static QString getTileIdString(uint16_t tileId);
 
     static const uint16_t maxValue;
 

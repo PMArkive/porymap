@@ -2,6 +2,8 @@
 #include "project.h"
 #include "bitpacker.h"
 
+bool ConfigDisplayIdsHexadecimal = true;
+
 // Upper limit for raw value (i.e., uint16_t max).
 const uint16_t Tile::maxValue = 0xFFFF;
 
@@ -63,4 +65,18 @@ int Tile::getIndexInTileset(int tileId) {
     } else {
         return tileId - Project::getNumTilesPrimary();
     }
+}
+
+QString Tile::toString() const {
+    return QString("Tile: %1, Palette: %2%3%4")
+                .arg(getTileIdString(this->tileId))
+                .arg(QString::number(this->palette))
+                .arg(this->xflip ? ", X-flipped" : "")
+                .arg(this->yflip ? ", Y-flipped" : "");
+}
+
+QString Tile::getTileIdString(uint16_t tileId) {
+    return /*porymapConfig.displayIdsHexadecimal*/ConfigDisplayIdsHexadecimal
+            ? Util::toHexString(tileId, 3)
+            : QString::number(tileId);
 }

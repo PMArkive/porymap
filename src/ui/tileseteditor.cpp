@@ -510,16 +510,11 @@ void TilesetEditor::updateLayerTileStatus() {
 }
 
 void TilesetEditor::showTileStatus(const Tile &tile) {
-    this->ui->statusbar->showMessage(QString("Tile: %1, Palette: %2%3%4")
-                                        .arg(Util::toHexString(tile.tileId, 3))
-                                        .arg(QString::number(tile.palette))
-                                        .arg(tile.xflip ? ", X-flipped" : "")
-                                        .arg(tile.yflip ? ", Y-flipped" : "")
-                                    );
+    this->ui->statusbar->showMessage(tile.toString());
 }
 
 void TilesetEditor::showTileStatus(uint16_t tileId) {
-    this->ui->statusbar->showMessage(QString("Tile: %1").arg(Util::toHexString(tileId, 3)));
+    this->ui->statusbar->showMessage(QString("Tile: %1").arg(Tile::getTileIdString(tileId)));
 }
 
 void TilesetEditor::onHoveredTileCleared() {
