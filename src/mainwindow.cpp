@@ -1442,10 +1442,19 @@ bool MainWindow::setProjectUI() {
     const QSignalBlocker b_PrimaryTileset(ui->comboBox_PrimaryTileset);
     ui->comboBox_PrimaryTileset->clear();
     ui->comboBox_PrimaryTileset->addItems(project->primaryTilesetLabels);
+    ui->comboBox_PrimaryTileset->setToolTip(Util::toHtmlParagraph(
+        QString("<b>Primary Tileset</b><br><br>Defines the metatiles from 0 - %1 available for the map.")
+                .arg(Metatile::getMetatileIdString(project->getNumMetatilesPrimary()-1))
+    ));
 
     const QSignalBlocker b_SecondaryTileset(ui->comboBox_SecondaryTileset);
     ui->comboBox_SecondaryTileset->clear();
     ui->comboBox_SecondaryTileset->addItems(project->secondaryTilesetLabels);
+    ui->comboBox_SecondaryTileset->setToolTip(Util::toHtmlParagraph(
+        QString("<b>Secondary Tileset</b><br><br>Defines the metatiles from %1 - %2 available for the map.")
+                .arg(Metatile::getMetatileIdString(project->getNumMetatilesPrimary()))
+                .arg(Metatile::getMetatileIdString(project->getNumMetatilesTotal()-1))
+    ));
 
     const QSignalBlocker b_LayoutSelector(ui->comboBox_LayoutSelector);
     ui->comboBox_LayoutSelector->clear();
