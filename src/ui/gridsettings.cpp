@@ -74,6 +74,28 @@ QVector<qreal> GridSettings::getDashPattern(uint length) const {
     }
 }
 
+QJsonObject GridSettings::toJson() const {
+    QJsonObject obj;
+    obj["width"] = static_cast<qint64>(this->width);
+    obj["height"] = static_cast<qint64>(this->height);
+    obj["offsetX"] = this->offsetX;
+    obj["offsetY"] = this->offsetY;
+    obj["style"] = getStyleName(this->style);
+    obj["color"] = this->color.name();
+    return obj;
+}
+
+GridSettings GridSettings::fromJson(const QJsonObject &obj) {
+    GridSettings settings;
+    settings.width = obj["width"].toInt();
+    settings.height = obj["height"].toInt();
+    settings.offsetX = obj["offsetX"].toInt();
+    settings.offsetY = obj["offsetY"].toInt();
+    settings.style = getStyleFromName(obj["style"].toString());
+    settings.color = QColor(obj["color"].toString());
+    return settings;
+}
+
 
 
 GridSettingsDialog::GridSettingsDialog(QWidget *parent) :

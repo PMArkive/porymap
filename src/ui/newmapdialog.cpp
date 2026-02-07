@@ -4,6 +4,7 @@
 #include "ui_newmapdialog.h"
 #include "config.h"
 #include "validator.h"
+#include "eventfilters.h"
 
 #include <QMap>
 #include <QSet>
@@ -61,7 +62,7 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewMapDialog::dialogButtonClicked);
 
     refresh();
-    restoreGeometry(porymapConfig.newMapDialogGeometry);
+    installEventFilter(new GeometrySaver(this));
     ui->lineEdit_Name->setFocus();
 }
 
@@ -91,7 +92,6 @@ NewMapDialog::NewMapDialog(Project *project, int mapListTab, const QString &mapL
 
 NewMapDialog::~NewMapDialog()
 {
-    porymapConfig.newMapDialogGeometry = saveGeometry();
     saveSettings();
     delete ui;
 }

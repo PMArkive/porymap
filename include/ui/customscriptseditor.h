@@ -33,7 +33,7 @@ private:
     bool hasUnsavedChanges = false;
     const QString baseDir;
 
-    void displayScript(const QString &filepath, bool enabled);
+    void displayScript(const ScriptSettings &settings);
     void displayNewScript(QString filepath);
     QString chooseScript(QString dir);
     void removeScript(QListWidgetItem * item);
@@ -46,7 +46,6 @@ private:
     int prompt(const QString &text, QMessageBox::StandardButton defaultButton);
     void save();
     void closeEvent(QCloseEvent*);
-    void restoreWindowState();
     void initShortcuts();
     QObjectList shortcutableObjects() const;
     void openManual();

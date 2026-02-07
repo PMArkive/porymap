@@ -2,6 +2,7 @@
 #define CUSTOMSCRIPTSLISTITEM_H
 
 #include <QFrame>
+#include "scriptsettings.h"
 
 namespace Ui {
 class CustomScriptsListItem;
@@ -13,9 +14,26 @@ class CustomScriptsListItem : public QFrame
 
 public:
     explicit CustomScriptsListItem(QWidget *parent = nullptr);
+    explicit CustomScriptsListItem(const ScriptSettings& settings, QWidget *parent = nullptr);
     ~CustomScriptsListItem();
 
-public:
+    void setSettings(const ScriptSettings& settings);
+    ScriptSettings getSettings() const;
+
+    void setPath(const QString& text);
+    QString path() const;
+
+    void setScriptEnabled(bool enabled);
+    bool scriptEnabled() const;
+
+signals:
+    void clickedChooseScript();
+    void clickedEditScript();
+    void clickedDeleteScript();
+    void toggledEnable(bool checked);
+    void pathEdited(const QString& text);
+
+private:
     Ui::CustomScriptsListItem *ui;
 };
 

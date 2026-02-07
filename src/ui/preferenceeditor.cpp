@@ -103,7 +103,7 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_StatusWarnings->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_WARN) != logTypeEnd);
     ui->checkBox_StatusInformation->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_INFO) != logTypeEnd);
 
-    if (/*porymapConfig.displayIdsHexadecimal*/ConfigDisplayIdsHexadecimal) {
+    if (porymapConfig.displayIdsHexadecimal) {
         ui->radioButton_Hexadecimal->setChecked(true);
     } else {
         ui->radioButton_Decimal->setChecked(true);
@@ -141,7 +141,7 @@ void PreferenceEditor::saveFields() {
     porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
     porymapConfig.eventDeleteWarningDisabled = ui->checkBox_DisableEventWarning->isChecked();
     porymapConfig.showProjectLoadingScreen = ui->checkBox_ShowProjectLoadingScreen->isChecked();
-    /*porymapConfig.displayIdsHexadecimal*/ConfigDisplayIdsHexadecimal = ui->radioButton_Hexadecimal->isChecked();
+    porymapConfig.displayIdsHexadecimal = ui->radioButton_Hexadecimal->isChecked();
 
     porymapConfig.statusBarLogTypes.clear();
     if (ui->checkBox_StatusErrors->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_ERROR);

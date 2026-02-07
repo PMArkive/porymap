@@ -41,18 +41,16 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
 
     refresh();
 
-    if (porymapConfig.newLayoutDialogGeometry.isEmpty()){
+    if (!porymapConfig.restoreGeometry(this)) {
         // On first display resize to fit contents a little better
         adjustSize();
-    } else {
-        restoreGeometry(porymapConfig.newLayoutDialogGeometry);
     }
     ui->lineEdit_Name->setFocus();
 }
 
 NewLayoutDialog::~NewLayoutDialog()
 {
-    porymapConfig.newLayoutDialogGeometry = saveGeometry();
+    porymapConfig.saveGeometry(this);
     saveSettings();
     delete ui;
 }

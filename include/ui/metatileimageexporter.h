@@ -84,7 +84,12 @@ private:
     QImage m_previewImage;
     bool m_previewUpdateQueued = false;
     QList<int> m_layerOrder;
-    ProjectConfig m_savedConfig;
+    struct SavedConfigSettings {
+        QColor transparencyColor;
+        uint16_t unusedTileNormal = 0;
+        uint16_t unusedTileCovered = 0;
+        uint16_t unusedTileSplit = 0;
+    } m_savedConfig;
     QList<QRadioButton*> m_transparencyButtons;
 
     void populate(const Settings &settings);

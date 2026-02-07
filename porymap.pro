@@ -47,8 +47,9 @@ VERSION = 6.3.0
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/core/advancemapparser.cpp \
+    src/config/legacy.cpp \
+    src/core/basegame.cpp \
     src/core/block.cpp \
-    src/ui/resizelayoutpopup.cpp \
     src/core/bitpacker.cpp \
     src/core/blockdata.cpp \
     src/core/events.cpp \
@@ -113,7 +114,7 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/layoutpixmapitem.cpp \
     src/ui/prefabcreationdialog.cpp \
     src/ui/regionmappixmapitem.cpp \
-    src/ui/citymappixmapitem.cpp \
+    src/ui/resizelayoutpopup.cpp \
     src/ui/mapheaderform.cpp \
     src/ui/metatilelayersitem.cpp \
     src/ui/metatileselector.cpp \
@@ -168,6 +169,7 @@ HEADERS  += include/core/advancemapparser.h \
     include/core/block.h \
     include/core/bitpacker.h \
     include/core/blockdata.h \
+    include/core/converter.h \
     include/core/events.h \
     include/core/filedialog.h \
     include/core/history.h \
@@ -233,7 +235,6 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/mapview.h \
     include/ui/prefabcreationdialog.h \
     include/ui/regionmappixmapitem.h \
-    include/ui/citymappixmapitem.h \
     include/ui/colorinputwidget.h \
     include/ui/metatilelayersitem.h \
     include/ui/metatileselector.h \

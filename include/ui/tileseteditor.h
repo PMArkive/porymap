@@ -114,7 +114,6 @@ private:
     void initMetatileLayersItem();
     void initShortcuts();
     void initExtraShortcuts();
-    void restoreWindowState();
     void initMetatileHistory();
     void setTilesets(QString primaryTilesetLabel, QString secondaryTilesetLabel);
     void reset();

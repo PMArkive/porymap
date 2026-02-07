@@ -1,5 +1,6 @@
 #include <QObject>
 #include <QEvent>
+#include <QSet>
 
 
 /// Ctrl+Wheel = zoom
@@ -16,7 +17,6 @@ public slots:
 };
 
 
-
 /// Emits a signal when a window gets activated / regains focus
 class ActiveWindowFilter : public QObject {
     Q_OBJECT
@@ -26,4 +26,16 @@ public:
     bool eventFilter(QObject *obj, QEvent *event) override;
 signals:
     void activated();
+};
+
+
+class GeometrySaver : public QObject {
+    Q_OBJECT
+public:
+    GeometrySaver(QObject *parent, bool enableLogging = true)
+        : QObject(parent), m_loggingEnabled(enableLogging) {}
+    bool eventFilter(QObject *obj, QEvent *event) override;
+private:
+    bool m_loggingEnabled = true;
+    QSet<QObject*> m_wasShown;
 };

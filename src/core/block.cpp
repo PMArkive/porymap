@@ -2,12 +2,10 @@
 #include "bitpacker.h"
 #include "config.h"
 
-// Upper limit for metatile ID, collision, and elevation masks. Used externally.
-const uint16_t Block::maxValue = 0xFFFF;
 
-static BitPacker bitsMetatileId = BitPacker(0x3FF);
-static BitPacker bitsCollision = BitPacker(0xC00);
-static BitPacker bitsElevation = BitPacker(0xF000);
+static BitPacker bitsMetatileId = BitPacker(Block::DefaultMetatileIdMask);
+static BitPacker bitsCollision = BitPacker(Block::DefaultCollisionMask);
+static BitPacker bitsElevation = BitPacker(Block::DefaultElevationMask);
 
 Block::Block() :
     m_metatileId(0),

@@ -2,7 +2,6 @@
 #define REGIONMAPEDITOR_H
 
 #include "regionmappixmapitem.h"
-#include "citymappixmapitem.h"
 #include "regionmaplayoutpixmapitem.h"
 #include "regionmapentriespixmapitem.h"
 #include "regionmap.h"
@@ -118,7 +117,6 @@ private:
     void setRegionMap(RegionMap *map);
     void setLocations(const QStringList &locations);
 
-    void restoreWindowState();
     void closeEvent(QCloseEvent* event);
 
     void setTileHFlip(bool enabled);

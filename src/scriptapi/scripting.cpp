@@ -22,11 +22,11 @@ Scripting::Scripting(MainWindow *mainWindow)
     : QObject(mainWindow), mainWindow(mainWindow), engine(new QJSEngine(this))
 {
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
-    const QStringList paths = userConfig.getCustomScriptPaths();
-    const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
-    for (int i = 0; i < paths.length(); i++) {
-        if (enabled.value(i, true))
-            loadScript(paths.at(i));
+
+    const QStringList paths = ScriptSettings::filter(userConfig.customScripts)
+                            + ScriptSettings::filter(projectConfig.customScripts);
+    for (const auto& path : paths) {
+        loadScript(path);
     }
 }
 
@@ -103,10 +103,10 @@ void Scripting::populateGlobalObject() {
     constants.setProperty("max_secondary_metatiles", Project::getNumMetatilesSecondary());
     constants.setProperty("num_primary_palettes", Project::getNumPalettesPrimary());
     constants.setProperty("num_secondary_palettes", Project::getNumPalettesSecondary());
-    constants.setProperty("layers_per_metatile", projectConfig.getNumLayersInMetatile());
-    constants.setProperty("tiles_per_metatile", projectConfig.getNumTilesInMetatile());
+    constants.setProperty("layers_per_metatile", Metatile::numLayers());
+    constants.setProperty("tiles_per_metatile", Metatile::maxTiles());
 
-    constants.setProperty("base_game_version", projectConfig.getBaseGameVersionString());
+    constants.setProperty("base_game_version", BaseGame::versionToString(projectConfig.baseGameVersion));
 
     // Read out behavior values into constants object
     QJSValue behaviorsArray = instance->engine->newObject();

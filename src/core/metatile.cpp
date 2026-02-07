@@ -45,7 +45,7 @@ QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
 
 static int numMetatileIdChars = 4;
 QString Metatile::getMetatileIdString(uint16_t metatileId) {
-    return /*porymapConfig.displayIdsHexadecimal*/ConfigDisplayIdsHexadecimal
+    return porymapConfig.displayIdsHexadecimal
             ? Util::toHexString(metatileId, numMetatileIdChars)
             : QString::number(metatileId);
 };
@@ -60,6 +60,10 @@ QString Metatile::getMetatileIdStrings(const QList<uint16_t> &metatileIds) {
 QString Metatile::getLayerName(int layerNum) {
     static const QStringList layerTitles = { "Bottom", "Middle", "Top"};
     return layerTitles.value(layerNum);
+}
+
+int Metatile::numLayers() {
+    return projectConfig.tripleLayerMetatilesEnabled ? 3 : 2;
 }
 
 // Read and pack together this metatile's attributes.
@@ -81,8 +85,8 @@ void Metatile::setAttributes(uint32_t data) {
 }
 
 // Unpack and insert metatile attributes from the given data using a vanilla layout. For AdvanceMap import
-void Metatile::setAttributes(uint32_t data, BaseGameVersion version) {
-    const auto vanillaPackers = (version == BaseGameVersion::pokefirered) ? attributePackersFRLG : attributePackersRSE;
+void Metatile::setAttributes(uint32_t data, BaseGame::Version version) {
+    const auto vanillaPackers = (version == BaseGame::Version::pokefirered) ? attributePackersFRLG : attributePackersRSE;
     for (auto i = vanillaPackers.cbegin(), end = vanillaPackers.cend(); i != end; i++){
         const auto packer = i.value();
         this->setAttribute(i.key(), packer.unpack(data));
@@ -95,12 +99,12 @@ void Metatile::setAttribute(Metatile::Attr attr, uint32_t value) {
     this->attributes.insert(attr, packer.clamp(value));
 }
 
-int Metatile::getDefaultAttributesSize(BaseGameVersion version) {
-    return (version == BaseGameVersion::pokefirered) ? 4 : 2;
+int Metatile::getDefaultAttributesSize(BaseGame::Version version) {
+    return (version == BaseGame::Version::pokefirered) ? 4 : 2;
 }
 
-uint32_t Metatile::getDefaultAttributesMask(BaseGameVersion version, Metatile::Attr attr) {
-    const auto vanillaPackers = (version == BaseGameVersion::pokefirered) ? attributePackersFRLG : attributePackersRSE;
+uint32_t Metatile::getDefaultAttributesMask(BaseGame::Version version, Metatile::Attr attr) {
+    const auto vanillaPackers = (version == BaseGame::Version::pokefirered) ? attributePackersFRLG : attributePackersRSE;
     return vanillaPackers.value(attr).mask();
 }
 

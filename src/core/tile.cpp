@@ -2,11 +2,6 @@
 #include "project.h"
 #include "bitpacker.h"
 
-bool ConfigDisplayIdsHexadecimal = true;
-
-// Upper limit for raw value (i.e., uint16_t max).
-const uint16_t Tile::maxValue = 0xFFFF;
-
 // At the moment these are fixed, and not exposed to the user.
 // We're only using them for convenience when converting between raw values.
 // The actual job of clamping Tile's members to correct values is handled by the widths in the bit field.
@@ -76,7 +71,7 @@ QString Tile::toString() const {
 }
 
 QString Tile::getTileIdString(uint16_t tileId) {
-    return /*porymapConfig.displayIdsHexadecimal*/ConfigDisplayIdsHexadecimal
+    return porymapConfig.displayIdsHexadecimal
             ? Util::toHexString(tileId, 3)
             : QString::number(tileId);
 }

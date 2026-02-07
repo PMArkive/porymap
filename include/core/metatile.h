@@ -3,11 +3,13 @@
 #define METATILE_H
 
 #include "tile.h"
-#include "config.h"
+#include "basegame.h"
 #include "bitpacker.h"
 #include <QImage>
 #include <QPoint>
 #include <QString>
+#include <QMap>
+#include <QSet>
 
 class Project;
 
@@ -41,7 +43,7 @@ public:
     uint32_t getAttributes() const;
     uint32_t getAttribute(Metatile::Attr attr) const { return this->attributes.value(attr, 0); }
     void setAttributes(uint32_t data);
-    void setAttributes(uint32_t data, BaseGameVersion version);
+    void setAttributes(uint32_t data, BaseGame::Version version);
     void setAttribute(Metatile::Attr attr, uint32_t value);
 
     // For convenience
@@ -56,17 +58,18 @@ public:
 
     static int getIndexInTileset(int);
     static QPoint coordFromPixmapCoord(const QPointF &pixelCoord);
-    static uint32_t getDefaultAttributesMask(BaseGameVersion version, Metatile::Attr attr);
+    static uint32_t getDefaultAttributesMask(BaseGame::Version version, Metatile::Attr attr);
     static uint32_t getMaxAttributesMask();
-    static int getDefaultAttributesSize(BaseGameVersion version);
+    static int getDefaultAttributesSize(BaseGame::Version version);
     static void setLayout(Project*);
     static QString getMetatileIdString(uint16_t metatileId);
     static QString getMetatileIdStrings(const QList<uint16_t> &metatileIds);
     static QString getLayerName(int layerNum);
-
+    static int numLayers();
     static constexpr int tileWidth() { return 2; }
     static constexpr int tileHeight() { return 2; }
     static constexpr int tilesPerLayer() { return Metatile::tileWidth() * Metatile::tileHeight(); }
+    static int maxTiles() { return Metatile::numLayers() * Metatile::tilesPerLayer(); }
     static constexpr int pixelWidth() { return Metatile::tileWidth() * Tile::pixelWidth(); }
     static constexpr int pixelHeight() { return Metatile::tileHeight() * Tile::pixelHeight(); }
     static constexpr QSize pixelSize() { return QSize(pixelWidth(), pixelHeight()); }

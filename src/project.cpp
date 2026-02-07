@@ -46,6 +46,11 @@ Project::~Project()
 }
 
 void Project::setRoot(const QString &dir) {
+    // This is not currently designed to actually change the root folder.
+    // It will not appropriately update instances of the root stored elsewhere,
+    // like in projectConfig or userConfig.
+    Q_ASSERT(this->root.isEmpty());
+
     this->root = dir;
     FileDialog::setDirectory(dir);
     this->parser.setRoot(dir);
@@ -72,20 +77,21 @@ bool Project::sanityCheck() {
     return false;
 }
 
-// Porymap projects have no standardized way for Porymap to determine whether they're compatible as of the latest breaking changes.
-// We can use the project's git history (if it has one, and we're able to get it) to make a reasonable guess.
-// We know the hashes of the commits in the base repos that contain breaking changes, so if we find one of these then the project
-// should support at least up to that Porymap major version. If this fails for any reason it returns a version of -1.
-int Project::getSupportedMajorVersion(QString *errorOut) {
+QVersionNumber Project::getMinimumVersion(QString *errorOut) const {
+    if (!projectConfig.minimumVersion.isNull()) return projectConfig.minimumVersion;
+
+    // No explicitly supported version, we can use the project's git history (if it has one, and we're able to get it) to make a reasonable guess.
+    // We know the hashes of the commits in the base repos that contain breaking changes, so if we find one of these then the project
+    // should support at least up to that Porymap major version. If this fails for any reason it returns a version of -1.
+
     // This has relatively tight timeout windows (500ms for each process, compared to the default 30,000ms). This version check
     // is not important enough to significantly slow down project launch, we'd rather just timeout.
-    const int timeoutLimit = 500;
-    const int failureVersion = -1;
-    QString gitName = "git";
+    constexpr int TimeoutLimit = 500;
+    const QString gitName = QStringLiteral("git");
     QString gitPath = QStandardPaths::findExecutable(gitName);
     if (gitPath.isEmpty()) {
         if (errorOut) *errorOut = QString("Unable to locate %1.").arg(gitName);
-        return failureVersion;
+        return QVersionNumber();
     }
 
     QProcess process;
@@ -98,7 +104,7 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
     // We'll get the root commit, then compare it to the known root commits for the base project repos.
     process.setArguments({ "-c", QString("safe.directory=%1").arg(this->root), "rev-list", "--max-parents=0", "HEAD" });
     process.start();
-    if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit || process.exitCode() != 0) {
+    if (!process.waitForFinished(TimeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit || process.exitCode() != 0) {
         if (errorOut) {
             *errorOut = QStringLiteral("Failed to identify commit history");
             if (process.error() != QProcess::UnknownError && !process.errorString().isEmpty()) {
@@ -109,7 +115,7 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
                 if (!error.isEmpty()) errorOut->append(QString(": %1").arg(error));
             }
         }
-        return failureVersion;
+        return QVersionNumber();
     }
     const QString rootCommit = QString(process.readLine()).remove('\n');
 
@@ -145,22 +151,22 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
     if (!historyMap.contains(rootCommit)) {
         // Either this repo does not share history with one of the base repos, or we got some unexpected result.
         if (errorOut) *errorOut = QStringLiteral("Unrecognized commit history");
-        return failureVersion;
+        return QVersionNumber();
     }
 
     // We now know which base repo that the user's repo shares history with.
     // Next we check to see if it contains the changes required to support particular major versions of Porymap.
     // We'll start with the most recent major version and work backwards.
     for (const auto &pair : historyMap.value(rootCommit)) {
-        int versionNum = pair.first;
-        QString commitHash = pair.second;
+        const QVersionNumber version = QVersionNumber(pair.first);
+        const QString commitHash = pair.second;
         if (commitHash.isEmpty()) {
             // An empty commit hash means 'consider any point in the history a supported version'
-            return versionNum;
+            return version;
         }
         process.setArguments({ "-c", QString("safe.directory=%1").arg(this->root), "merge-base", "--is-ancestor", commitHash, "HEAD" });
         process.start();
-        if (!process.waitForFinished(timeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit) {
+        if (!process.waitForFinished(TimeoutLimit) || process.exitStatus() != QProcess::ExitStatus::NormalExit) {
             if (errorOut) {
                 *errorOut = QStringLiteral("Failed to search commit history");
                 if (process.error() != QProcess::UnknownError && !process.errorString().isEmpty()) {
@@ -171,15 +177,15 @@ int Project::getSupportedMajorVersion(QString *errorOut) {
                     if (!error.isEmpty()) errorOut->append(QString(": %1").arg(error));
                 }
             }
-            return failureVersion;
+            return QVersionNumber();
         }
         if (process.exitCode() == 0) {
             // Identified a supported major version
-            return versionNum;
+            return version;
         }
     }
     // We recognized the commit history, but it's too old for any version of Porymap to support.
-    return 0;
+    return QVersionNumber();
 }
 
 bool Project::load() {
@@ -1553,7 +1559,7 @@ Tileset *Project::createNewTileset(QString name, bool secondary, bool checkerboa
     tileset->loadTilesImage(&tilesImage);
 
     // Create default metatiles
-    const int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
+    const int tilesPerMetatile = Metatile::maxTiles();
     for (int i = 0; i < tileset->maxMetatiles(); ++i) {
         auto metatile = new Metatile();
         for(int j = 0; j < tilesPerMetatile; ++j){
@@ -1645,8 +1651,8 @@ bool Project::readTilesetMetatileLabels() {
     for (auto i = defines.constBegin(); i != defines.constEnd(); i++) {
         QString label = i.key();
         uint32_t metatileId = i.value();
-        if (metatileId > Block::maxValue) {
-            metatileId &= Block::maxValue;
+        if (metatileId > Block::MaxValue) {
+            metatileId &= Block::MaxValue;
             logWarn(QString("Value of metatile label '%1' truncated to %2").arg(label).arg(Metatile::getMetatileIdString(metatileId)));
         }
         QString tilesetName = findMetatileLabelsTileset(label);
@@ -3205,7 +3211,7 @@ QPixmap Project::getEventPixmap(Event::Group group) {
     QPixmap defaultIcon = QPixmap(defaultIcons.copy(static_cast<int>(group) * defaultWidth, 0, defaultWidth, defaultHeight));
 
     // Custom event icons may be provided by the user.
-    QString customIconPath = projectConfig.getEventIconPath(group);
+    QString customIconPath = projectConfig.eventIconPaths.value(group);
     if (customIconPath.isEmpty()) {
         // No custom icon specified, use the default icon.
         pixmap = defaultIcon;
@@ -3297,7 +3303,7 @@ QString Project::getDefaultSpeciesIconPath(const QString &species) {
 
     // We failed to find a default icon path, this species will use a placeholder icon.
     // If the user has no custom icon path for this species, tell them they can provide one.
-    if (path.isEmpty() && projectConfig.getPokemonIconPath(species).isEmpty()) {
+    if (path.isEmpty() && projectConfig.pokemonIconPaths.value(species).isEmpty()) {
         logWarn(QString("Failed to find Pokémon icon for '%1'. The filepath can be specified under 'Options->Project Settings'").arg(species));
     }
     return path;
@@ -3338,7 +3344,7 @@ QPixmap Project::getSpeciesIcon(const QString &species) {
     QPixmap pixmap;
     if (!QPixmapCache::find(species, &pixmap)) {
         // Prefer path from config. If not present, use the path parsed from project files
-        QString path = Project::getExistingFilepath(projectConfig.getPokemonIconPath(species));
+        QString path = Project::getExistingFilepath(projectConfig.pokemonIconPaths.value(species));
         if (path.isEmpty()) {
             path = getDefaultSpeciesIconPath(species);
         }

@@ -715,7 +715,7 @@ void MainWindow::setMetatileAttributes(int metatileId, int attributes) {
 }
 
 int MainWindow::calculateTileBounds(int * tileStart, int * tileEnd) {
-    int maxNumTiles = projectConfig.getNumTilesInMetatile();
+    int maxNumTiles = Metatile::maxTiles();
     if (*tileEnd >= maxNumTiles || *tileEnd < 0)
         *tileEnd = maxNumTiles - 1;
     if (*tileStart >= maxNumTiles || *tileStart < 0)

@@ -23,16 +23,17 @@ void MetatileLayersItem::setOrientation(Qt::Orientation orientation) {
     // Generate a table of tile positions that allows us to map between
     // the index of a tile in the metatile and its position in this layer view.
     this->tilePositions.clear();
+    const int numLayers = Metatile::numLayers();
     if (this->orientation == Qt::Horizontal) {
         // Tiles are laid out horizontally, with the bottom layer on the left:
         //  0  1   4  5   8  9
         //  2  3   6  7  10 11
-        for (int layer = 0; layer < projectConfig.getNumLayersInMetatile(); layer++)
+        for (int layer = 0; layer < numLayers; layer++)
         for (int y = 0; y < Metatile::tileHeight(); y++)
         for (int x = 0; x < Metatile::tileWidth(); x++) {
             this->tilePositions.append(QPoint(x + layer * Metatile::tileWidth(), y));
         }
-        maxWidth *= projectConfig.getNumLayersInMetatile();
+        maxWidth *= numLayers;
     } else if (this->orientation == Qt::Vertical) {
         // Tiles are laid out vertically, with the bottom layer on the bottom:
         //  8  9
@@ -41,12 +42,12 @@ void MetatileLayersItem::setOrientation(Qt::Orientation orientation) {
         //  6  7
         //  0  1
         //  2  3
-        for (int layer = projectConfig.getNumLayersInMetatile() - 1; layer >= 0; layer--)
+        for (int layer = numLayers - 1; layer >= 0; layer--)
         for (int y = 0; y < Metatile::tileHeight(); y++)
         for (int x = 0; x < Metatile::tileWidth(); x++) {
             this->tilePositions.append(QPoint(x, y + layer * Metatile::tileHeight()));
         }
-        maxHeight *= projectConfig.getNumLayersInMetatile();
+        maxHeight *= numLayers;
     }
     setMaxSelectionSize(maxWidth, maxHeight);
     update();
@@ -61,7 +62,7 @@ void MetatileLayersItem::draw() {
 
     // Draw tile images
     const Metatile* metatile = getMetatile();
-    int numTiles = qMin(projectConfig.getNumTilesInMetatile(), metatile ? metatile->tiles.length() : 0);
+    int numTiles = qMin(Metatile::maxTiles(), metatile ? metatile->tiles.length() : 0);
     for (int i = 0; i < numTiles; i++) {
         Tile tile = metatile->tiles.at(i);
         QImage tileImage = getPalettedTileImage(tile.tileId,
@@ -79,7 +80,7 @@ void MetatileLayersItem::draw() {
         painter.setPen(Qt::white);
         const int layerWidth = this->cellWidth * Metatile::tileWidth();
         const int layerHeight = this->cellHeight * Metatile::tileHeight();
-        for (int i = 1; i < projectConfig.getNumLayersInMetatile(); i++) {
+        for (int i = 1; i < Metatile::numLayers(); i++) {
             if (this->orientation == Qt::Vertical) {
                 int y = i * layerHeight;
                 painter.drawLine(0, y, layerWidth, y);

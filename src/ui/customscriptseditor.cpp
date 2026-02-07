@@ -5,6 +5,7 @@
 #include "editor.h"
 #include "shortcut.h"
 #include "filedialog.h"
+#include "eventfilters.h"
 
 #include <QDir>
 
@@ -18,10 +19,10 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     // This property seems to be reset if we don't set it programmatically
     ui->list->setDragDropMode(QAbstractItemView::NoDragDrop);
 
-    const QStringList paths = userConfig.getCustomScriptPaths();
-    const QList<bool> enabled = userConfig.getCustomScriptsEnabled();
-    for (int i = 0; i < paths.length(); i++)
-        this->displayScript(paths.at(i), enabled.value(i, true));
+    for (const auto& settings : projectConfig.customScripts)
+        displayScript(settings);
+    for (const auto& settings : userConfig.customScripts)
+        displayScript(settings);
 
     connect(ui->button_Help, &QAbstractButton::clicked, this, &CustomScriptsEditor::openManual);
     connect(ui->button_CreateNewScript, &QAbstractButton::clicked, this, &CustomScriptsEditor::createNewScript);
@@ -29,8 +30,8 @@ CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     connect(ui->button_RefreshScripts, &QAbstractButton::clicked, this, &CustomScriptsEditor::userRefreshScripts);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &CustomScriptsEditor::dialogButtonClicked);
 
-    this->initShortcuts();
-    this->restoreWindowState();
+    initShortcuts();
+    installEventFilter(new GeometrySaver(this));
 }
 
 CustomScriptsEditor::~CustomScriptsEditor()
@@ -60,7 +61,6 @@ void CustomScriptsEditor::initShortcuts() {
     shortcut_refresh->setObjectName("shortcut_refresh");
     shortcut_refresh->setWhatsThis("Refresh Scripts");
 
-    shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
     applyUserShortcuts();
 }
@@ -87,26 +87,16 @@ void CustomScriptsEditor::applyUserShortcuts() {
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
 }
 
-void CustomScriptsEditor::restoreWindowState() {
-    logInfo("Restoring custom scripts editor geometry from previous session.");
-    const QMap<QString, QByteArray> geometry = porymapConfig.getCustomScriptsEditorGeometry();
-    this->restoreGeometry(geometry.value("custom_scripts_editor_geometry"));
-    this->restoreState(geometry.value("custom_scripts_editor_state"));
-}
-
-void CustomScriptsEditor::displayScript(const QString &filepath, bool enabled) {
-    auto item = new QListWidgetItem();
-    auto widget = new CustomScriptsListItem();
-
-    widget->ui->checkBox_Enable->setChecked(enabled);
-    widget->ui->lineEdit_filepath->setText(filepath);
+void CustomScriptsEditor::displayScript(const ScriptSettings& settings) {
+    auto item = new QListWidgetItem(ui->list);
+    auto widget = new CustomScriptsListItem(settings, ui->list);
     item->setSizeHint(widget->sizeHint());
 
-    connect(widget->ui->b_Choose, &QAbstractButton::clicked, [this, item](bool) { this->replaceScript(item); });
-    connect(widget->ui->b_Edit,   &QAbstractButton::clicked, [this, item](bool) { this->openScript(item); });
-    connect(widget->ui->b_Delete, &QAbstractButton::clicked, [this, item](bool) { this->removeScript(item); });
-    connect(widget->ui->checkBox_Enable, &QCheckBox::toggled, this, &CustomScriptsEditor::markEdited);
-    connect(widget->ui->lineEdit_filepath, &QLineEdit::textEdited, this, &CustomScriptsEditor::markEdited);
+    connect(widget, &CustomScriptsListItem::clickedChooseScript, [this, item] { this->replaceScript(item); });
+    connect(widget, &CustomScriptsListItem::clickedEditScript,   [this, item] { this->openScript(item); });
+    connect(widget, &CustomScriptsListItem::clickedDeleteScript, [this, item] { this->removeScript(item); });
+    connect(widget, &CustomScriptsListItem::toggledEnable, this, &CustomScriptsEditor::markEdited);
+    connect(widget, &CustomScriptsListItem::pathEdited, this, &CustomScriptsEditor::markEdited);
 
     // Per the Qt manual, for performance reasons QListWidget::setItemWidget shouldn't be used with non-static items.
     // There's an assumption here that users won't have enough scripts for that to be a problem.
@@ -122,7 +112,7 @@ QString CustomScriptsEditor::getScriptFilepath(QListWidgetItem * item, bool abso
     auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
     if (!widget) return QString();
 
-    QString path = widget->ui->lineEdit_filepath->text();
+    QString path = widget->path();
     if (absolutePath) {
         QFileInfo fileInfo(path);
         if (fileInfo.isRelative())
@@ -134,13 +124,13 @@ QString CustomScriptsEditor::getScriptFilepath(QListWidgetItem * item, bool abso
 void CustomScriptsEditor::setScriptFilepath(QListWidgetItem * item, QString filepath) const {
     auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
     if (widget) {
-        widget->ui->lineEdit_filepath->setText(Util::stripPrefix(filepath, this->baseDir));
+        widget->setPath(Util::stripPrefix(filepath, this->baseDir));
     }
 }
 
 bool CustomScriptsEditor::getScriptEnabled(QListWidgetItem * item) const {
     auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
-    return widget && widget->ui->checkBox_Enable->isChecked();
+    return widget && widget->scriptEnabled();
 }
 
 QString CustomScriptsEditor::chooseScript(QString dir) {
@@ -187,7 +177,9 @@ void CustomScriptsEditor::displayNewScript(QString filepath) {
         }
     }
 
-    this->displayScript(filepath, true);
+    ScriptSettings settings;
+    settings.path = filepath;
+    this->displayScript(settings);
     this->markEdited();
 }
 
@@ -253,19 +245,23 @@ void CustomScriptsEditor::save() {
     if (!this->hasUnsavedChanges)
         return;
 
-    QStringList paths;
-    QList<bool> enabledStates;
+    QList<ScriptSettings> userScripts;
+    QList<ScriptSettings> projectScripts;
     for (int i = 0; i < ui->list->count(); i++) {
         auto item = ui->list->item(i);
-        const QString path = this->getScriptFilepath(item, false);
-        if (!path.isEmpty()) {
-            paths.append(path);
-            enabledStates.append(this->getScriptEnabled(item));
-        }
+        auto widget = dynamic_cast<CustomScriptsListItem *>(ui->list->itemWidget(item));
+        if (!widget) continue;
+        const ScriptSettings settings = widget->getSettings();
+        if (settings.userOnly) userScripts.append(settings);
+        else projectScripts.append(settings);
     }
 
-    userConfig.setCustomScripts(paths, enabledStates);
+    userConfig.customScripts = userScripts;
     userConfig.save();
+
+    projectConfig.customScripts = projectScripts;
+    projectConfig.save();
+
     this->hasUnsavedChanges = false;
     this->refreshScripts();
 }
@@ -295,9 +291,4 @@ void CustomScriptsEditor::closeEvent(QCloseEvent* event) {
         if (result == QMessageBox::Yes)
             this->save();
     }
-
-    porymapConfig.setCustomScriptsEditorGeometry(
-        this->saveGeometry(),
-        this->saveState()
-    );
 }

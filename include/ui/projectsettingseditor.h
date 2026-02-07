@@ -40,7 +40,6 @@ private:
 
     void initUi();
     void connectSignals();
-    void restoreWindowState();
     void save();
     void refresh();
     void closeEvent(QCloseEvent*);

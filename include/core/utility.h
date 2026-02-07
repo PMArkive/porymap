@@ -21,6 +21,19 @@ namespace Util {
     QColorSpace toColorSpace(int colorSpaceInt);
     QString mkpath(const QString& dirPath);
     QString getFileHash(const QString &filepath);
+
+    // Given a QMap<T,QString>, erases all entries with empty strings.
+    // Returns the number of entries erased.
+    template <typename T>
+    int removeEmptyStrings(QMap<T,QString> *map) {
+        if (!map) return 0;
+        int numRemoved = 0;
+        for (auto it = map->begin(); it != map->end();) {
+            if (it.value().isEmpty()) it = map->erase(it);
+            else {it++; numRemoved++;}
+        }
+        return numRemoved;
+    }
 }
 
 #endif // UTILITY_H

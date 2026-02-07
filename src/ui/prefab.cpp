@@ -20,7 +20,7 @@ const QString defaultFilepath = "prefabs.json";
 
 void Prefab::loadPrefabs() {
     this->items.clear();
-    QString filepath = projectConfig.prefabFilepath;
+    QString filepath = userConfig.prefabsFilepath;
     if (filepath.isEmpty()) return;
 
     ParseUtil parser;
@@ -87,10 +87,10 @@ void Prefab::loadPrefabs() {
 }
 
 void Prefab::savePrefabs() {
-    if (projectConfig.prefabFilepath.isEmpty())
-        projectConfig.prefabFilepath = defaultFilepath;
+    if (userConfig.prefabsFilepath.isEmpty())
+        userConfig.prefabsFilepath = defaultFilepath;
 
-    QString filepath = projectConfig.prefabFilepath;
+    QString filepath = userConfig.prefabsFilepath;
 
     QFileInfo info(filepath);
     if (info.isRelative()) {
@@ -283,9 +283,9 @@ void Prefab::addPrefab(MetatileSelection selection, Layout *layout, QString name
     this->updatePrefabUi(layout);
 }
 
-bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, QString filepath) {
+bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGame::Version version, QString filepath) {
     // Ensure we have default prefabs for the project's game version.
-    if (version != BaseGameVersion::pokeruby && version != BaseGameVersion::pokeemerald && version != BaseGameVersion::pokefirered)
+    if (version != BaseGame::Version::pokeruby && version != BaseGame::Version::pokeemerald && version != BaseGame::Version::pokefirered)
         return false;
 
     if (filepath.isEmpty())
@@ -316,17 +316,17 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
              QMessageBox::question(parent,
                                    QApplication::applicationName(),
                                    QString("Would you like to import the default prefabs for %1? %2.")
-                                               .arg(projectConfig.getBaseGameVersionString(version))
+                                               .arg(BaseGame::versionToString(version))
                                                .arg(fileWarning),
                                    QMessageBox::Yes | QMessageBox::No);
 
     bool acceptedImport = (prompt == QMessageBox::Yes);
     if (acceptedImport) {
         // Sets up the default prefabs.json filepath.
-        projectConfig.prefabFilepath = filepath;
+        userConfig.prefabsFilepath = filepath;
         QFile prefabsFile(absFilepath);
         if (!prefabsFile.open(QIODevice::WriteOnly)) {
-            projectConfig.prefabFilepath = QString();
+            userConfig.prefabsFilepath = QString();
 
             logError(QString("Error: Could not open %1 for writing").arg(absFilepath));
             QMessageBox messageBox(parent);
@@ -340,13 +340,13 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
         ParseUtil parser;
         QString content;
         switch (version) {
-        case BaseGameVersion::pokeruby:
+        case BaseGame::Version::pokeruby:
             content = parser.readTextFile(":/text/prefabs_default_ruby.json");
             break;
-        case BaseGameVersion::pokefirered:
+        case BaseGame::Version::pokefirered:
             content = parser.readTextFile(":/text/prefabs_default_firered.json");
             break;
-        case BaseGameVersion::pokeemerald:
+        case BaseGame::Version::pokeemerald:
             content = parser.readTextFile(":/text/prefabs_default_emerald.json");
             break;
         default:
@@ -359,7 +359,7 @@ bool Prefab::tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, 
         this->loadPrefabs();
     }
 
-    projectConfig.prefabImportPrompted = true;
+    userConfig.prefabsImportPrompted = true;
     return acceptedImport;
 }
 

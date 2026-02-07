@@ -4,6 +4,7 @@
 #include "multikeyedit.h"
 #include "message.h"
 #include "log.h"
+#include "eventfilters.h"
 
 #include <QGroupBox>
 #include <QFormLayout>
@@ -22,6 +23,7 @@ ShortcutsEditor::ShortcutsEditor(QWidget *parent) :
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
+    installEventFilter(new GeometrySaver(this));
     main_container = ui->scrollAreaWidgetContents_Shortcuts;
     auto *main_layout = new QVBoxLayout(main_container);
     main_layout->setSpacing(12);
