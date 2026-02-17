@@ -3046,16 +3046,25 @@ bool Project::readEventGraphics() {
     const QMap<QString, QStringList> picTables = parser.readCArrayMulti(picTablesFilepath);
     const QMap<QString, QString> graphicIncbins = parser.readCIncbinMulti(gfxFilepath);
 
-    for (auto i = this->gfxDefines.constBegin(); i != this->gfxDefines.constEnd(); i++) {
-        const QString gfxName = i.key();
+    for (auto it = pointerMap.begin(); it != pointerMap.end(); it++) {
+        // The index name is not necessarily a gfx define name.
+        // If it's a number string, normalize it to a decimal string.
+        QString indexName = it.key();
+        bool ok;
+        int indexValue = indexName.toInt(&ok, 0);
+        const QString gfxName = ok ? QString::number(indexValue) : indexName;
+        if (this->eventGraphicsMap.contains(gfxName)) {
+            logWarn(QString("Duplicate entry in '%1' for index '%2' will be ignored.").arg(pointersName).arg(indexName));
+            continue;
+        }
 
         // Strip the address-of operator to get the pointer's name. We'll use this name to get data about the event's sprite.
         // If we don't recognize the name, ignore it. The event will use a default sprite.
-        QString info_label = pointerMap.value(gfxName);
-        info_label.replace("&", "");
-        if (!gfxInfos.contains(info_label))
+        QString infoLabel = it.value();
+        infoLabel.replace("&", "");
+        if (!gfxInfos.contains(infoLabel))
             continue;
-        const QHash<QString, QString> gfxInfoAttributes = gfxInfos[info_label];
+        const QHash<QString, QString> gfxInfoAttributes = gfxInfos[infoLabel];
 
         auto gfx = new EventGraphics;
 
@@ -3140,10 +3149,35 @@ QPixmap Project::getEventPixmap(const QString &gfxName, const QString &movementN
 QPixmap Project::getEventPixmap(const QString &gfxName, int frame, bool hFlip) {
     EventGraphics* gfx = this->eventGraphicsMap.value(gfxName, nullptr);
     if (!gfx) {
-        // Invalid gfx constant. If this is a number, try to use that instead.
+        // String was not mapped directly to graphics data.
+        // Try to find matching graphics by converting to a number (either directly
+        // from the given string, or indirectly by resolving a gfx define).
         bool ok;
-        int gfxNum = ParseUtil::gameStringToInt(gfxName, &ok);
-        if (ok) gfx = this->eventGraphicsMap.value(this->gfxDefines.key(gfxNum, "NULL"), nullptr);
+        int gfxNum = gfxName.toInt(&ok, 0);
+        if (!ok) {
+            auto it = this->gfxDefines.constFind(gfxName);
+            if (it != this->gfxDefines.constEnd()) {
+                gfxNum = it.value();
+                ok = true;
+            }
+        }
+        if (ok) {
+            // Successful number conversion, try any gfx define with this value.
+            for (const auto& gfxNameWithValue : this->gfxDefines.keys(gfxNum)) {
+                if (gfxNameWithValue == gfxName) continue;
+                gfx = this->eventGraphicsMap.value(gfxNameWithValue, nullptr);
+                if (gfx) break;
+            }
+            if (!gfx) {
+                // Try the number string directly. Note that even if we got this
+                // number by direct conversion earlier, the resulting string may
+                // still be different (e.g. '0xA' vs '10').
+                const QString gfxNumString = QString::number(gfxNum);
+                if (gfxNumString != gfxName) {
+                    gfx = this->eventGraphicsMap.value(gfxNumString, nullptr);
+                }
+            }
+        }
     }
     if (gfx && !gfx->loaded) {
         // This is the first request for this event's sprite. We'll attempt to load it now.

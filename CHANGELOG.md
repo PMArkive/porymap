@@ -17,6 +17,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix custom top-level data in the `encounters` object of `wild_encounters.json` being discarded if no `fields` data is present.
 - Fix actions triggered with the use of `utility.registerAction` calling all functions across plug-ins with the registered name, rather than just the function in the script that registered it.
 - Fix the tool tips for the tileset selectors always listing the same tileset size.
+- Fix event sprite names that appear in `symbol_obj_event_gfx_pointers` by value and not by name not rendering with the correct sprite.
 
 ## [6.3.0] - 2025-12-26
 ### Added

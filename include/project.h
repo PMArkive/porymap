@@ -328,7 +328,7 @@ private:
         int spriteHeight = -1;
         bool inanimate = false;
     };
-    QMap<QString, EventGraphics*> eventGraphicsMap;
+    QHash<QString, EventGraphics*> eventGraphicsMap;
 
     // The extra data that can be associated with each MAPSEC name.
     struct LocationData
