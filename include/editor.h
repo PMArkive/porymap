@@ -118,7 +118,6 @@ public:
     void redrawEvents(const QList<Event*> &events);
     void redrawEventPixmapItem(EventPixmapItem *item);
     void updateEventPixmapItemZValue(EventPixmapItem *item);
-    qreal getEventOpacity(const Event *event) const;
 
     bool isMouseInMap() const;
     void setPlayerViewRect(const QRectF &rect);

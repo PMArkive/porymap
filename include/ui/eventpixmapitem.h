@@ -28,6 +28,8 @@ public:
     void moveTo(int x, int y);
     void moveTo(const QPoint &pos);
 
+    void setOpacityOverride(qreal opacity) { m_opacityOverride = opacity;}
+    void clearOpacityOverride() { m_opacityOverride.reset(); }
 private:
     QPixmap m_basePixmap;
     Event *const m_event = nullptr;
@@ -35,6 +37,7 @@ private:
     bool m_active = false;
     bool m_selected = false;
     bool m_releaseSelectionQueued = false;
+    std::optional<qreal> m_opacityOverride = {};
 
     void updatePixelPosition();
 

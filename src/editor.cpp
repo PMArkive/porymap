@@ -1788,7 +1788,6 @@ void Editor::displayMapEvents() {
 }
 
 EventPixmapItem *Editor::addEventPixmapItem(Event *event) {
-    this->project->loadEventPixmap(event);
     auto item = new EventPixmapItem(event);
     connect(item, &EventPixmapItem::doubleClicked, this, &Editor::openEventMap);
     connect(item, &EventPixmapItem::dragged, this, &Editor::onEventDragged);
@@ -2046,34 +2045,22 @@ void Editor::redrawEvents(const QList<Event*> &events) {
     }
 }
 
-qreal Editor::getEventOpacity(const Event *event) const {
-    // There are 4 possible opacities for an event's sprite:
-    // - Off the Events tab, and the event overlay is off (0.0)
-    // - Off the Events tab, and the event overlay is on (0.5)
-    // - On the Events tab, and the event has a default sprite (0.7)
-    // - On the Events tab, and the event has a custom sprite (1.0)
-    if (this->editMode != EditMode::Events)
-        return porymapConfig.eventOverlayEnabled ? 0.5 : 0.0;
-    return event->getUsesDefaultPixmap() ? 0.7 : 1.0;
-}
-
 void Editor::redrawEventPixmapItem(EventPixmapItem *item) {
     if (!item) return;
-    Event *event = item->getEvent();
-    if (!event) return;
-
     if (this->editMode == EditMode::Events) {
         item->setAcceptedMouseButtons(Qt::AllButtons);
-        item->setSelected(this->selectedEvents.contains(event));
+        item->setSelected(item->getEvent() ? this->selectedEvents.contains(item->getEvent()) : false);
+        item->clearOpacityOverride();
     } else {
         // Can't interact with event pixmaps outside of event editing mode.
         // We could do setEnabled(false), but rather than ignoring the mouse events this
         // would reject them, which would prevent painting on the map behind the events.
         item->setAcceptedMouseButtons(Qt::NoButton);
         item->setSelected(false);
+        // When not on the events tab, events are only visible if certain settings are enabled.
+        item->setOpacityOverride(porymapConfig.eventOverlayEnabled ? 0.5 : 0.0);
     }
     updateEventPixmapItemZValue(item);
-    item->setOpacity(getEventOpacity(event));
     item->setShapeMode(porymapConfig.eventSelectionShapeMode);
     item->render(project);
 }

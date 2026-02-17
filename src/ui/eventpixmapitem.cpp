@@ -19,6 +19,14 @@ void EventPixmapItem::render(Project *project) {
 
     m_basePixmap = m_event->loadPixmap(project);
 
+    if (m_opacityOverride.has_value()) {
+        setOpacity(m_opacityOverride.value());
+    } else {
+        // This can only happen after loading the pixmap above,
+        // as whether we're using the default or not may have changed.
+        setOpacity(m_event->getUsesDefaultPixmap() ? 0.7 : 1.0);
+    }
+
     // If the base pixmap changes, the event's pixel position may change.
     updatePixelPosition();
 
