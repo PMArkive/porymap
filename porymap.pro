@@ -46,8 +46,13 @@ DEFINES += PORYMAP_LATEST_COMMIT=\\\"$$LATEST_COMMIT\\\"
 VERSION = 6.3.0
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
-SOURCES += src/core/advancemapparser.cpp \
+SOURCES += src/config/keyvalueconfigbase.cpp \
     src/config/legacy.cpp \
+    src/config/porymapconfig.cpp \
+    src/config/projectconfig.cpp \
+    src/config/shortcutsconfig.cpp \
+    src/config/userconfig.cpp \
+    src/core/advancemapparser.cpp \
     src/core/basegame.cpp \
     src/core/block.cpp \
     src/core/bitpacker.cpp \
@@ -153,7 +158,6 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/colorpicker.cpp \
     src/ui/loadingscreen.cpp \
     src/ui/unlockableicon.cpp \
-    src/config.cpp \
     src/editor.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
@@ -165,7 +169,12 @@ SOURCES += src/core/advancemapparser.cpp \
     src/ui/wildmonchart.cpp \
     src/ui/wildmonsearch.cpp
 
-HEADERS  += include/core/advancemapparser.h \
+HEADERS  += include/config/keyvalueconfigbase.h \
+    include/config/porymapconfig.h \
+    include/config/projectconfig.h \
+    include/config/shortcutsconfig.h \
+    include/config/userconfig.h \
+    include/core/advancemapparser.h \
     include/core/block.h \
     include/core/bitpacker.h \
     include/core/blockdata.h \
@@ -275,7 +284,6 @@ HEADERS  += include/core/advancemapparser.h \
     include/ui/colorpicker.h \
     include/ui/loadingscreen.h \
     include/ui/unlockableicon.h \
-    include/config.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
@@ -333,6 +341,7 @@ RESOURCES += \
     resources/text.qrc
 
 INCLUDEPATH += include
+INCLUDEPATH += include/config
 INCLUDEPATH += include/core
 INCLUDEPATH += include/ui
 INCLUDEPATH += include/lib
