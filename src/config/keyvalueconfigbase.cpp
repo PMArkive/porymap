@@ -2,6 +2,8 @@
 #include "log.h"
 
 #include <QDir>
+#include <QJsonDocument>
+#include <QJsonParseError>
 
 void KeyValueConfigBase::setRoot(const QString& root) {
     m_root = root;

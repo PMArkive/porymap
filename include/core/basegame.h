@@ -7,7 +7,7 @@
 
 namespace BaseGame {
     enum Version {
-        none, // TODO: Go through and make sure this is a valid state
+        none,
         pokeruby,
         pokefirered,
         pokeemerald,

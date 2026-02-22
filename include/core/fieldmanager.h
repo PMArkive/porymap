@@ -1,8 +1,5 @@
 #include "converter.h"
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // A FieldInterface provides a simple interface for converting a field to/from JSON.
 // It's constructed with a pointer to some data, and has two functions:
 // - 'get' returns the pointed-to data, converted to JSON
@@ -26,7 +23,6 @@
 //    QList<QString> options = {"hello","hi there"};
 //    FieldInterface* fi = makeFieldInterface(&someField, options);
 //    fi->set(QJsonValue("5")); // someField is now "hello" (defaults to first element), error messages returned
-
 
 // Base class lets us use the interface without any type information.
 class FieldInterface {

@@ -287,6 +287,7 @@ void ProjectConfig::initializeFromEmpty() {
             logWarn(QString("No base_game_version selected, using default '%1'").arg(BaseGame::versionToString(this->baseGameVersion)));
         }
     }
+    setVersionSpecificDefaults(this->baseGameVersion);
 }
 
 void ProjectConfig::setFilePath(ProjectFilePath pathId, const QString& path) {

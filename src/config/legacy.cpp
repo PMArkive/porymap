@@ -47,8 +47,9 @@ bool KeyValueConfigBase::loadLegacy() {
     logInfo(QString("Loaded legacy config file '%1'").arg(oldFilename));
 
     // Save before deleting the old config file to ensure no data is lost.
-    if (save()/* && !file.remove()*/) { // TODO: Once non-legacy loading is complete, we can uncomment this.
-        //logWarn(QString("Failed to delete old config file '%1'.").arg(oldFilename));
+    if (save()) {
+        if (!file.remove()) logWarn(QString("Failed to delete legacy config file '%1'.").arg(oldFilename));
+        else logInfo(QString("Deleted legacy config file '%1'.").arg(oldFilename));
     }
     return true;
 }

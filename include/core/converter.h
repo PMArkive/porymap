@@ -2,7 +2,10 @@
 #ifndef CONVERTER_H
 #define CONVERTER_H
 
+#include <QDateTime>
 #include <QJsonValue>
+#include <QUrl>
+#include <QVariant>
 #include <QVersionNumber>
 
 #include "magic_enum.hpp"
@@ -49,7 +52,8 @@
           Appropriately implementing 'toString'/'fromString' has the added benefit that your type
           can automatically be used as a JSON key if it for example appears as the key in a QMap.
 
-    // TODO: Document clamp
+    If a type doesn't support the '<'/'>' operators, 'clamp' can be reimplemented as well to allow
+    the type to be used in range validation.
 
 */
 
@@ -59,7 +63,7 @@ struct DefaultConverter {
     // Defaults to straightforward QJsonValue construction.
     // This handles most of the primitive types.
     static QJsonValue toJson(const T& value) {
-        return QJsonValue{value};
+        return QJsonValue(value);
     }
     static T fromJson(const QJsonValue& json, QStringList* errors = nullptr) {
         const QVariant v = json.toVariant();
@@ -218,7 +222,7 @@ struct Converter<std::optional<T>> : DefaultConverter<std::optional<T>> {
 };
 
 template <typename T>
-struct Converter<QList<T>> : DefaultConverter<QList<T>> {
+struct ListConverter : DefaultConverter<QList<T>> {
     static QJsonValue toJson(const QList<T>& list) {
         QJsonArray arr;
         for (auto& elem : list) arr.append(Converter<T>::toJson(elem));
@@ -227,10 +231,17 @@ struct Converter<QList<T>> : DefaultConverter<QList<T>> {
     static QList<T> fromJson(const QJsonValue& json, QStringList* errors = nullptr) {
         const auto arr = Converter<QJsonArray>::fromJson(json, errors);
         QList<T> list;
-        for (auto& elem : arr) list.append(Converter<T>::fromJson(elem, errors));
+        for (const auto& elem : arr) list.append(Converter<T>::fromJson(elem, errors));
         return list;
     }
 };
+
+template <typename T>
+struct Converter<QList<T>> : ListConverter<T> {};
+
+// Only needed for Qt5
+template <>
+struct Converter<QStringList> : ListConverter<QString> {};
 
 template <typename K, typename V>
 struct Converter<QMap<K,V>> : DefaultConverter<QMap<K,V>> {
@@ -285,7 +296,7 @@ struct Converter<OrderedSet<T>> : DefaultConverter<OrderedSet<T>> {
     static OrderedSet<T> fromJson(const QJsonValue& json, QStringList* errors = nullptr) {
         const auto arr = Converter<QJsonArray>::fromJson(json, errors);
         OrderedSet<T> set;
-        for (auto& elem : arr) set.insert(Converter<T>::fromJson(elem, errors));
+        for (const auto& elem : arr) set.insert(Converter<T>::fromJson(elem, errors));
         return set;
     }
 };

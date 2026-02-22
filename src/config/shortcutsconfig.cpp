@@ -1,6 +1,9 @@
 #include "shortcutsconfig.h"
 #include "shortcut.h"
 
+#include <QAction>
+#include <QRegularExpression>
+
 ShortcutsConfig shortcutsConfig;
 
 void ShortcutsConfig::loadFromJson(const QJsonObject& obj) {
