@@ -3,6 +3,8 @@
 #define CONVERTER_H
 
 #include <QJsonValue>
+#include <QVersionNumber>
+
 #include "magic_enum.hpp"
 #include "orderedset.h"
 #include "scriptsettings.h"

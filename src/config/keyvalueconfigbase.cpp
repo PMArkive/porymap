@@ -3,8 +3,6 @@
 
 #include <QDir>
 
-const QVersionNumber porymapVersion = QVersionNumber::fromString(PORYMAP_VERSION);
-
 void KeyValueConfigBase::setRoot(const QString& root) {
     m_root = root;
     QDir dir(m_root);

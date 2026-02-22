@@ -29,6 +29,7 @@
 #include "newmapgroupdialog.h"
 #include "newlocationdialog.h"
 #include "loadingscreen.h"
+#include "version.h"
 
 #include <QClipboard>
 #include <QDirIterator>

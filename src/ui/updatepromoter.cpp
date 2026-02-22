@@ -3,6 +3,7 @@
 #include "ui_updatepromoter.h"
 #include "log.h"
 #include "config.h"
+#include "version.h"
 
 #include <QJsonDocument>
 #include <QJsonArray>

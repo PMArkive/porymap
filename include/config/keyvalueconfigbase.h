@@ -4,11 +4,8 @@
 
 #include <QJsonObject>
 #include <QString>
-#include <QVersionNumber>
 
 #include "fieldmanager.h"
-
-extern const QVersionNumber porymapVersion;
 
 class KeyValueConfigBase
 {

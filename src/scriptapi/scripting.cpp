@@ -5,6 +5,7 @@
 #include "log.h"
 #include "config.h"
 #include "mainwindow.h"
+#include "version.h"
 
 Scripting *instance = nullptr;
 

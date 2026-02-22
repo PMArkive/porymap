@@ -72,6 +72,7 @@ SOURCES += src/config/keyvalueconfigbase.cpp \
     src/core/tileset.cpp \
     src/core/utility.cpp \
     src/core/validator.cpp \
+    src/core/version.cpp \
     src/core/regionmap.cpp \
     src/core/wildmoninfo.cpp \
     src/core/editcommands.cpp \
@@ -195,6 +196,7 @@ HEADERS  += include/config/keyvalueconfigbase.h \
     include/core/tileset.h \
     include/core/utility.h \
     include/core/validator.h \
+    include/core/version.h \
     include/core/regionmap.h \
     include/core/wildmoninfo.h \
     include/core/editcommands.h \
