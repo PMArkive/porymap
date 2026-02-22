@@ -18,7 +18,6 @@ namespace Util {
     void setErrorStylesheet(QLineEdit *lineEdit, bool isError);
     QString toStylesheetString(const QFont &font);
     void show(QWidget *w);
-    QColorSpace toColorSpace(int colorSpaceInt);
     QString mkpath(const QString& dirPath);
     QString getFileHash(const QString &filepath);
 

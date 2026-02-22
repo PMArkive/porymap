@@ -15,9 +15,9 @@
 #include <QFontDatabase>
 #include <QStandardPaths>
 #include <QColorSpace>
-#include <set>
 
 #include "converter.h"
+#include "fieldmanager.h"
 #include "events.h"
 #include "gridsettings.h"
 #include "scriptsettings.h"
@@ -25,11 +25,6 @@
 #include "basegame.h"
 #include "orderedset.h"
 #include "block.h"
-
-// TODO: Go through and re-test the default window geometries.
-// TODO: Value validation? Make sure anything no longer validated can't cause problems.
-// TODO: Documentation
-// TODO: File splits
 
 extern const QVersionNumber porymapVersion;
 
@@ -58,12 +53,11 @@ public:
     virtual bool save();
 
     // Loads the contents of the config from disk.
-    // The file to load from depends on the file name given to
-    // the constructor, and the root given to setRoot, if any.
+    // Returns true if saving was successful, false otherwise.
     // A successful load includes initializing an empty or non-existing file.
     virtual bool load();
 
-    virtual QJsonObject toJson() const;
+    virtual QJsonObject toJson();
     virtual void loadFromJson(const QJsonObject& obj);
 
     void setRoot(const QString& dir);
@@ -74,31 +68,7 @@ protected:
     virtual void initializeFromEmpty() {};
     virtual QJsonObject getDefaultJson() const { return QJsonObject(); }
 
-    struct FieldManager {
-        QJsonValue (*get)(const KeyValueConfigBase*);
-        QStringList (*set)(KeyValueConfigBase*, const QJsonValue&);
-    };
-    template <typename ConfigType, auto Member>
-    static FieldManager makeFieldManager() {
-        // Deduce the type from the pointer to the member variable.
-        using T = std::remove_reference_t<decltype(std::declval<ConfigType>().*Member)>;
-        return FieldManager{
-            .get = [](const KeyValueConfigBase* base) -> QJsonValue {
-                auto c = static_cast<const ConfigType*>(base);
-                return Converter<T>::toJson(c->*Member);
-            },
-            .set = [](KeyValueConfigBase* base, const QJsonValue& json) {
-                QStringList errors;
-                const T value = Converter<T>::fromJson(json, &errors);
-                if (errors.isEmpty()) static_cast<ConfigType*>(base)->*Member = value;
-                return errors;
-            }
-        };
-    }
-    virtual const QHash<QString,FieldManager>& registeredFields() const {
-        static QHash<QString,FieldManager> empty;
-        return empty;
-    }
+    virtual FieldManager* getFieldManager() { return nullptr; }
 
     virtual bool parseJsonKeyValue(const QString& key, const QJsonValue& value);
     virtual bool parseLegacyKeyValue(const QString& , const QString& ) {return false;}
@@ -109,7 +79,6 @@ protected:
 private:
     bool loadLegacy();
 
-    // TODO: Make this setting accessible somewhere
     bool m_saveAllFields = true;
 };
 
@@ -194,86 +163,86 @@ public:
     // Since the release of the Retina display, Apple products use the Display P3 color space by default.
     // If we don't use this for exported images (which by default will either have no color space or the sRGB
     // color space) then they may appear to have different colors than the same image displayed in Porymap.
-    int imageExportColorSpaceId = static_cast<int>(QColorSpace::DisplayP3);
+    std::optional<QColorSpace::NamedColorSpace> imageExportColorSpace = QColorSpace::DisplayP3;
 #else
     // As of writing Qt has no way to get a reasonable color space from the user's environment,
     // so we export images without one and let them handle it.
-    int imageExportColorSpaceId = 0;
+    std::optional<QColorSpace::NamedColorSpace> imageExportColorSpace = {};
 #endif
     QMap<QString,QString> trustedScriptHashes;
 
-#define REGISTER(key, member) {QStringLiteral(key), makeFieldManager<PorymapConfig, &PorymapConfig::member>()}
-    const QHash<QString,FieldManager>& registeredFields() const override {
-        static const QHash<QString,FieldManager> fields = {
-            REGISTER("reopen_on_launch", reopenOnLaunch),
-            REGISTER("project_manually_closed", projectManuallyClosed),
-            REGISTER("map_list_tab", mapListTab),
-            REGISTER("map_list_edit_groups_enabled", mapListEditGroupsEnabled),
-            REGISTER("map_list_tabs_hiding_empty_folders", mapListTabsHidingEmptyFolders),
-            REGISTER("map_list_layouts_sorted", mapListLayoutsSorted),
-            REGISTER("map_list_locations_sorted", mapListLocationsSorted),
-            REGISTER("pretty_cursors", prettyCursors),
-            REGISTER("mirror_connecting_maps", mirrorConnectingMaps),
-            REGISTER("show_dive_emerge_maps", showDiveEmergeMaps),
-            REGISTER("dive_emerge_map_opacity", diveEmergeMapOpacity),
-            REGISTER("dive_map_opacity", diveMapOpacity),
-            REGISTER("emerge_map_opacity", emergeMapOpacity),
-            REGISTER("collision_opacity", collisionOpacity),
-            REGISTER("collision_zoom", collisionZoom),
-            REGISTER("metatiles_zoom", metatilesZoom),
-            REGISTER("tileset_editor_metatiles_zoom", tilesetEditorMetatilesZoom),
-            REGISTER("tileset_editor_tiles_zoom", tilesetEditorTilesZoom),
-            REGISTER("tileset_editor_layer_orientation", tilesetEditorLayerOrientation),
-            REGISTER("show_player_view", showPlayerView),
-            REGISTER("show_cursor_tile", showCursorTile),
-            REGISTER("show_border", showBorder),
-            REGISTER("show_grid", showGrid),
-            REGISTER("show_tileset_editor_metatile_grid", showTilesetEditorMetatileGrid),
-            REGISTER("show_tileset_editor_layer_grid", showTilesetEditorLayerGrid),
-            REGISTER("show_tileset_editor_divider", showTilesetEditorDivider),
-            REGISTER("show_tileset_editor_raw_attributes", showTilesetEditorRawAttributes),
-            REGISTER("show_palette_editor_unused_colors", showPaletteEditorUnusedColors),
-            REGISTER("monitor_files", monitorFiles),
-            REGISTER("tileset_checkerboard_fill", tilesetCheckerboardFill),
-            REGISTER("new_map_header_section_expanded", newMapHeaderSectionExpanded),
-            REGISTER("display_ids_hexadecimal", displayIdsHexadecimal),
-            REGISTER("theme", theme),
-            REGISTER("wild_mon_chart_theme", wildMonChartTheme),
-            REGISTER("text_editor_open_folder", textEditorOpenFolder),
-            REGISTER("text_editor_goto_line", textEditorGotoLine),
-            REGISTER("palette_editor_bit_depth", paletteEditorBitDepth),
-            REGISTER("project_settings_tab", projectSettingsTab),
-            REGISTER("script_autocomplete_mode", scriptAutocompleteMode),
-            REGISTER("warp_behavior_warning_disabled", warpBehaviorWarningDisabled),
-            REGISTER("event_delete_warning_disabled", eventDeleteWarningDisabled),
-            REGISTER("event_overlay_enabled", eventOverlayEnabled),
-            REGISTER("check_for_updates", checkForUpdates),
-            REGISTER("show_project_loading_screen", showProjectLoadingScreen),
-            REGISTER("last_update_check_time", lastUpdateCheckTime),
-            REGISTER("last_update_check_version", lastUpdateCheckVersion),
-            REGISTER("rate_limit_times", rateLimitTimes),
-            REGISTER("event_selection_shape_mode", eventSelectionShapeMode),
-            REGISTER("shown_in_game_reload_message", shownInGameReloadMessage),
-            REGISTER("map_grid", gridSettings),
-            REGISTER("status_bar_log_types", statusBarLogTypes),
-            REGISTER("application_font", applicationFont),
-            REGISTER("map_list_font", mapListFont),
-            REGISTER("image_export_color_space_id", imageExportColorSpaceId),
-            REGISTER("trusted_script_hashes", trustedScriptHashes),
+    FieldManager* getFieldManager() override {
+        if (!m_fm) {
+            m_fm = std::make_shared<FieldManager>();
+            m_fm->addField(&this->reopenOnLaunch, "reopen_on_launch");
+            m_fm->addField(&this->projectManuallyClosed, "project_manually_closed");
+            m_fm->addField(&this->mapListTab, "map_list_tab", 0, 2);
+            m_fm->addField(&this->mapListEditGroupsEnabled, "map_list_edit_groups_enabled");
+            m_fm->addField(&this->mapListTabsHidingEmptyFolders, "map_list_tabs_hiding_empty_folders");
+            m_fm->addField(&this->mapListLayoutsSorted, "map_list_layouts_sorted");
+            m_fm->addField(&this->mapListLocationsSorted, "map_list_locations_sorted");
+            m_fm->addField(&this->prettyCursors, "pretty_cursors");
+            m_fm->addField(&this->mirrorConnectingMaps, "mirror_connecting_maps");
+            m_fm->addField(&this->showDiveEmergeMaps, "show_dive_emerge_maps");
+            m_fm->addField(&this->diveEmergeMapOpacity, "dive_emerge_map_opacity", 10, 90);
+            m_fm->addField(&this->diveMapOpacity, "dive_map_opacity", 10, 90);
+            m_fm->addField(&this->emergeMapOpacity, "emerge_map_opacity", 10, 90);
+            m_fm->addField(&this->collisionOpacity, "collision_opacity", 0, 100);
+            m_fm->addField(&this->collisionZoom, "collision_zoom", 10, 100);
+            m_fm->addField(&this->metatilesZoom, "metatiles_zoom", 10, 100);
+            m_fm->addField(&this->tilesetEditorMetatilesZoom, "tileset_editor_metatiles_zoom", 10, 100);
+            m_fm->addField(&this->tilesetEditorTilesZoom, "tileset_editor_tiles_zoom", 10, 100);
+            m_fm->addField(&this->tilesetEditorLayerOrientation, "tileset_editor_layer_orientation");
+            m_fm->addField(&this->showPlayerView, "show_player_view");
+            m_fm->addField(&this->showCursorTile, "show_cursor_tile");
+            m_fm->addField(&this->showBorder, "show_border");
+            m_fm->addField(&this->showGrid, "show_grid");
+            m_fm->addField(&this->showTilesetEditorMetatileGrid, "show_tileset_editor_metatile_grid");
+            m_fm->addField(&this->showTilesetEditorLayerGrid, "show_tileset_editor_layer_grid");
+            m_fm->addField(&this->showTilesetEditorDivider, "show_tileset_editor_divider");
+            m_fm->addField(&this->showTilesetEditorRawAttributes, "show_tileset_editor_raw_attributes");
+            m_fm->addField(&this->showPaletteEditorUnusedColors, "show_palette_editor_unused_colors");
+            m_fm->addField(&this->monitorFiles, "monitor_files");
+            m_fm->addField(&this->tilesetCheckerboardFill, "tileset_checkerboard_fill");
+            m_fm->addField(&this->newMapHeaderSectionExpanded, "new_map_header_section_expanded");
+            m_fm->addField(&this->displayIdsHexadecimal, "display_ids_hexadecimal");
+            m_fm->addField(&this->theme, "theme");
+            m_fm->addField(&this->wildMonChartTheme, "wild_mon_chart_theme");
+            m_fm->addField(&this->textEditorOpenFolder, "text_editor_open_folder");
+            m_fm->addField(&this->textEditorGotoLine, "text_editor_goto_line");
+            m_fm->addField(&this->paletteEditorBitDepth, "palette_editor_bit_depth", {24,15});
+            m_fm->addField(&this->projectSettingsTab, "project_settings_tab");
+            m_fm->addField(&this->scriptAutocompleteMode, "script_autocomplete_mode");
+            m_fm->addField(&this->warpBehaviorWarningDisabled, "warp_behavior_warning_disabled");
+            m_fm->addField(&this->eventDeleteWarningDisabled, "event_delete_warning_disabled");
+            m_fm->addField(&this->eventOverlayEnabled, "event_overlay_enabled");
+            m_fm->addField(&this->checkForUpdates, "check_for_updates");
+            m_fm->addField(&this->showProjectLoadingScreen, "show_project_loading_screen");
+            m_fm->addField(&this->lastUpdateCheckTime, "last_update_check_time");
+            m_fm->addField(&this->lastUpdateCheckVersion, "last_update_check_version");
+            m_fm->addField(&this->rateLimitTimes, "rate_limit_times");
+            m_fm->addField(&this->eventSelectionShapeMode, "event_selection_shape_mode");
+            m_fm->addField(&this->shownInGameReloadMessage, "shown_in_game_reload_message");
+            m_fm->addField(&this->gridSettings, "map_grid");
+            m_fm->addField(&this->statusBarLogTypes, "status_bar_log_types");
+            m_fm->addField(&this->applicationFont, "application_font");
+            m_fm->addField(&this->mapListFont, "map_list_font");
+            m_fm->addField(&this->imageExportColorSpace, "image_export_color_space");
+            m_fm->addField(&this->trustedScriptHashes, "trusted_script_hashes");
 
-            REGISTER("recent_projects", recentProjects),
-            REGISTER("geometry", savedGeometryMap),
-            REGISTER("geometry_version", geometryVersion),
-        };
-        return fields;
+            m_fm->addField(&this->recentProjects, "recent_projects");
+            m_fm->addField(&this->savedGeometryMap, "geometry");
+            m_fm->addField(&this->geometryVersion, "geometry_version");
+        }
+        return m_fm.get();
     };
-#undef REGISTER
 
 protected:
     virtual bool parseLegacyKeyValue(const QString& key, const QString& value) override;
     virtual QJsonObject getDefaultJson() const override;
 
 private:
+    std::shared_ptr<FieldManager> m_fm = nullptr;
     QStringList recentProjects;
     QMap<QString, QByteArray> savedGeometryMap;
     int geometryVersion = 0;
@@ -470,64 +439,63 @@ public:
     QMap<QString, QString> pokemonIconPaths;
     QVersionNumber minimumVersion;
 
-#define REGISTER(key, member) {QStringLiteral(key), makeFieldManager<ProjectConfig, &ProjectConfig::member>()}
-    const QHash<QString,FieldManager>& registeredFields() const override {
-        static const QHash<QString,FieldManager> fields = {
-            REGISTER("base_game_version", baseGameVersion),
-            REGISTER("use_poryscript", usePoryScript),
-            REGISTER("use_custom_border_size", useCustomBorderSize),
-            REGISTER("enable_event_weather_trigger", eventWeatherTriggerEnabled),
-            REGISTER("enable_event_secret_base", eventSecretBaseEnabled),
-            REGISTER("enable_hidden_item_quantity", hiddenItemQuantityEnabled),
-            REGISTER("enable_hidden_item_requires_itemfinder", hiddenItemRequiresItemfinderEnabled),
-            REGISTER("enable_heal_location_respawn_data", healLocationRespawnDataEnabled),
-            REGISTER("enable_event_clone_object", eventCloneObjectEnabled),
-            REGISTER("enable_floor_number", floorNumberEnabled),
-            REGISTER("create_map_text_file", createMapTextFileEnabled),
-            REGISTER("enable_triple_layer_metatiles", tripleLayerMetatilesEnabled),
-            REGISTER("default_metatile_id", defaultMetatileId),
-            REGISTER("default_elevation", defaultElevation),
-            REGISTER("default_collision", defaultCollision),
-            REGISTER("default_map_size", defaultMapSize),
-            REGISTER("new_map_border_metatiles", newMapBorderMetatileIds),
-            REGISTER("default_primary_tileset", defaultPrimaryTileset),
-            REGISTER("default_secondary_tileset", defaultSecondaryTileset),
-            REGISTER("tilesets_have_callback", tilesetsHaveCallback),
-            REGISTER("tilesets_have_is_compressed", tilesetsHaveIsCompressed),
-            REGISTER("transparency_color", transparencyColor),
-            REGISTER("preserve_matching_only_data", preserveMatchingOnlyData),
-            REGISTER("metatile_attributes_size", metatileAttributesSize),
-            REGISTER("metatile_behavior_mask", metatileBehaviorMask),
-            REGISTER("metatile_terrain_type_mask", metatileTerrainTypeMask),
-            REGISTER("metatile_encounter_type_mask", metatileEncounterTypeMask),
-            REGISTER("metatile_layer_type_mask", metatileLayerTypeMask),
-            REGISTER("block_metatile_id_mask", blockMetatileIdMask),
-            REGISTER("block_collision_mask", blockCollisionMask),
-            REGISTER("block_elevation_mask", blockElevationMask),
-            REGISTER("unused_tile_normal", unusedTileNormal),
-            REGISTER("unused_tile_covered", unusedTileCovered),
-            REGISTER("unused_tile_split", unusedTileSplit),
-            REGISTER("enable_map_allow_flags", mapAllowFlagsEnabled),
-            REGISTER("events_tab_icon_path", eventsTabIconPath),
-            REGISTER("collision_sheet_path", collisionSheetPath),
-            REGISTER("collision_sheet_size", collisionSheetSize),
-            REGISTER("player_view_distance", playerViewDistance),
-            REGISTER("warp_behaviors", warpBehaviors),
-            REGISTER("max_events_per_group", maxEventsPerGroup),
-            REGISTER("metatile_selector_width", metatileSelectorWidth),
-            REGISTER("global_constants_filepaths", globalConstantsFilepaths),
-            REGISTER("global_constants", globalConstants),
-            REGISTER("custom_scripts", customScripts),
-            REGISTER("event_icon_paths", eventIconPaths),
-            REGISTER("pokemon_icon_paths", pokemonIconPaths),
-            REGISTER("minimum_version", minimumVersion),
+    FieldManager* getFieldManager() override {
+        if (!m_fm) {
+            m_fm = std::make_shared<FieldManager>();
+            m_fm->addField(&this->baseGameVersion, "base_game_version");
+            m_fm->addField(&this->usePoryScript, "use_poryscript");
+            m_fm->addField(&this->useCustomBorderSize, "use_custom_border_size");
+            m_fm->addField(&this->eventWeatherTriggerEnabled, "enable_event_weather_trigger");
+            m_fm->addField(&this->eventSecretBaseEnabled, "enable_event_secret_base");
+            m_fm->addField(&this->hiddenItemQuantityEnabled, "enable_hidden_item_quantity");
+            m_fm->addField(&this->hiddenItemRequiresItemfinderEnabled, "enable_hidden_item_requires_itemfinder");
+            m_fm->addField(&this->healLocationRespawnDataEnabled, "enable_heal_location_respawn_data");
+            m_fm->addField(&this->eventCloneObjectEnabled, "enable_event_clone_object");
+            m_fm->addField(&this->floorNumberEnabled, "enable_floor_number");
+            m_fm->addField(&this->createMapTextFileEnabled, "create_map_text_file");
+            m_fm->addField(&this->tripleLayerMetatilesEnabled, "enable_triple_layer_metatiles");
+            m_fm->addField<uint16_t>(&this->defaultMetatileId, "default_metatile_id", 0, Block::MaxValue);
+            m_fm->addField<uint16_t>(&this->defaultElevation, "default_elevation", 0, Block::MaxValue);
+            m_fm->addField<uint16_t>(&this->defaultCollision, "default_collision", 0, Block::MaxValue);
+            m_fm->addField(&this->defaultMapSize, "default_map_size");
+            m_fm->addField(&this->newMapBorderMetatileIds, "new_map_border_metatiles");
+            m_fm->addField(&this->defaultPrimaryTileset, "default_primary_tileset");
+            m_fm->addField(&this->defaultSecondaryTileset, "default_secondary_tileset");
+            m_fm->addField(&this->tilesetsHaveCallback, "tilesets_have_callback");
+            m_fm->addField(&this->tilesetsHaveIsCompressed, "tilesets_have_is_compressed");
+            m_fm->addField(&this->transparencyColor, "transparency_color");
+            m_fm->addField(&this->preserveMatchingOnlyData, "preserve_matching_only_data");
+            m_fm->addField(&this->metatileAttributesSize, "metatile_attributes_size");
+            m_fm->addField(&this->metatileBehaviorMask, "metatile_behavior_mask");
+            m_fm->addField(&this->metatileTerrainTypeMask, "metatile_terrain_type_mask");
+            m_fm->addField(&this->metatileEncounterTypeMask, "metatile_encounter_type_mask");
+            m_fm->addField(&this->metatileLayerTypeMask, "metatile_layer_type_mask");
+            m_fm->addField<uint16_t>(&this->blockMetatileIdMask, "block_metatile_id_mask", 0, Block::MaxValue);
+            m_fm->addField<uint16_t>(&this->blockCollisionMask, "block_collision_mask", 0, Block::MaxValue);
+            m_fm->addField<uint16_t>(&this->blockElevationMask, "block_elevation_mask", 0, Block::MaxValue);
+            m_fm->addField<uint16_t>(&this->unusedTileNormal, "unused_tile_normal", 0, Tile::MaxValue);
+            m_fm->addField<uint16_t>(&this->unusedTileCovered, "unused_tile_covered", 0, Tile::MaxValue);
+            m_fm->addField<uint16_t>(&this->unusedTileSplit, "unused_tile_split", 0, Tile::MaxValue);
+            m_fm->addField(&this->mapAllowFlagsEnabled, "enable_map_allow_flags");
+            m_fm->addField(&this->eventsTabIconPath, "events_tab_icon_path");
+            m_fm->addField(&this->collisionSheetPath, "collision_sheet_path");
+            m_fm->addField(&this->collisionSheetSize, "collision_sheet_size", QSize(1,1), QSize(Block::MaxValue, Block::MaxValue));
+            m_fm->addField(&this->playerViewDistance, "player_view_distance", QMargins(0,0,0,0), QMargins(INT_MAX, INT_MAX, INT_MAX, INT_MAX));
+            m_fm->addField(&this->warpBehaviors, "warp_behaviors");
+            m_fm->addField(&this->maxEventsPerGroup, "max_events_per_group", 1, INT_MAX);
+            m_fm->addField(&this->metatileSelectorWidth, "metatile_selector_width", 1, INT_MAX);
+            m_fm->addField(&this->globalConstantsFilepaths, "global_constants_filepaths");
+            m_fm->addField(&this->globalConstants, "global_constants");
+            m_fm->addField(&this->customScripts, "custom_scripts");
+            m_fm->addField(&this->eventIconPaths, "event_icon_paths");
+            m_fm->addField(&this->pokemonIconPaths, "pokemon_icon_paths");
+            m_fm->addField(&this->minimumVersion, "minimum_version");
 
-            REGISTER("custom_identifiers", identifiers),
-            REGISTER("custom_file_paths", filePaths),
-        };
-        return fields;
+            m_fm->addField(&this->identifiers, "custom_identifiers");
+            m_fm->addField(&this->filePaths, "custom_file_paths");
+        }
+        return m_fm.get();
     }
-#undef REGISTER
 
 protected:
     virtual bool parseLegacyKeyValue(const QString& key, const QString& value) override;
@@ -538,6 +506,7 @@ private:
     ProjectFilePath reverseDefaultPaths(const QString& str);
     ProjectIdentifier reverseDefaultIdentifier(const QString& str);
 
+    std::shared_ptr<FieldManager> m_fm = nullptr;
     QMap<ProjectIdentifier, QString> identifiers;
     QMap<ProjectFilePath, QString> filePaths;
 };
@@ -565,18 +534,20 @@ protected:
     virtual bool parseLegacyKeyValue(const QString& key, const QString& value) override;
     virtual QJsonObject getDefaultJson() const override;
 
-#define REGISTER(key, member) {QStringLiteral(key), makeFieldManager<UserConfig, &UserConfig::member>()}
-    const QHash<QString,FieldManager>& registeredFields() const override {
-        static const QHash<QString,FieldManager> fields = {
-            REGISTER("recent_map_or_layout", recentMapOrLayout),
-            REGISTER("prefabs_filepath", prefabsFilepath),
-            REGISTER("prefabs_import_prompted", prefabsImportPrompted),
-            REGISTER("use_encounter_json", useEncounterJson),
-            REGISTER("custom_scripts", customScripts),
-        };
-        return fields;
+    FieldManager* getFieldManager() override {
+        if (!m_fm) {
+            m_fm = std::make_shared<FieldManager>();
+            m_fm->addField(&this->recentMapOrLayout, "recent_map_or_layout");
+            m_fm->addField(&this->prefabsFilepath, "prefabs_filepath");
+            m_fm->addField(&this->prefabsImportPrompted, "prefabs_import_prompted");
+            m_fm->addField(&this->useEncounterJson, "use_encounter_json");
+            m_fm->addField(&this->customScripts, "custom_scripts");
+        }
+        return m_fm.get();
     }
-#undef REGISTER
+
+private:
+    std::shared_ptr<FieldManager> m_fm = nullptr;
 };
 
 extern UserConfig userConfig;
@@ -591,7 +562,7 @@ public:
         setRoot(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     }
 
-    virtual QJsonObject toJson() const override;
+    virtual QJsonObject toJson() override;
     virtual void loadFromJson(const QJsonObject& obj) override;
 
     // Call this before applying user shortcuts so that the user can restore defaults.

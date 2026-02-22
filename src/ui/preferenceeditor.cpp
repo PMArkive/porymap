@@ -81,7 +81,11 @@ void PreferenceEditor::updateFields() {
     } else if (porymapConfig.eventSelectionShapeMode == QGraphicsPixmapItem::BoundingRectShape) {
         ui->radioButton_WithinRect->setChecked(true);
     }
-    ui->comboBox_ColorSpace->setNumberItem(porymapConfig.imageExportColorSpaceId);
+    if (porymapConfig.imageExportColorSpace) {
+        ui->comboBox_ColorSpace->setNumberItem(porymapConfig.imageExportColorSpace.value());
+    } else {
+        ui->comboBox_ColorSpace->setNumberItem(0);
+    }
     ui->lineEdit_TextEditorOpenFolder->setText(porymapConfig.textEditorOpenFolder);
     ui->lineEdit_TextEditorGotoLine->setText(porymapConfig.textEditorGotoLine);
     ui->checkBox_MonitorProjectFiles->setChecked(porymapConfig.monitorFiles);
@@ -133,7 +137,12 @@ void PreferenceEditor::saveFields() {
         emit scriptSettingsChanged(scriptAutocompleteMode);
     }
 
-    porymapConfig.imageExportColorSpaceId = ui->comboBox_ColorSpace->currentData().toInt();
+    auto colorSpace = magic_enum::enum_cast<QColorSpace::NamedColorSpace>(ui->comboBox_ColorSpace->currentData().toInt());
+    if (colorSpace.has_value()) {
+        porymapConfig.imageExportColorSpace = colorSpace.value();
+    } else {
+        porymapConfig.imageExportColorSpace.reset();
+    }
     porymapConfig.eventSelectionShapeMode = ui->radioButton_OnSprite->isChecked() ? QGraphicsPixmapItem::MaskShape : QGraphicsPixmapItem::BoundingRectShape;
     porymapConfig.textEditorOpenFolder = ui->lineEdit_TextEditorOpenFolder->text();
     porymapConfig.textEditorGotoLine = ui->lineEdit_TextEditorGotoLine->text();

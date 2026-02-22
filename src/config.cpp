@@ -199,24 +199,19 @@ void KeyValueConfigBase::loadFromJson(const QJsonObject& obj) {
 }
 
 bool KeyValueConfigBase::parseJsonKeyValue(const QString& key, const QJsonValue& value) {
-    const auto fields = registeredFields();
-    auto it = fields.find(key);
-    if (it == fields.end()) return false;
+    auto fieldManager = getFieldManager();
+    if (!fieldManager || !fieldManager->hasField(key)) return false;
 
     // Recognized 'key' as a registered field. Let the FieldManager try to assign the value.
-    const QStringList errors = it.value().set(this, value);
+    const QStringList errors = fieldManager->setField(key, value);
     if (errors.length() == 1)     logWarn(QString("Failed to read config key '%1': %2").arg(key).arg(errors.at(0)));
     else if (errors.length() > 1) logWarn(QString("Failed to read config key '%1':\n%2").arg(key).arg(errors.join("\n")));
     return true;
 }
 
-QJsonObject KeyValueConfigBase::toJson() const {
-    QJsonObject obj;
-    const auto fields = registeredFields();
-    for (auto it = fields.begin(); it != fields.end(); it++) {
-        obj[it.key()] = it.value().get(this);
-    }
-    return obj;
+QJsonObject KeyValueConfigBase::toJson() {
+    auto fieldManager = getFieldManager();
+    return fieldManager ? fieldManager->getFields() : QJsonObject();
 }
 
 bool KeyValueConfigBase::save() {
@@ -279,6 +274,9 @@ void PorymapConfig::loadFromJson(const QJsonObject& obj) {
         this->geometryVersion = CurrentGeometryVersion;
         this->savedGeometryMap.clear();
     }
+
+    this->gridSettings.offsetX = std::clamp(this->gridSettings.offsetX, 0, 999);
+    this->gridSettings.offsetY = std::clamp(this->gridSettings.offsetY, 0, 999);
 }
 
 QJsonObject PorymapConfig::getDefaultJson() const {
@@ -606,7 +604,7 @@ void ShortcutsConfig::loadFromJson(const QJsonObject& obj) {
     this->user_shortcuts = Converter<QMultiMap<QString, QKeySequence>>::fromJson(obj);
 }
 
-QJsonObject ShortcutsConfig::toJson() const {
+QJsonObject ShortcutsConfig::toJson() {
     return Converter<QMultiMap<QString, QKeySequence>>::toJson(this->user_shortcuts);
 }
 

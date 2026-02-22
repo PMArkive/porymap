@@ -112,7 +112,6 @@ bool PorymapConfig::parseLegacyKeyValue(const QString &key, const QString &value
         this->emergeMapOpacity = toInt(value, 10, 90, 15);
     } else if (key == "collision_opacity") {
         this->collisionOpacity = toInt(value, 0, 100, 50);
-    } else if (key == "tileset_editor_geometry") {
     } else if (key == "metatiles_zoom") {
         this->metatilesZoom = toInt(value, 10, 100, 30);
     } else if (key == "collision_zoom") {
@@ -225,8 +224,6 @@ bool PorymapConfig::parseLegacyKeyValue(const QString &key, const QString &value
     } else if (key == "map_list_font") {
         this->mapListFont = QFont();
         this->mapListFont.fromString(value);
-    } else if (key == "image_export_color_space_id") {
-        this->imageExportColorSpaceId = toInt(value, 0, 8);
     } else {
         return false;
     }

@@ -47,6 +47,8 @@
           Appropriately implementing 'toString'/'fromString' has the added benefit that your type
           can automatically be used as a JSON key if it for example appears as the key in a QMap.
 
+    // TODO: Document clamp
+
 */
 
 
@@ -69,6 +71,19 @@ struct DefaultConverter {
     // Default to identity
     static QString toString(const T& value) {return value;}
     static T fromString(const QString& string, QStringList* = nullptr) {return string;}
+
+    static T clamp(const T& value, const T& min, const T& max, QStringList* errors = nullptr) {
+        Q_ASSERT(min <= max);
+        if (value < min) {
+            if (errors) errors->append("Value too low");
+            return min;
+        }
+        if (value > max) {
+            if (errors) errors->append("Value too high");
+            return max;
+        }
+        return value;
+    }
 };
 
 template <typename T, typename Enable = void>
@@ -190,6 +205,17 @@ struct Converter<BaseGame::Version> : DefaultStringConverter<BaseGame::Version> 
 };
 
 template <typename T>
+struct Converter<std::optional<T>> : DefaultConverter<std::optional<T>> {
+    static QJsonValue toJson(const std::optional<T>& optional) {
+        return optional.has_value() ? Converter<T>::toJson(optional.value()) : QJsonValue();
+    }
+    static std::optional<T> fromJson(const QJsonValue& json, QStringList* errors = nullptr) {
+        if (json.isNull()) return {};
+        return Converter<T>::fromJson(json, errors);
+    }
+};
+
+template <typename T>
 struct Converter<QList<T>> : DefaultConverter<QList<T>> {
     static QJsonValue toJson(const QList<T>& list) {
         QJsonArray arr;
@@ -277,6 +303,14 @@ struct Converter<QSize> : DefaultConverter<QSize> {
         size.setHeight(obj.value("height").toInt());
         return size;
     }
+    static QSize clamp(const QSize& value, const QSize& min, const QSize& max, const QStringList* = nullptr) {
+        Q_ASSERT(min.width() <= max.width());
+        Q_ASSERT(min.height() <= max.height());
+        QSize size = value;
+        if (value.width() < min.width() || value.height() < min.height()) size = value.expandedTo(min);
+        if (value.width() > max.width() || value.height() > max.height()) size = value.boundedTo(max);
+        return size;
+    }
 };
 
 template <>
@@ -296,6 +330,18 @@ struct Converter<QMargins> : DefaultConverter<QMargins> {
         margins.setBottom(obj.value("bottom").toInt());
         margins.setLeft(obj.value("left").toInt());
         margins.setRight(obj.value("right").toInt());
+        return margins;
+    }
+    static QMargins clamp(const QMargins& value, const QMargins& min, const QMargins& max, const QStringList* = nullptr) {
+        Q_ASSERT(min.left() <= max.left());
+        Q_ASSERT(min.right() <= max.right());
+        Q_ASSERT(min.top() <= max.top());
+        Q_ASSERT(min.bottom() <= max.bottom());
+        QMargins margins = value;
+        margins.setLeft(  std::clamp(value.left(),   min.left(),   max.left()));
+        margins.setRight( std::clamp(value.right(),  min.right(),  max.right()));
+        margins.setTop(   std::clamp(value.top(),    min.top(),    max.top()));
+        margins.setBottom(std::clamp(value.bottom(), min.bottom(), max.bottom()));
         return margins;
     }
 };

@@ -40,16 +40,16 @@ bool CustomScriptsListItem::scriptEnabled() const {
     return ui->checkBox_Enable->isChecked();
 }
 
+// TODO: The two functions below should read/write from/to the UI whether the script belongs to the project or user.
 void CustomScriptsListItem::setSettings(const ScriptSettings& settings) {
     setPath(settings.path);
     setScriptEnabled(settings.enabled);
-    // TODO: Read userOnly
 }
 
 ScriptSettings CustomScriptsListItem::getSettings() const {
     return {
         .path = path(),
         .enabled = scriptEnabled(),
-        .userOnly = true, // TODO
+        .userOnly = true,
     };
 }

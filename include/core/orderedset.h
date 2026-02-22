@@ -3,6 +3,7 @@
 #define ORDERED_SET_H
 
 #include <QJsonArray>
+#include <set>
 
 template <typename T>
 class OrderedSet : public std::set<T>

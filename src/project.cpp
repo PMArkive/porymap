@@ -82,7 +82,7 @@ QVersionNumber Project::getMinimumVersion(QString *errorOut) const {
 
     // No explicitly supported version, we can use the project's git history (if it has one, and we're able to get it) to make a reasonable guess.
     // We know the hashes of the commits in the base repos that contain breaking changes, so if we find one of these then the project
-    // should support at least up to that Porymap major version. If this fails for any reason it returns a version of -1.
+    // should support at least up to that Porymap major version. If this fails for any reason it returns an empty QVersionNumber.
 
     // This has relatively tight timeout windows (500ms for each process, compared to the default 30,000ms). This version check
     // is not important enough to significantly slow down project launch, we'd rather just timeout.
