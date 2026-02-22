@@ -156,9 +156,9 @@ bool PorymapConfig::parseLegacyKeyValue(const QString &key, const QString &value
     } else if (key == "text_editor_goto_line") {
         this->textEditorGotoLine = value;
     } else if (key == "palette_editor_bit_depth") {
-        this->paletteEditorBitDepth = toInt(value, 15, 24, 24);
-        if (this->paletteEditorBitDepth != 15 && this->paletteEditorBitDepth != 24){
-            this->paletteEditorBitDepth = 24;
+        int bitDepth = toInt(value, 15, 24, 24);
+        if (bitDepth == 15 || bitDepth == 24){
+            this->paletteEditorBitDepth = bitDepth;
         }
     } else if (key == "project_settings_tab") {
         this->projectSettingsTab = toInt(value, 0);
@@ -180,9 +180,7 @@ bool PorymapConfig::parseLegacyKeyValue(const QString &key, const QString &value
         this->lastUpdateCheckTime = QDateTime::fromString(value).toLocalTime();
     } else if (key == "last_update_check_version") {
         auto version = QVersionNumber::fromString(value);
-        if (version.segmentCount() != 3) {
-            this->lastUpdateCheckVersion = porymapVersion;
-        } else {
+        if (version.segmentCount() == 3) {
             this->lastUpdateCheckVersion = version;
         }
     } else if (key.startsWith("rate_limit_time/")) {

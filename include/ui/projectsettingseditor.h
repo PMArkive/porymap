@@ -71,6 +71,7 @@ private:
     void addNewGlobalConstant();
     void addGlobalConstant(const QString &name, const QString &expression);
     QMap<QString,QString> getGlobalConstants();
+    BaseGame::Version getBaseGameVersion() const;
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

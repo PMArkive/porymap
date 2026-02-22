@@ -48,13 +48,7 @@ public:
     { };
     virtual ~KeyValueConfigBase() {};
 
-    // Writes the contents of the config to disk.
-    // Returns true if saving was successful, false otherwise.
     virtual bool save();
-
-    // Loads the contents of the config from disk.
-    // Returns true if saving was successful, false otherwise.
-    // A successful load includes initializing an empty or non-existing file.
     virtual bool load();
 
     virtual QJsonObject toJson();

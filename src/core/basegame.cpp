@@ -13,14 +13,14 @@ BaseGame::Version BaseGame::stringToVersion(const QString &input_) {
     };
 
     const QString input(input_.toLower());
-    BaseGame::Version version = BaseGame::Version::none;
+    Version version = Version::none;
     for (auto it = versionDetectNames.begin(); it != versionDetectNames.end(); it++) {
         // Compare the given string to all the possible names for this game version
         for (const auto &name : it.value()) {
             if (input.contains(name)) {
-                if (version != BaseGame::Version::none) {
+                if (version != Version::none) {
                     // The given string matches multiple versions, so we can't be sure which it is.
-                    return BaseGame::Version::none;
+                    return Version::none;
                 }
                 version = it.key();
                 break;
@@ -31,7 +31,6 @@ BaseGame::Version BaseGame::stringToVersion(const QString &input_) {
     return version;
 }
 
-// TODO: Make sure empty string is ok everywhere this is used
 QString BaseGame::versionToString(BaseGame::Version version) {
     static const QMap<Version, QString> map = {
         {Version::pokeruby,    "pokeruby"},
@@ -42,15 +41,15 @@ QString BaseGame::versionToString(BaseGame::Version version) {
 }
 
 QString BaseGame::getPlayerIconPath(BaseGame::Version version, int character) {
-    if (version == BaseGame::Version::pokeemerald) {
+    if (version == Version::pokeemerald) {
         static const QStringList paths = { QStringLiteral(":/icons/player/brendan_em.ico"),
                                            QStringLiteral(":/icons/player/may_em.ico"), };
         return paths.value(character);
-    } else if (version == BaseGame::Version::pokefirered) {
+    } else if (version == Version::pokefirered) {
         static const QStringList paths = { QStringLiteral(":/icons/player/red.ico"),
                                            QStringLiteral(":/icons/player/green.ico"), };
         return paths.value(character);
-    } else if (version == BaseGame::Version::pokeruby) {
+    } else if (version == Version::pokeruby) {
         static const QStringList paths = { QStringLiteral(":/icons/player/brendan_rs.ico"),
                                            QStringLiteral(":/icons/player/may_rs.ico"), };
         return paths.value(character);

@@ -115,42 +115,15 @@ bool RegionMapEditor::saveRegionMapEntries() {
     return true;
 }
 
-void buildEmeraldDefaults(poryjson::Json &json) {
-    ParseUtil parser;
-    QString emeraldDefault = parser.readTextFile(":/text/region_map_default_emerald.json");
-    json = poryjson::Json::parse(emeraldDefault);
-}
-
-void buildRubyDefaults(poryjson::Json &json) {
-    ParseUtil parser;
-    QString emeraldDefault = parser.readTextFile(":/text/region_map_default_ruby.json");
-    json = poryjson::Json::parse(emeraldDefault);
-}
-
-void buildFireredDefaults(poryjson::Json &json) {
-
-    ParseUtil parser;
-    QString fireredDefault = parser.readTextFile(":/text/region_map_default_firered.json");    
-    json = poryjson::Json::parse(fireredDefault);
-}
-
 poryjson::Json RegionMapEditor::buildDefaultJson() {
-    poryjson::Json defaultJson;
-    switch (projectConfig.baseGameVersion) {
-        case BaseGame::Version::pokeemerald:
-            buildEmeraldDefaults(defaultJson);
-            break;
-        case BaseGame::Version::pokeruby:
-            buildRubyDefaults(defaultJson);
-            break;
-        case BaseGame::Version::pokefirered:
-            buildFireredDefaults(defaultJson);
-            break;
-        default:
-            break;
-    }
-
-    return defaultJson;
+    static const QMap<BaseGame::Version, QString> versionToJsonPath = {
+        {BaseGame::Version::pokeemerald, QStringLiteral(":/text/region_map_default_emerald.json")},
+        {BaseGame::Version::pokeruby,    QStringLiteral(":/text/region_map_default_ruby.json")},
+        {BaseGame::Version::pokefirered, QStringLiteral(":/text/region_map_default_firered.json")},
+    };
+    const QString path = versionToJsonPath.value(projectConfig.baseGameVersion);
+    if (path.isEmpty()) { Q_ASSERT(false); return OrderedJson::object(); }
+    return OrderedJson::parse(ParseUtil::readTextFile(path));
 }
 
 bool RegionMapEditor::buildConfigDialog() {
@@ -276,6 +249,8 @@ bool RegionMapEditor::buildConfigDialog() {
 
 
     // for sake of convenience, option to just use defaults for each basegame version
+    // TODO: Each version's default settings should be available regardless of the base game version,
+    //       it can just suggest which default settings to use depending on the base game version.
     QPushButton *config_useProjectDefault = nullptr;
     switch (projectConfig.baseGameVersion) {
         case BaseGame::Version::pokefirered:
@@ -288,6 +263,8 @@ bool RegionMapEditor::buildConfigDialog() {
             config_useProjectDefault = new QPushButton("\nUse pokeruby defaults\n");
             break;
         default:
+            config_useProjectDefault = new QPushButton("\nNo default settings available\n");
+            config_useProjectDefault->setEnabled(false);
             break;
     }
     form.addRow(config_useProjectDefault);

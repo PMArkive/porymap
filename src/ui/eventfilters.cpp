@@ -40,14 +40,15 @@ bool GeometrySaver::eventFilter(QObject *object, QEvent *event) {
         if (m_loggingEnabled && !w->windowTitle().isEmpty()) {
             logInfo(QString("Opening window: %1").arg(w->windowTitle()));
         }
-        m_wasShown.insert(object);
-    } else if (event->type() == QEvent::Close && m_wasShown.contains(object)) {
+        m_shown.insert(object);
+    } else if (event->type() == QEvent::Close || event->type() == QEvent::DeferredDelete) {
         // There are situations where a window might be 'closed' without
         // ever actually having been opened (for example, the Shortcuts Editor
         // will quietly construct windows to get their shortcuts, and those windows
         // can later be closed without having been displayed).
         // We don't want to save the geometry of these windows, or log that they closed,
-        // so we've checked to make sure the widget was displayed before proceeding.
+        // so we checked to make sure the widget was displayed before proceeding.
+        if (!m_shown.remove(object)) return false;
         porymapConfig.saveGeometry(w);
         if (m_loggingEnabled && !w->windowTitle().isEmpty()) {
             logInfo(QString("Closing window: %1").arg(w->windowTitle()));

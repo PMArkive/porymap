@@ -111,12 +111,10 @@ void ProjectSettingsEditor::initUi() {
         ui->comboBox_IconSpecies->addItems(project->speciesNames);
         ui->comboBox_WarpBehaviors->addItems(project->metatileBehaviorMap.keys());
     }
-    // TODO: We don't need to keep converting these to/from strings, just include the value as data.
-    ui->comboBox_BaseGameVersion->addItems({
-        BaseGame::versionToString(BaseGame::Version::pokeruby),
-        BaseGame::versionToString(BaseGame::Version::pokefirered),
-        BaseGame::versionToString(BaseGame::Version::pokeemerald),
-    });
+    ui->comboBox_BaseGameVersion->addItem("Custom", BaseGame::Version::none);
+    ui->comboBox_BaseGameVersion->addItem(BaseGame::versionToString(BaseGame::Version::pokeruby),    BaseGame::Version::pokeruby);
+    ui->comboBox_BaseGameVersion->addItem(BaseGame::versionToString(BaseGame::Version::pokefirered), BaseGame::Version::pokefirered);
+    ui->comboBox_BaseGameVersion->addItem(BaseGame::versionToString(BaseGame::Version::pokeemerald), BaseGame::Version::pokeemerald);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
 
     ui->comboBox_EventsTabIcon->addItem("Automatic",         "");
@@ -205,6 +203,10 @@ bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString
         return true;
     }
     return false;
+}
+
+BaseGame::Version ProjectSettingsEditor::getBaseGameVersion() const {
+    return static_cast<BaseGame::Version>(ui->comboBox_BaseGameVersion->currentData().toInt());
 }
 
 // Remember the current settings tab for future sessions
@@ -447,7 +449,7 @@ void ProjectSettingsEditor::refresh() {
     // Set combo box texts
     ui->comboBox_DefaultPrimaryTileset->setTextItem(projectConfig.defaultPrimaryTileset);
     ui->comboBox_DefaultSecondaryTileset->setTextItem(projectConfig.defaultSecondaryTileset);
-    ui->comboBox_BaseGameVersion->setTextItem(BaseGame::versionToString(projectConfig.baseGameVersion));
+    ui->comboBox_BaseGameVersion->setNumberItem(projectConfig.baseGameVersion);
     ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.metatileAttributesSize));
     this->updateAttributeLimits(ui->comboBox_AttributesSize->currentText());
 
@@ -555,7 +557,7 @@ void ProjectSettingsEditor::save() {
     // Save combo box settings
     projectConfig.defaultPrimaryTileset = ui->comboBox_DefaultPrimaryTileset->currentText();
     projectConfig.defaultSecondaryTileset = ui->comboBox_DefaultSecondaryTileset->currentText();
-    projectConfig.baseGameVersion = BaseGame::stringToVersion(ui->comboBox_BaseGameVersion->currentText());
+    projectConfig.baseGameVersion = getBaseGameVersion();
     projectConfig.metatileAttributesSize = ui->comboBox_AttributesSize->currentText().toInt();
 
     // Save check box settings
@@ -772,7 +774,7 @@ QString ProjectSettingsEditor::stripProjectDir(QString s) {
 
 void ProjectSettingsEditor::importDefaultPrefabsClicked(bool) {
     // If the prompt is accepted the prefabs file will be created and its filepath will be saved in the config.
-    BaseGame::Version version = BaseGame::stringToVersion(ui->comboBox_BaseGameVersion->currentText());
+    BaseGame::Version version = getBaseGameVersion();
     if (prefab.tryImportDefaultPrefabs(this, version, ui->lineEdit_PrefabsPath->text())) {
         ui->lineEdit_PrefabsPath->setText(userConfig.prefabsFilepath); // Refresh with new filepath
         this->hasUnsavedChanges = true;
@@ -804,19 +806,20 @@ bool ProjectSettingsEditor::promptSaveChanges() {
     return true;
 }
 
+// TODO: Changing the base game version implicitly changes defaults.
+//       If the user declines this prompt, it should revert to the previous setting.
 bool ProjectSettingsEditor::promptRestoreDefaults() {
     if (this->refreshing)
         return false;
 
-    const QString versionText = ui->comboBox_BaseGameVersion->currentText();
-    if (this->prompt(QString("Restore default config settings for %1?").arg(versionText)) == QMessageBox::No)
+    if (this->prompt(QString("Restore default config settings for %1?").arg(ui->comboBox_BaseGameVersion->currentText())) == QMessageBox::No)
         return false;
 
     // Restore defaults by resetting config in memory, refreshing the UI, then restoring the config.
     // Don't want to save changes until user accepts them.
     // TODO: Maybe give the project settings editor it's own copy of the config then.
     ProjectConfig tempProject = projectConfig;
-    projectConfig.setVersionSpecificDefaults(BaseGame::stringToVersion(versionText));
+    projectConfig.setVersionSpecificDefaults(getBaseGameVersion());
     this->refresh();
     projectConfig = tempProject;
 

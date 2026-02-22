@@ -434,10 +434,8 @@ void ProjectConfig::setVersionSpecificDefaults(BaseGame::Version version) {
             0x9B, // MB_SECRET_BASE_SPOT_BLUE_CAVE_OPEN
             0x9D, // MB_SECRET_BASE_SPOT_TREE_RIGHT_OPEN
         };
-        if (this->baseGameVersion == BaseGame::Version::pokeruby) {
-            this->mapAllowFlagsEnabled = false;
-        }
     }
+    this->mapAllowFlagsEnabled = (this->baseGameVersion != BaseGame::Version::pokeruby);
 }
 
 bool ProjectConfig::save()  {
@@ -472,6 +470,7 @@ QJsonObject ProjectConfig::getDefaultJson() const {
     return defaultConfig.toJson();
 }
 
+// TODO: Replace with a new prompt that allows choosing either the defaults for each version, or customizing settings.
 void ProjectConfig::initializeFromEmpty() {
     const QString dirName = QDir(projectDir()).dirName();
     BaseGame::Version version = BaseGame::stringToVersion(dirName);
@@ -485,21 +484,18 @@ void ProjectConfig::initializeFromEmpty() {
 
         QFormLayout form(&dialog);
 
-        QComboBox *baseGameVersionComboBox = new QComboBox();
-        // TODO: Populate dynamically, same as project settings editor
-        baseGameVersionComboBox->addItem("pokeruby", BaseGame::Version::pokeruby);
-        baseGameVersionComboBox->addItem("pokefirered", BaseGame::Version::pokefirered);
-        baseGameVersionComboBox->addItem("pokeemerald", BaseGame::Version::pokeemerald);
-        form.addRow(new QLabel("Game Version"), baseGameVersionComboBox);
-
-        // TODO: Add an 'Advanced' button to open the project settings window (with some settings disabled)
+        auto comboBox = new QComboBox();
+        comboBox->addItem(BaseGame::versionToString(BaseGame::Version::pokeruby),    BaseGame::Version::pokeruby);
+        comboBox->addItem(BaseGame::versionToString(BaseGame::Version::pokefirered), BaseGame::Version::pokefirered);
+        comboBox->addItem(BaseGame::versionToString(BaseGame::Version::pokeemerald), BaseGame::Version::pokeemerald);
+        form.addRow(new QLabel("Game Version"), comboBox);
 
         QDialogButtonBox buttonBox(QDialogButtonBox::Ok, Qt::Horizontal, &dialog);
         QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
         form.addRow(&buttonBox);
 
         if (dialog.exec() == QDialog::Accepted) {
-            this->baseGameVersion = static_cast<BaseGame::Version>(baseGameVersionComboBox->currentData().toInt());
+            this->baseGameVersion = static_cast<BaseGame::Version>(comboBox->currentData().toInt());
         } else {
             logWarn(QString("No base_game_version selected, using default '%1'").arg(BaseGame::versionToString(this->baseGameVersion)));
         }

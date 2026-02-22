@@ -895,7 +895,8 @@ bool MainWindow::checkProjectVersion(Project *project) {
             logInfo(QString("Successfully checked project version. Supports at least Porymap v%1").arg(minimumVersion.toString()));
         }
         if (minimumVersion > porymapVersion ||  minimumVersion.majorVersion() != porymapVersion.majorVersion()) {
-            // We were unable to find the necessary changes for Porymap's current major version.
+            // Porymap is incompatible with the project if its version is below the specified minimum version,
+            // or if Porymap is so new that it exceeds the major version of the specified minimum version.
             // Unless they have explicitly suppressed this message, warn the user that this might mean their project is missing breaking changes.
             // Note: Do not report 'minimumVersion' to the user in this message. We've already logged it for troubleshooting.
             //       It is very plausible that the user may have reproduced the required changes in an

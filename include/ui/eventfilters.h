@@ -37,5 +37,5 @@ public:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private:
     bool m_loggingEnabled = true;
-    QSet<QObject*> m_wasShown;
+    QSet<QObject*> m_shown;
 };

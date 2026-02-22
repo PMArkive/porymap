@@ -2289,7 +2289,7 @@ All constants are accessible via the global ``constants`` object.
 
 .. js:attribute:: constants.base_game_version
 
-   The string value of the config setting ``base_game_version``. This will either be ``pokeruby``, ``pokefirered``, or ``pokeemerald``.
+   The string value of the config setting ``base_game_version``. This will either be ``pokeruby``, ``pokefirered``, ``pokeemerald``, or an empty string.
 
 .. js:attribute:: constants.version.major
 
