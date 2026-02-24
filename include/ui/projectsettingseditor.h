@@ -40,7 +40,6 @@ private:
 
     void initUi();
     void connectSignals();
-    void restoreWindowState();
     void save();
     void refresh();
     void closeEvent(QCloseEvent*);
@@ -72,6 +71,7 @@ private:
     void addNewGlobalConstant();
     void addGlobalConstant(const QString &name, const QString &expression);
     QMap<QString,QString> getGlobalConstants();
+    BaseGame::Version getBaseGameVersion() const;
 
 private slots:
     void dialogButtonClicked(QAbstractButton *button);

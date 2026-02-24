@@ -60,7 +60,7 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
     ui->actionRedo->setShortcuts({ui->actionRedo->shortcut(), QKeySequence("Ctrl+Shift+Z")});
 
     refreshPaletteId();
-    restoreWindowState();
+    installEventFilter(new GeometrySaver(this));
 }
 
 PaletteEditor::~PaletteEditor() {
@@ -157,13 +157,6 @@ void PaletteEditor::commitEditHistory(int paletteId) {
     }
     this->palettesHistory[paletteId].push(new PaletteHistoryItem(colors));
     updateEditHistoryActions();
-}
-
-void PaletteEditor::restoreWindowState() {
-    logInfo("Restoring palette editor geometry from previous session.");
-    QMap<QString, QByteArray> geometry = porymapConfig.getPaletteEditorGeometry();
-    restoreGeometry(geometry.value("palette_editor_geometry"));
-    restoreState(geometry.value("palette_editor_state"));
 }
 
 void PaletteEditor::updateEditHistoryActions() {
@@ -279,11 +272,6 @@ void PaletteEditor::setColorInputTitles(bool showUnused) {
 }
 
 void PaletteEditor::closeEvent(QCloseEvent*) {
-    porymapConfig.setPaletteEditorGeometry(
-        saveGeometry(),
-        saveState()
-    );
-
     // Opening the color search window then closing the Palette Editor sets
     // focus to the main editor window instead of the parent (Tileset Editor).
     // Make sure the parent is active when we close.

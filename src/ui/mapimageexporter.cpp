@@ -565,7 +565,9 @@ void MapImageExporter::updatePreview(bool forceUpdate) {
     }
     progress.close();
 
-    m_previewImage.setColorSpace(Util::toColorSpace(porymapConfig.imageExportColorSpaceId));
+    if (porymapConfig.imageExportColorSpace) {
+        m_previewImage.setColorSpace(QColorSpace(porymapConfig.imageExportColorSpace.value()));
+    }
     m_preview->setPixmap(QPixmap::fromImage(m_previewImage));
     m_scene->setSceneRect(m_scene->itemsBoundingRect());
     scalePreview();

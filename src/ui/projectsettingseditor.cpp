@@ -4,6 +4,7 @@
 #include "filedialog.h"
 #include "newdefinedialog.h"
 #include "utility.h"
+#include "eventfilters.h"
 
 #include <QAbstractButton>
 #include <QFormLayout>
@@ -27,9 +28,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(QWidget *parent, Project *project) 
     this->initUi();
     this->createProjectPathsTable();
     this->createProjectIdentifiersTable();
+    this->installEventFilter(new GeometrySaver(this));
     this->connectSignals();
     this->refresh();
-    this->restoreWindowState();
 }
 
 ProjectSettingsEditor::~ProjectSettingsEditor()
@@ -110,16 +111,19 @@ void ProjectSettingsEditor::initUi() {
         ui->comboBox_IconSpecies->addItems(project->speciesNames);
         ui->comboBox_WarpBehaviors->addItems(project->metatileBehaviorMap.keys());
     }
-    ui->comboBox_BaseGameVersion->addItems(ProjectConfig::versionStrings);
+    ui->comboBox_BaseGameVersion->addItem("Custom", BaseGame::Version::none);
+    ui->comboBox_BaseGameVersion->addItem(BaseGame::versionToString(BaseGame::Version::pokeruby),    BaseGame::Version::pokeruby);
+    ui->comboBox_BaseGameVersion->addItem(BaseGame::versionToString(BaseGame::Version::pokefirered), BaseGame::Version::pokefirered);
+    ui->comboBox_BaseGameVersion->addItem(BaseGame::versionToString(BaseGame::Version::pokeemerald), BaseGame::Version::pokeemerald);
     ui->comboBox_AttributesSize->addItems({"1", "2", "4"});
 
     ui->comboBox_EventsTabIcon->addItem("Automatic",         "");
-    ui->comboBox_EventsTabIcon->addItem("Brendan (Emerald)", ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeemerald, 0));
-    ui->comboBox_EventsTabIcon->addItem("Brendan (R/S)",     ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeruby,    0));
-    ui->comboBox_EventsTabIcon->addItem("May (Emerald)",     ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeemerald, 1));
-    ui->comboBox_EventsTabIcon->addItem("May (R/S)",         ProjectConfig::getPlayerIconPath(BaseGameVersion::pokeruby,    1));
-    ui->comboBox_EventsTabIcon->addItem("Red",               ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 0));
-    ui->comboBox_EventsTabIcon->addItem("Green",             ProjectConfig::getPlayerIconPath(BaseGameVersion::pokefirered, 1));
+    ui->comboBox_EventsTabIcon->addItem("Brendan (Emerald)", BaseGame::getPlayerIconPath(BaseGame::Version::pokeemerald, 0));
+    ui->comboBox_EventsTabIcon->addItem("Brendan (R/S)",     BaseGame::getPlayerIconPath(BaseGame::Version::pokeruby,    0));
+    ui->comboBox_EventsTabIcon->addItem("May (Emerald)",     BaseGame::getPlayerIconPath(BaseGame::Version::pokeemerald, 1));
+    ui->comboBox_EventsTabIcon->addItem("May (R/S)",         BaseGame::getPlayerIconPath(BaseGame::Version::pokeruby,    1));
+    ui->comboBox_EventsTabIcon->addItem("Red",               BaseGame::getPlayerIconPath(BaseGame::Version::pokefirered, 0));
+    ui->comboBox_EventsTabIcon->addItem("Green",             BaseGame::getPlayerIconPath(BaseGame::Version::pokefirered, 1));
     ui->comboBox_EventsTabIcon->addItem("Custom",            "Custom");
     connect(ui->comboBox_EventsTabIcon, QOverload<int>::of(&NoScrollComboBox::currentIndexChanged), [this](int index) {
         bool usingCustom = (index == ui->comboBox_EventsTabIcon->findText("Custom"));
@@ -147,12 +151,12 @@ void ProjectSettingsEditor::initUi() {
     ui->spinBox_Collision->setMaximum(Block::getMaxCollision());
     ui->spinBox_MaxElevation->setMaximum(Block::getMaxElevation());
     ui->spinBox_MaxCollision->setMaximum(Block::getMaxCollision());
-    ui->spinBox_MetatileIdMask->setMaximum(Block::maxValue);
-    ui->spinBox_CollisionMask->setMaximum(Block::maxValue);
-    ui->spinBox_ElevationMask->setMaximum(Block::maxValue);
-    ui->spinBox_UnusedTileNormal->setMaximum(Tile::maxValue);
-    ui->spinBox_UnusedTileCovered->setMaximum(Tile::maxValue);
-    ui->spinBox_UnusedTileSplit->setMaximum(Tile::maxValue);
+    ui->spinBox_MetatileIdMask->setMaximum(Block::MaxValue);
+    ui->spinBox_CollisionMask->setMaximum(Block::MaxValue);
+    ui->spinBox_ElevationMask->setMaximum(Block::MaxValue);
+    ui->spinBox_UnusedTileNormal->setMaximum(Tile::MaxValue);
+    ui->spinBox_UnusedTileCovered->setMaximum(Tile::MaxValue);
+    ui->spinBox_UnusedTileSplit->setMaximum(Tile::MaxValue);
     ui->spinBox_MaxEvents->setMaximum(INT_MAX);
     ui->spinBox_MapWidth->setMaximum(INT_MAX);
     ui->spinBox_MapHeight->setMaximum(INT_MAX);
@@ -199,6 +203,10 @@ bool ProjectSettingsEditor::disableParsedSetting(QWidget * widget, const QString
         return true;
     }
     return false;
+}
+
+BaseGame::Version ProjectSettingsEditor::getBaseGameVersion() const {
+    return static_cast<BaseGame::Version>(ui->comboBox_BaseGameVersion->currentData().toInt());
 }
 
 // Remember the current settings tab for future sessions
@@ -434,13 +442,6 @@ QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath)
     return path.remove(0, this->baseDir.length());
 }
 
-void ProjectSettingsEditor::restoreWindowState() {
-    logInfo("Restoring project settings editor geometry from previous session.");
-    const QMap<QString, QByteArray> geometry = porymapConfig.getProjectSettingsEditorGeometry();
-    this->restoreGeometry(geometry.value("project_settings_editor_geometry"));
-    this->restoreState(geometry.value("project_settings_editor_state"));
-}
-
 // Set UI states using config data
 void ProjectSettingsEditor::refresh() {
     this->refreshing = true; // Block signals
@@ -448,12 +449,12 @@ void ProjectSettingsEditor::refresh() {
     // Set combo box texts
     ui->comboBox_DefaultPrimaryTileset->setTextItem(projectConfig.defaultPrimaryTileset);
     ui->comboBox_DefaultSecondaryTileset->setTextItem(projectConfig.defaultSecondaryTileset);
-    ui->comboBox_BaseGameVersion->setTextItem(projectConfig.getBaseGameVersionString());
+    ui->comboBox_BaseGameVersion->setNumberItem(projectConfig.baseGameVersion);
     ui->comboBox_AttributesSize->setTextItem(QString::number(projectConfig.metatileAttributesSize));
     this->updateAttributeLimits(ui->comboBox_AttributesSize->currentText());
 
     this->prevIconSpecies = QString();
-    this->editedPokemonIconPaths = projectConfig.getPokemonIconPaths();
+    this->editedPokemonIconPaths = projectConfig.pokemonIconPaths;
     this->updatePokemonIconPath(ui->comboBox_IconSpecies->currentText());
 
     // Set check box states
@@ -511,13 +512,13 @@ void ProjectSettingsEditor::refresh() {
     this->setBorderMetatileIds(true, projectConfig.newMapBorderMetatileIds);
 
     // Set line edit texts
-    ui->lineEdit_PrefabsPath->setText(projectConfig.prefabFilepath);
+    ui->lineEdit_PrefabsPath->setText(userConfig.prefabsFilepath);
     ui->lineEdit_CollisionGraphics->setText(projectConfig.collisionSheetPath);
-    ui->lineEdit_ObjectsIcon->setText(projectConfig.getEventIconPath(Event::Group::Object));
-    ui->lineEdit_WarpsIcon->setText(projectConfig.getEventIconPath(Event::Group::Warp));
-    ui->lineEdit_TriggersIcon->setText(projectConfig.getEventIconPath(Event::Group::Coord));
-    ui->lineEdit_BGsIcon->setText(projectConfig.getEventIconPath(Event::Group::Bg));
-    ui->lineEdit_HealLocationsIcon->setText(projectConfig.getEventIconPath(Event::Group::Heal));
+    ui->lineEdit_ObjectsIcon->setText(projectConfig.eventIconPaths.value(Event::Group::Object));
+    ui->lineEdit_WarpsIcon->setText(projectConfig.eventIconPaths.value(Event::Group::Warp));
+    ui->lineEdit_TriggersIcon->setText(projectConfig.eventIconPaths.value(Event::Group::Coord));
+    ui->lineEdit_BGsIcon->setText(projectConfig.eventIconPaths.value(Event::Group::Bg));
+    ui->lineEdit_HealLocationsIcon->setText(projectConfig.eventIconPaths.value(Event::Group::Heal));
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         lineEdit->setText(projectConfig.getCustomFilePath(lineEdit->objectName()));
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
@@ -556,7 +557,7 @@ void ProjectSettingsEditor::save() {
     // Save combo box settings
     projectConfig.defaultPrimaryTileset = ui->comboBox_DefaultPrimaryTileset->currentText();
     projectConfig.defaultSecondaryTileset = ui->comboBox_DefaultSecondaryTileset->currentText();
-    projectConfig.baseGameVersion = projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText());
+    projectConfig.baseGameVersion = getBaseGameVersion();
     projectConfig.metatileAttributesSize = ui->comboBox_AttributesSize->currentText().toInt();
 
     // Save check box settings
@@ -603,13 +604,13 @@ void ProjectSettingsEditor::save() {
     projectConfig.metatileSelectorWidth = ui->spinBox_MetatileSelectorWidth->value();
 
     // Save line edit settings
-    projectConfig.prefabFilepath = ui->lineEdit_PrefabsPath->text();
+    userConfig.prefabsFilepath = ui->lineEdit_PrefabsPath->text();
     projectConfig.collisionSheetPath = ui->lineEdit_CollisionGraphics->text();
-    projectConfig.setEventIconPath(Event::Group::Object, ui->lineEdit_ObjectsIcon->text());
-    projectConfig.setEventIconPath(Event::Group::Warp, ui->lineEdit_WarpsIcon->text());
-    projectConfig.setEventIconPath(Event::Group::Coord, ui->lineEdit_TriggersIcon->text());
-    projectConfig.setEventIconPath(Event::Group::Bg, ui->lineEdit_BGsIcon->text());
-    projectConfig.setEventIconPath(Event::Group::Heal, ui->lineEdit_HealLocationsIcon->text());
+    projectConfig.eventIconPaths[Event::Group::Object] = ui->lineEdit_ObjectsIcon->text();
+    projectConfig.eventIconPaths[Event::Group::Warp] = ui->lineEdit_WarpsIcon->text();
+    projectConfig.eventIconPaths[Event::Group::Coord] = ui->lineEdit_TriggersIcon->text();
+    projectConfig.eventIconPaths[Event::Group::Bg] = ui->lineEdit_BGsIcon->text();
+    projectConfig.eventIconPaths[Event::Group::Heal] = ui->lineEdit_HealLocationsIcon->text();
     for (auto lineEdit : ui->scrollAreaContents_ProjectPaths->findChildren<QLineEdit*>())
         projectConfig.setFilePath(lineEdit->objectName(), lineEdit->text());
     for (auto lineEdit : ui->scrollAreaContents_Identifiers->findChildren<QLineEdit*>())
@@ -623,7 +624,7 @@ void ProjectSettingsEditor::save() {
     projectConfig.warpBehaviors.clear();
     const QStringList behaviorNames = this->getWarpBehaviorsList();
     for (auto name : behaviorNames)
-        projectConfig.warpBehaviors.append(project->metatileBehaviorMap.value(name));
+        projectConfig.warpBehaviors.insert(project->metatileBehaviorMap.value(name));
 
     // Save border metatile IDs
     projectConfig.newMapBorderMetatileIds = this->getBorderMetatileIds(ui->checkBox_EnableCustomBorderSize->isChecked());
@@ -633,7 +634,7 @@ void ProjectSettingsEditor::save() {
     if (this->project->speciesNames.contains(species))
         this->editedPokemonIconPaths.insert(species, ui->lineEdit_PokemonIcon->text());
     for (auto i = this->editedPokemonIconPaths.cbegin(), end = this->editedPokemonIconPaths.cend(); i != end; i++)
-        projectConfig.setPokemonIconPath(i.key(), i.value());
+        projectConfig.pokemonIconPaths[i.key()] = i.value();
 
     QString eventsTabIconPath;
     QVariant data = ui->comboBox_EventsTabIcon->currentData();
@@ -773,9 +774,9 @@ QString ProjectSettingsEditor::stripProjectDir(QString s) {
 
 void ProjectSettingsEditor::importDefaultPrefabsClicked(bool) {
     // If the prompt is accepted the prefabs file will be created and its filepath will be saved in the config.
-    BaseGameVersion version = projectConfig.stringToBaseGameVersion(ui->comboBox_BaseGameVersion->currentText());
+    BaseGame::Version version = getBaseGameVersion();
     if (prefab.tryImportDefaultPrefabs(this, version, ui->lineEdit_PrefabsPath->text())) {
-        ui->lineEdit_PrefabsPath->setText(projectConfig.prefabFilepath); // Refresh with new filepath
+        ui->lineEdit_PrefabsPath->setText(userConfig.prefabsFilepath); // Refresh with new filepath
         this->hasUnsavedChanges = true;
     }
 }
@@ -805,18 +806,20 @@ bool ProjectSettingsEditor::promptSaveChanges() {
     return true;
 }
 
+// TODO: Changing the base game version implicitly changes defaults.
+//       If the user declines this prompt, it should revert to the previous setting.
 bool ProjectSettingsEditor::promptRestoreDefaults() {
     if (this->refreshing)
         return false;
 
-    const QString versionText = ui->comboBox_BaseGameVersion->currentText();
-    if (this->prompt(QString("Restore default config settings for %1?").arg(versionText)) == QMessageBox::No)
+    if (this->prompt(QString("Restore default config settings for %1?").arg(ui->comboBox_BaseGameVersion->currentText())) == QMessageBox::No)
         return false;
 
     // Restore defaults by resetting config in memory, refreshing the UI, then restoring the config.
     // Don't want to save changes until user accepts them.
+    // TODO: Maybe give the project settings editor it's own copy of the config then.
     ProjectConfig tempProject = projectConfig;
-    projectConfig.reset(projectConfig.stringToBaseGameVersion(versionText));
+    projectConfig.setVersionSpecificDefaults(getBaseGameVersion());
     this->refresh();
     projectConfig = tempProject;
 
@@ -862,11 +865,6 @@ void ProjectSettingsEditor::closeEvent(QCloseEvent* event) {
         event->ignore();
         return;
     }
-
-    porymapConfig.setProjectSettingsEditorGeometry(
-        this->saveGeometry(),
-        this->saveState()
-    );
 
     if (this->projectNeedsReload) {
         // Note: Declining this prompt with changes that need a reload may cause problems

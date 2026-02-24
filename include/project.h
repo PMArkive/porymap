@@ -105,7 +105,7 @@ public:
     void clearHealLocations();
 
     bool sanityCheck();
-    int getSupportedMajorVersion(QString *errorOut = nullptr);
+    QVersionNumber getMinimumVersion(QString *errorOut = nullptr) const;
     bool load();
 
     QMap<QString, Tileset*> tilesetCache;

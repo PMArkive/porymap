@@ -29,6 +29,7 @@
 #include "newmapgroupdialog.h"
 #include "newlocationdialog.h"
 #include "loadingscreen.h"
+#include "version.h"
 
 #include <QClipboard>
 #include <QDirIterator>
@@ -81,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::initialize() {
     this->initWindow();
+    this->installEventFilter(new GeometrySaver(this));
     if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true)) {
         on_toolButton_Paint_clicked();
     }
@@ -92,7 +94,7 @@ void MainWindow::initialize() {
     if (porymapConfig.checkForUpdates)
         this->checkForUpdates(false);
 
-    this->restoreWindowState();
+    this->resizeWithinScreen();
     this->show();
 }
 
@@ -109,13 +111,6 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::saveGlobalConfigs() {
-    porymapConfig.setMainGeometry(
-        this->saveGeometry(),
-        this->saveState(),
-        this->ui->splitter_map->saveState(),
-        this->ui->splitter_main->saveState(),
-        this->ui->splitter_Metatiles->saveState()
-    );
     porymapConfig.save();
     shortcutsConfig.save();
 }
@@ -185,6 +180,7 @@ void MainWindow::setWindowDisabled(bool disabled) {
 }
 
 void MainWindow::initWindow() {
+    porymapConfig = PorymapConfig();
     porymapConfig.load();
     this->initLogStatusBar();
     this->initCustomUI();
@@ -227,6 +223,7 @@ void MainWindow::initWindow() {
 void MainWindow::initShortcuts() {
     initExtraShortcuts();
 
+    shortcutsConfig = ShortcutsConfig();
     shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
     applyUserShortcuts();
@@ -303,9 +300,8 @@ void MainWindow::applyUserShortcuts() {
 
 void MainWindow::initLogStatusBar() {
     removeLogStatusBar(this->statusBar());
-    auto logTypes = QSet<LogType>(porymapConfig.statusBarLogTypes.begin(), porymapConfig.statusBarLogTypes.end());
-    if (!logTypes.isEmpty()) {
-        addLogStatusBar(this->statusBar(), logTypes);
+    if (!porymapConfig.statusBarLogTypes.isEmpty()) {
+        addLogStatusBar(this->statusBar(), porymapConfig.statusBarLogTypes.toQSet());
     }
 }
 
@@ -320,7 +316,7 @@ void MainWindow::initCustomUI() {
 
     static const QMap<int, QIcon> mainTabIcons = {
         {MainTab::Map, QIcon(QStringLiteral(":/icons/minimap.ico"))},
-        {MainTab::Events, ProjectConfig::getPlayerIcon(BaseGameVersion::pokefirered, 0)}, // Arbitrary default
+        {MainTab::Events, BaseGame::getPlayerIcon(BaseGame::Version::pokefirered, 0)}, // Arbitrary default
         {MainTab::Header, QIcon(QStringLiteral(":/icons/application_form_edit.ico"))},
         {MainTab::Connections, QIcon(QStringLiteral(":/icons/connections.ico"))},
         {MainTab::WildPokemon, QIcon(QStringLiteral(":/icons/tall_grass.ico"))},
@@ -591,9 +587,9 @@ void MainWindow::initMapList() {
 
     // Initialize settings from config
     ui->mapListToolBar_Groups->setEditsAllowed(porymapConfig.mapListEditGroupsEnabled);
-    for (auto i = porymapConfig.mapListHideEmptyEnabled.constBegin(); i != porymapConfig.mapListHideEmptyEnabled.constEnd(); i++) {
-        auto toolbar = getMapListToolBar(i.key());
-        if (toolbar) toolbar->setEmptyFoldersVisible(!i.value());
+    for (const auto &tab : porymapConfig.mapListTabsHidingEmptyFolders) {
+        auto toolbar = getMapListToolBar(tab);
+        if (toolbar) toolbar->setEmptyFoldersVisible(false);
     }
 
     // Update config if map list settings change
@@ -601,13 +597,16 @@ void MainWindow::initMapList() {
         porymapConfig.mapListEditGroupsEnabled = allowed;
     });
     connect(ui->mapListToolBar_Groups, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
-        porymapConfig.mapListHideEmptyEnabled[MapListTab::Groups] = !visible;
+        if (visible) porymapConfig.mapListTabsHidingEmptyFolders.erase(MapListTab::Groups);
+        else porymapConfig.mapListTabsHidingEmptyFolders.insert(MapListTab::Groups);
     });
     connect(ui->mapListToolBar_Locations, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
-        porymapConfig.mapListHideEmptyEnabled[MapListTab::Locations] = !visible;
+        if (visible) porymapConfig.mapListTabsHidingEmptyFolders.erase(MapListTab::Locations);
+        else porymapConfig.mapListTabsHidingEmptyFolders.insert(MapListTab::Locations);
     });
     connect(ui->mapListToolBar_Layouts, &MapListToolBar::emptyFoldersVisibleChanged, [](bool visible) {
-        porymapConfig.mapListHideEmptyEnabled[MapListTab::Layouts] = !visible;
+        if (visible) porymapConfig.mapListTabsHidingEmptyFolders.erase(MapListTab::Layouts);
+        else porymapConfig.mapListTabsHidingEmptyFolders.insert(MapListTab::Layouts);
     });
 
     // When map list search filter is cleared we want the current map/layout in the editor to be visible in the list.
@@ -729,19 +728,8 @@ void MainWindow::loadUserSettings() {
     refreshRecentProjectsMenu();
 }
 
-void MainWindow::restoreWindowState() {
-    QMap<QString, QByteArray> geometry = porymapConfig.getMainGeometry();
-    const QByteArray mainWindowGeometry = geometry.value("main_window_geometry");
-    if (!mainWindowGeometry.isEmpty()) {
-        logInfo("Restoring main window geometry from previous session.");
-        restoreGeometry(mainWindowGeometry);
-        restoreState(geometry.value("main_window_state"));
-        ui->splitter_map->restoreState(geometry.value("map_splitter_state"));
-        ui->splitter_main->restoreState(geometry.value("main_splitter_state"));
-        ui->splitter_Metatiles->restoreState(geometry.value("metatiles_splitter_state"));
-    }
-
-    // Resize the window if it exceeds the available screen size.
+// Resize the window if it exceeds the available screen size.
+void MainWindow::resizeWithinScreen() {
     auto screen = windowHandle() ? windowHandle()->screen() : QGuiApplication::primaryScreen();
     if (!screen) return;
     const QRect screenGeometry = screen->availableGeometry();
@@ -800,14 +788,14 @@ bool MainWindow::openProject(QString dir, bool initial) {
         logInfo("Aborted project open.");
         return false;
     }
-
-    const QString openMessage = QString("Opening %1").arg(projectString);
-    logInfo(openMessage);
+    logInfo(QString("Opening %1").arg(projectString));
 
     if (porymapConfig.showProjectLoadingScreen) porysplash->start();
 
     porysplash->showLoadingMessage("config");
-    if (!projectConfig.load(dir) || !userConfig.load(dir)) {
+    projectConfig = ProjectConfig(dir);
+    userConfig = UserConfig(dir);
+    if (!projectConfig.load() || !userConfig.load()) {
         showProjectOpenFailure();
         porysplash->stop();
         return false;
@@ -845,9 +833,6 @@ bool MainWindow::openProject(QString dir, bool initial) {
         porysplash->stop();
         return false;
     }
-
-    // Only create the config files once the project has opened successfully in case the user selected an invalid directory
-    this->editor->project->saveConfig();
     
     updateWindowTitle();
 
@@ -899,24 +884,25 @@ bool MainWindow::checkProjectSanity(Project *project) {
 
 bool MainWindow::checkProjectVersion(Project *project) {
     QString error;
-    int projectVersion = project->getSupportedMajorVersion(&error);
-    if (projectVersion < 0) {
-        // Failed to identify a supported major version.
+    QVersionNumber minimumVersion = project->getMinimumVersion(&error);
+    if (!error.isEmpty()) {
+        // Failed to identify a supported version.
         // We can't draw any conclusions from this, so we don't consider the project to be invalid.
-        QString msg = QStringLiteral("Failed to check project version");
-        logWarn(error.isEmpty() ? msg : QString("%1: '%2'").arg(msg).arg(error));
+        logWarn(QString("Failed to check project version: '%1'").arg(error));
     } else {
-        QString msg = QStringLiteral("Successfully checked project version. ");
-        logInfo(msg + ((projectVersion != 0) ? QString("Supports at least Porymap v%1").arg(projectVersion)
-                                             : QStringLiteral("Too old for any Porymap version")));
-
-        if (projectVersion < porymapVersion.majorVersion() && projectConfig.forcedMajorVersion < porymapVersion.majorVersion()) {
-            // We were unable to find the necessary changes for Porymap's current major version.
+        if (minimumVersion.isNull()) {
+            logInfo(QStringLiteral("Successfully checked project version. Too old for any Porymap version"));
+        } else {
+            logInfo(QString("Successfully checked project version. Supports at least Porymap v%1").arg(minimumVersion.toString()));
+        }
+        if (minimumVersion > porymapVersion ||  minimumVersion.majorVersion() != porymapVersion.majorVersion()) {
+            // Porymap is incompatible with the project if its version is below the specified minimum version,
+            // or if Porymap is so new that it exceeds the major version of the specified minimum version.
             // Unless they have explicitly suppressed this message, warn the user that this might mean their project is missing breaking changes.
-            // Note: Do not report 'projectVersion' to the user in this message. We've already logged it for troubleshooting.
+            // Note: Do not report 'minimumVersion' to the user in this message. We've already logged it for troubleshooting.
             //       It is very plausible that the user may have reproduced the required changes in an
             //       unknown commit, rather than merging the required changes directly from the base repo.
-            //       In this case the 'projectVersion' may actually be too old to use for their repo.
+            //       In this case the 'minimumVersion' may actually be too old to use for their repo.
             ErrorMessage msgBox(QStringLiteral("Your project may be incompatible!"), porysplash);
             msgBox.setTextFormat(Qt::RichText);
             msgBox.setInformativeText(QString("Make sure '%1' has all the required changes for Porymap version %2.<br>"
@@ -929,7 +915,7 @@ bool MainWindow::checkProjectVersion(Project *project) {
                 return false;
             }
             // User opted to try with this version anyway. Don't warn them about this version again.
-            projectConfig.forcedMajorVersion = porymapVersion.majorVersion();
+            projectConfig.minimumVersion = QVersionNumber(porymapVersion.majorVersion());
         }
     }
     return true;
@@ -939,7 +925,7 @@ void MainWindow::showProjectOpenFailure() {
     if (!this->isVisible()){
         // The main window is not visible during the initial project open; the splash screen is busy providing visual feedback.
         // If project opening fails we can immediately display the empty main window (which we need anyway to parent messages to).
-        restoreWindowState();
+        resizeWithinScreen();
         show();
     }
     RecentErrorMessage::show(QStringLiteral("There was an error opening the project."), this);
@@ -1491,7 +1477,7 @@ bool MainWindow::setProjectUI() {
     this->mapGroupModel = new MapGroupModel(editor->project);
     this->groupListProxyModel = new FilterChildrenProxyModel();
     this->groupListProxyModel->setSourceModel(this->mapGroupModel);
-    this->groupListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Groups]);
+    this->groupListProxyModel->setHideEmpty(porymapConfig.mapListTabsHidingEmptyFolders.contains(MapListTab::Groups));
     ui->mapList->setModel(groupListProxyModel);
 
     this->ui->mapList->setItemDelegateForColumn(0, new GroupNameDelegate(this->editor->project, this));
@@ -1500,14 +1486,14 @@ bool MainWindow::setProjectUI() {
     this->mapLocationModel = new MapLocationModel(editor->project);
     this->locationListProxyModel = new FilterChildrenProxyModel();
     this->locationListProxyModel->setSourceModel(this->mapLocationModel);
-    this->locationListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Locations]);
+    this->locationListProxyModel->setHideEmpty(porymapConfig.mapListTabsHidingEmptyFolders.contains(MapListTab::Locations));
     ui->locationList->setModel(locationListProxyModel);
     setMapListSorted(ui->locationList, porymapConfig.mapListLocationsSorted);
 
     this->layoutTreeModel = new LayoutTreeModel(editor->project);
     this->layoutListProxyModel = new FilterChildrenProxyModel();
     this->layoutListProxyModel->setSourceModel(this->layoutTreeModel);
-    this->layoutListProxyModel->setHideEmpty(porymapConfig.mapListHideEmptyEnabled[MapListTab::Layouts]);
+    this->layoutListProxyModel->setHideEmpty(porymapConfig.mapListTabsHidingEmptyFolders.contains(MapListTab::Layouts));
     ui->layoutList->setModel(layoutListProxyModel);
     setMapListSorted(ui->layoutList, porymapConfig.mapListLayoutsSorted);
 
@@ -1524,7 +1510,7 @@ bool MainWindow::setProjectUI() {
     if (eventTabIcon.isNull()) {
         // We randomly choose between the available characters for ~flavor~.
         // For now, this correctly assumes all versions have 2 icons.
-        eventTabIcon = ProjectConfig::getPlayerIcon(projectConfig.baseGameVersion, QRandomGenerator::global()->bounded(0, 2));
+        eventTabIcon = BaseGame::getPlayerIcon(projectConfig.baseGameVersion, QRandomGenerator::global()->bounded(0, 2));
     }
     ui->mainTabBar->setTabIcon(MainTab::Events, eventTabIcon);
 
@@ -2259,7 +2245,7 @@ void MainWindow::on_mapViewTab_tabBarClicked(int index)
     } else if (index == MapViewTab::Collision) {
         refreshCollisionSelector();
     } else if (index == MapViewTab::Prefabs) {
-        if (projectConfig.prefabFilepath.isEmpty() && !projectConfig.prefabImportPrompted) {
+        if (userConfig.prefabsFilepath.isEmpty() && !userConfig.prefabsImportPrompted) {
             // User hasn't set up prefabs and hasn't been prompted before.
             // Ask if they'd like to import the default prefabs file.
             if (prefab.tryImportDefaultPrefabs(this, projectConfig.baseGameVersion))
@@ -3299,7 +3285,8 @@ bool MainWindow::closeProject() {
             return false;
         }
     }
-    editor->closeProject();
+    logInfo(QString("Closing project '%1'").arg(this->editor->project->root));
+    this->editor->closeProject();
     clearProjectUI();
     refreshRecentProjectsMenu();
     setWindowDisabled(true);

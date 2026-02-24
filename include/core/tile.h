@@ -5,9 +5,6 @@
 #include <QObject>
 #include <QSize>
 
-// TODO: Replace once config refactoring is complete.
-extern bool ConfigDisplayIdsHexadecimal;
-
 class Tile
 {
 public:
@@ -30,7 +27,8 @@ public:
     QString toString() const;
     static QString getTileIdString(uint16_t tileId);
 
-    static const uint16_t maxValue;
+    // Upper limit for raw value (i.e., uint16_t max).
+    static constexpr uint16_t MaxValue = 0xFFFF;
 
     static constexpr int pixelWidth() { return 8; }
     static constexpr int pixelHeight() { return 8; }

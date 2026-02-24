@@ -50,7 +50,7 @@ public:
     Q_INVOKABLE bool getBorderVisibility();
     Q_INVOKABLE void setSmartPathsEnabled(bool visible);
     Q_INVOKABLE bool getSmartPathsEnabled();
-    Q_INVOKABLE QList<QString> getCustomScripts();
+    static Q_INVOKABLE QList<QString> getCustomScripts();
     Q_INVOKABLE QList<int> getMetatileLayerOrder();
     Q_INVOKABLE void setMetatileLayerOrder(const QList<int> &order);
     Q_INVOKABLE QList<float> getMetatileLayerOpacity();

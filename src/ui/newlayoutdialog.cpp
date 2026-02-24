@@ -3,6 +3,7 @@
 #include "ui_newlayoutdialog.h"
 #include "config.h"
 #include "validator.h"
+#include "eventfilters.h"
 
 #include <QMap>
 #include <QSet>
@@ -40,19 +41,12 @@ NewLayoutDialog::NewLayoutDialog(Project *project, const Layout *layoutToCopy, Q
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &NewLayoutDialog::dialogButtonClicked);
 
     refresh();
-
-    if (porymapConfig.newLayoutDialogGeometry.isEmpty()){
-        // On first display resize to fit contents a little better
-        adjustSize();
-    } else {
-        restoreGeometry(porymapConfig.newLayoutDialogGeometry);
-    }
+    installEventFilter(new GeometrySaver(this));
     ui->lineEdit_Name->setFocus();
 }
 
 NewLayoutDialog::~NewLayoutDialog()
 {
-    porymapConfig.newLayoutDialogGeometry = saveGeometry();
     saveSettings();
     delete ui;
 }

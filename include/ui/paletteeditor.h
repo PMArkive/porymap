@@ -54,7 +54,6 @@ private:
     void commitEditHistory();
     void commitEditHistory(int paletteId);
     void updateEditHistoryActions();
-    void restoreWindowState();
     void invalidateCache();
     void closeEvent(QCloseEvent*);
     void setColorInputTitles(bool show);

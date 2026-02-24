@@ -440,7 +440,7 @@ private:
     void initShortcuts();
     void initExtraShortcuts();
     void loadUserSettings();
-    void restoreWindowState();
+    void resizeWithinScreen();
     void setTheme(QString);
     void updateTilesetEditor();
     Event::Group getEventGroupFromTabWidget(QWidget *tab);

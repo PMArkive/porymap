@@ -89,7 +89,7 @@ void Tileset::resizeMetatiles(int newNumMetatiles) {
     while (m_metatiles.length() > newNumMetatiles) {
         delete m_metatiles.takeLast();
     }
-    const int numTiles = projectConfig.getNumTilesInMetatile();
+    const int numTiles = Metatile::maxTiles();
     while (m_metatiles.length() < newNumMetatiles) {
         m_metatiles.append(new Metatile(numTiles));
     }
@@ -322,7 +322,7 @@ bool Tileset::appendToHeaders(const QString &filepath, const QString &friendlyNa
         dataString.append(QString("\t.4byte gTilesetTiles_%1\n").arg(friendlyName));
         dataString.append(QString("\t.4byte gTilesetPalettes_%1\n").arg(friendlyName));
         dataString.append(QString("\t.4byte gMetatiles_%1\n").arg(friendlyName));
-        if (projectConfig.baseGameVersion == BaseGameVersion::pokefirered) {
+        if (projectConfig.baseGameVersion == BaseGame::Version::pokefirered) {
             dataString.append("\t.4byte NULL @ animation callback\n");
             dataString.append(QString("\t.4byte gMetatileAttributes_%1\n").arg(friendlyName));
         } else {
@@ -439,7 +439,7 @@ QHash<int, QString> Tileset::getHeaderMemberMap(bool usingAsm)
     int paddingOffset = usingAsm ? 1 : 0;
 
     // The position of metatileAttributes changes between games
-    bool isPokefirered = (projectConfig.baseGameVersion == BaseGameVersion::pokefirered);
+    bool isPokefirered = (projectConfig.baseGameVersion == BaseGame::Version::pokefirered);
     int metatileAttrPosition = (isPokefirered ? 6 : 5) + paddingOffset;
 
     auto map = QHash<int, QString>();
@@ -461,7 +461,7 @@ bool Tileset::loadMetatiles() {
     }
 
     QByteArray data = file.readAll();
-    int tilesPerMetatile = projectConfig.getNumTilesInMetatile();
+    int tilesPerMetatile = Metatile::maxTiles();
     int bytesPerMetatile = Tile::sizeInBytes() * tilesPerMetatile;
     int numMetatiles = data.length() / bytesPerMetatile;
     if (numMetatiles > maxMetatiles()) {
@@ -493,7 +493,7 @@ bool Tileset::saveMetatiles() {
     }
 
     QByteArray data;
-    int numTiles = projectConfig.getNumTilesInMetatile();
+    int numTiles = Metatile::maxTiles();
     for (const auto &metatile : m_metatiles) {
         for (int i = 0; i < numTiles; i++) {
             uint16_t tile = metatile->tiles.value(i).rawValue();

@@ -3,10 +3,12 @@
 
 #include <QDialog>
 #include <QAbstractButton>
+#include <QJsonObject>
+#include "metatile.h"
 
 class GridSettings {
 public:
-    explicit GridSettings() {};
+    constexpr GridSettings() {};
     ~GridSettings() {};
 
     enum Style {
@@ -17,14 +19,17 @@ public:
         Dots,
     };
 
-    uint width = 16;
-    uint height = 16;
+    uint width = Metatile::pixelWidth();
+    uint height = Metatile::pixelHeight();
     int offsetX = 0;
     int offsetY = 0;
     Style style = Style::Solid;
-    QColor color = Qt::black;
+    QColor color = QColorConstants::Black;
     QVector<qreal> getHorizontalDashPattern() const { return this->getDashPattern(this->width); }
     QVector<qreal> getVerticalDashPattern() const { return this->getDashPattern(this->height); }
+
+    QJsonObject toJson() const;
+    static GridSettings fromJson(const QJsonObject &obj);
 
     static QString getStyleName(Style style);
     static GridSettings::Style getStyleFromName(const QString &name);

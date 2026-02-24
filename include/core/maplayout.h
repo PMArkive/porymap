@@ -8,6 +8,7 @@
 #include <QPixmap>
 #include <QString>
 #include <QUndoStack>
+#include <QJsonObject>
 
 class Map;
 class LayoutPixmapItem;

@@ -198,7 +198,12 @@ bool ScriptUtility::getSmartPathsEnabled() {
 }
 
 QList<QString> ScriptUtility::getCustomScripts() {
-    return userConfig.getCustomScriptPaths();
+    QList<QString> paths;
+    for (const auto& settings : userConfig.customScripts)
+        paths.append(settings.path);
+    for (const auto& settings : projectConfig.customScripts)
+        paths.append(settings.path);
+    return paths;
 }
 
 QList<int> ScriptUtility::getMetatileLayerOrder() {

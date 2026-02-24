@@ -4,6 +4,7 @@
 #include "config.h"
 #include "utility.h"
 #include "message.h"
+#include "eventfilters.h"
 
 static const QString baseWindowTitle = QString("Wild Pokémon Summary Charts");
 
@@ -25,6 +26,7 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowFlags(Qt::Window);
+    installEventFilter(new GeometrySaver(this));
 
     connect(ui->button_Help, &QAbstractButton::clicked, this, &WildMonChart::showHelpDialog);
 
@@ -48,8 +50,6 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
     } else {
         porymapConfig.wildMonChartTheme = ui->comboBox_Theme->currentText();
     }
-
-    restoreGeometry(porymapConfig.wildMonChartGeometry);
 
     setTable(table);
 };
@@ -459,11 +459,6 @@ void WildMonChart::showHelpDialog() {
         informativeText = levelTabInfo;
     }
     InfoMessage::show(text, informativeText, this);
-}
-
-void WildMonChart::closeEvent(QCloseEvent *event) {
-    porymapConfig.wildMonChartGeometry = saveGeometry();
-    QWidget::closeEvent(event);
 }
 
 #endif // QT_CHARTS_LIB

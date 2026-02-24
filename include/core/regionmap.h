@@ -5,6 +5,7 @@
 #include "map.h"
 #include "tilemaptileselector.h"
 #include "history.h"
+#include "config.h"
 
 #include <QStringList>
 #include <QString>

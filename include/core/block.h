@@ -26,7 +26,12 @@ public:
     static uint16_t getMaxCollision();
     static uint16_t getMaxElevation();
 
-    static const uint16_t maxValue;
+    // Upper limit for metatile ID, collision, and elevation masks. Used externally.
+    static constexpr uint16_t MaxValue = 0xFFFF;
+
+    static constexpr uint16_t DefaultMetatileIdMask = 0x03FF;
+    static constexpr uint16_t DefaultCollisionMask = 0x0C00;
+    static constexpr uint16_t DefaultElevationMask = 0xF000;
 
 private:
     uint16_t m_metatileId;

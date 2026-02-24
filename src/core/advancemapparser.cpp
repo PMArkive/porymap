@@ -2,6 +2,7 @@
 #include "log.h"
 #include "project.h"
 #include "maplayout.h"
+#include "config.h"
 
 Layout *AdvanceMapParser::parseLayout(const QString &filepath, bool *error, const Project *project)
 {
@@ -118,18 +119,18 @@ QList<Metatile*> AdvanceMapParser::parseMetatiles(const QString &filepath, bool 
 
     int projIdOffset = in.length() - 4;
     int metatileSize = 16;
-    BaseGameVersion version;
+    BaseGame::Version version;
     if (in.at(projIdOffset + 0) == 'R'
      && in.at(projIdOffset + 1) == 'S'
      && in.at(projIdOffset + 2) == 'E'
      && in.at(projIdOffset + 3) == ' ') {
         // ruby and emerald are handled equally here.
-        version = BaseGameVersion::pokeemerald;
+        version = BaseGame::Version::pokeemerald;
     } else if (in.at(projIdOffset + 0) == 'F'
             && in.at(projIdOffset + 1) == 'R'
             && in.at(projIdOffset + 2) == 'L'
             && in.at(projIdOffset + 3) == 'G') {
-        version = BaseGameVersion::pokefirered;
+        version = BaseGame::Version::pokefirered;
     } else {
         *error = true;
         logError(QString("Detected unsupported game type from .bvd file. Last 4 bytes of file must be 'RSE ' or 'FRLG'."));

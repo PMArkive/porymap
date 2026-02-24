@@ -25,7 +25,7 @@ public:
     void addPrefab(MetatileSelection selection, Layout *layout, QString name);
     void updatePrefabUi(QPointer<Layout> layout);
     void clearPrefabUi();
-    bool tryImportDefaultPrefabs(QWidget * parent, BaseGameVersion version, QString filepath = "");
+    bool tryImportDefaultPrefabs(QWidget * parent, BaseGame::Version version, QString filepath = "");
 
 private:
     QPointer<MetatileSelector> selector;

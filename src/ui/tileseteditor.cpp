@@ -37,7 +37,7 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
 
     ActiveWindowFilter *filter = new ActiveWindowFilter(this);
     connect(filter, &ActiveWindowFilter::activated, this, &TilesetEditor::onWindowActivated);
-    this->installEventFilter(filter);
+    installEventFilter(filter);
 
     setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);
 
@@ -75,7 +75,7 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     initShortcuts();
     setMetatileLayerOrientation(porymapConfig.tilesetEditorLayerOrientation);
     this->metatileSelector->select(0);
-    restoreWindowState();
+    installEventFilter(new GeometrySaver(this));
 }
 
 TilesetEditor::~TilesetEditor()
@@ -233,7 +233,7 @@ void TilesetEditor::setMetatileLayerOrientation(Qt::Orientation orientation) {
 
     int numTilesWide = Metatile::tileWidth();
     int numTilesTall = Metatile::tileHeight();
-    int numLayers = projectConfig.getNumLayersInMetatile();
+    int numLayers = Metatile::numLayers();
     if (horizontal) {
         numTilesWide *= numLayers;
     } else {
@@ -339,8 +339,6 @@ void TilesetEditor::initSelectedTileItem() {
 
 void TilesetEditor::initShortcuts() {
     initExtraShortcuts();
-
-    shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
     applyUserShortcuts();
 }
@@ -377,14 +375,6 @@ void TilesetEditor::applyUserShortcuts() {
     for (auto *shortcut : findChildren<Shortcut *>())
         if (!shortcut->objectName().isEmpty())
             shortcut->setKeys(shortcutsConfig.userShortcuts(shortcut));
-}
-
-void TilesetEditor::restoreWindowState() {
-    logInfo("Restoring tileset editor geometry from previous session.");
-    QMap<QString, QByteArray> geometry = porymapConfig.getTilesetEditorGeometry();
-    this->restoreGeometry(geometry.value("tileset_editor_geometry"));
-    this->restoreState(geometry.value("tileset_editor_state"));
-    this->ui->splitter->restoreState(geometry.value("tileset_editor_splitter_state"));
 }
 
 void TilesetEditor::onWindowActivated() {
@@ -853,11 +843,6 @@ void TilesetEditor::closeEvent(QCloseEvent *event)
 
     if (event->isAccepted()) {
         if (this->paletteEditor) this->paletteEditor->close();
-        porymapConfig.setTilesetEditorGeometry(
-            this->saveGeometry(),
-            this->saveState(),
-            this->ui->splitter->saveState()
-        );
     }
 }
 
@@ -930,7 +915,7 @@ bool TilesetEditor::replaceMetatile(uint16_t metatileId, const Metatile &src, QS
 
     // Update tile usage if any tiles changed
     if (this->tileSelector && this->tileSelector->showUnused) {
-        int numTiles = projectConfig.getNumTilesInMetatile();
+        int numTiles = qMin(src.tiles.length(), dest->tiles.length());
         for (int i = 0; i < numTiles; i++) {
             if (src.tiles[i].tileId != dest->tiles[i].tileId) {
                 this->tileSelector->usedTiles[src.tiles[i].tileId] += 1;
@@ -995,7 +980,7 @@ void TilesetEditor::on_actionRedo_triggered() {
 void TilesetEditor::on_actionCut_triggered()
 {
     this->copyMetatile(true);
-    this->pasteMetatile(Metatile(projectConfig.getNumTilesInMetatile()), "");
+    this->pasteMetatile(Metatile(Metatile::maxTiles()), "");
 }
 
 void TilesetEditor::on_actionCopy_triggered()

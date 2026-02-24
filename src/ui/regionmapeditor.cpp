@@ -7,6 +7,7 @@
 #include "config.h"
 #include "log.h"
 #include "utility.h"
+#include "eventfilters.h"
 
 #include <QDir>
 #include <QDialog>
@@ -33,7 +34,7 @@ RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :
 
     this->configFilepath = QString("%1/%2").arg(this->project->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_porymap_cfg));
     this->initShortcuts();
-    this->restoreWindowState();
+    this->installEventFilter(new GeometrySaver(this));
 }
 
 RegionMapEditor::~RegionMapEditor()
@@ -56,13 +57,6 @@ RegionMapEditor::~RegionMapEditor()
     delete ui;
 }
 
-void RegionMapEditor::restoreWindowState() {
-    logInfo("Restoring region map editor geometry from previous session.");
-    QMap<QString, QByteArray> geometry = porymapConfig.getRegionMapEditorGeometry();
-    this->restoreGeometry(geometry.value("region_map_editor_geometry"));
-    this->restoreState(geometry.value("region_map_editor_state"));
-}
-
 void RegionMapEditor::initShortcuts() {
     auto *shortcut_RM_Options_delete = new Shortcut(
             {QKeySequence("Del"), QKeySequence("Backspace")}, this, SLOT(on_pushButton_RM_Options_delete_clicked()));
@@ -80,7 +74,6 @@ void RegionMapEditor::initShortcuts() {
     ui->menuEdit->addAction(undoAction);
     ui->menuEdit->addAction(redoAction);
 
-    shortcutsConfig.load();
     shortcutsConfig.setDefaultShortcuts(shortcutableObjects());
     applyUserShortcuts();
 
@@ -122,42 +115,15 @@ bool RegionMapEditor::saveRegionMapEntries() {
     return true;
 }
 
-void buildEmeraldDefaults(poryjson::Json &json) {
-    ParseUtil parser;
-    QString emeraldDefault = parser.readTextFile(":/text/region_map_default_emerald.json");
-    json = poryjson::Json::parse(emeraldDefault);
-}
-
-void buildRubyDefaults(poryjson::Json &json) {
-    ParseUtil parser;
-    QString emeraldDefault = parser.readTextFile(":/text/region_map_default_ruby.json");
-    json = poryjson::Json::parse(emeraldDefault);
-}
-
-void buildFireredDefaults(poryjson::Json &json) {
-
-    ParseUtil parser;
-    QString fireredDefault = parser.readTextFile(":/text/region_map_default_firered.json");    
-    json = poryjson::Json::parse(fireredDefault);
-}
-
 poryjson::Json RegionMapEditor::buildDefaultJson() {
-    poryjson::Json defaultJson;
-    switch (projectConfig.baseGameVersion) {
-        case BaseGameVersion::pokeemerald:
-            buildEmeraldDefaults(defaultJson);
-            break;
-        case BaseGameVersion::pokeruby:
-            buildRubyDefaults(defaultJson);
-            break;
-        case BaseGameVersion::pokefirered:
-            buildFireredDefaults(defaultJson);
-            break;
-        default:
-            break;
-    }
-
-    return defaultJson;
+    static const QMap<BaseGame::Version, QString> versionToJsonPath = {
+        {BaseGame::Version::pokeemerald, QStringLiteral(":/text/region_map_default_emerald.json")},
+        {BaseGame::Version::pokeruby,    QStringLiteral(":/text/region_map_default_ruby.json")},
+        {BaseGame::Version::pokefirered, QStringLiteral(":/text/region_map_default_firered.json")},
+    };
+    const QString path = versionToJsonPath.value(projectConfig.baseGameVersion);
+    if (path.isEmpty()) { Q_ASSERT(false); return OrderedJson::object(); }
+    return OrderedJson::parse(ParseUtil::readTextFile(path));
 }
 
 bool RegionMapEditor::buildConfigDialog() {
@@ -283,18 +249,22 @@ bool RegionMapEditor::buildConfigDialog() {
 
 
     // for sake of convenience, option to just use defaults for each basegame version
+    // TODO: Each version's default settings should be available regardless of the base game version,
+    //       it can just suggest which default settings to use depending on the base game version.
     QPushButton *config_useProjectDefault = nullptr;
     switch (projectConfig.baseGameVersion) {
-        case BaseGameVersion::pokefirered:
+        case BaseGame::Version::pokefirered:
             config_useProjectDefault = new QPushButton("\nUse pokefirered defaults\n");
             break;
-        case BaseGameVersion::pokeemerald:
+        case BaseGame::Version::pokeemerald:
             config_useProjectDefault = new QPushButton("\nUse pokeemerald defaults\n");
             break;
-        case BaseGameVersion::pokeruby:
+        case BaseGame::Version::pokeruby:
             config_useProjectDefault = new QPushButton("\nUse pokeruby defaults\n");
             break;
         default:
+            config_useProjectDefault = new QPushButton("\nNo default settings available\n");
+            config_useProjectDefault->setEnabled(false);
             break;
     }
     form.addRow(config_useProjectDefault);
@@ -1251,11 +1221,6 @@ void RegionMapEditor::closeEvent(QCloseEvent *event)
     } else {
         event->accept();
     }
-
-    porymapConfig.setRegionMapEditorGeometry(
-        this->saveGeometry(),
-        this->saveState()
-    );
 }
 
 void RegionMapEditor::on_verticalSlider_Zoom_Map_Image_valueChanged(int val) {
