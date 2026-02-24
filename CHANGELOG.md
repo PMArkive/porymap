@@ -10,6 +10,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Add API functions for reading and writing text files.
 
 ### Changed
+- Porymap's .cfg files were replaced with .json. Any fields not listed not listed in a config file are assumed to be the default value.
 - Move the tileset/layout labels to prioritize horizontal space for the map.
 
 ### Fixed
