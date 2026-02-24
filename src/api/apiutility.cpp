@@ -197,12 +197,12 @@ bool ScriptUtility::getSmartPathsEnabled() {
     return window->ui->checkBox_smartPaths->isChecked();
 }
 
-QList<QString> ScriptUtility::getCustomScripts() {
+QList<QString> ScriptUtility::getPluginScripts() {
     QList<QString> paths;
-    for (const auto& settings : userConfig.customScripts)
-        paths.append(settings.path);
-    for (const auto& settings : projectConfig.customScripts)
-        paths.append(settings.path);
+    for (const auto& plugin : userConfig.plugins)
+        paths.append(plugin.path);
+    for (const auto& plugin : projectConfig.plugins)
+        paths.append(plugin.path);
     return paths;
 }
 

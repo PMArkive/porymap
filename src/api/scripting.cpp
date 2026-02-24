@@ -24,8 +24,8 @@ Scripting::Scripting(MainWindow *mainWindow)
 {
     this->engine->installExtensions(QJSEngine::ConsoleExtension);
 
-    const QStringList paths = ScriptSettings::filter(userConfig.customScripts)
-                            + ScriptSettings::filter(projectConfig.customScripts);
+    const QStringList paths = PluginSettings::filter(userConfig.plugins)
+                            + PluginSettings::filter(projectConfig.plugins);
     for (const auto& path : paths) {
         loadScript(path);
     }
@@ -61,7 +61,7 @@ void Scripting::loadScript(const QString &filepath) {
     if (script->filepath().isEmpty() || tryErrorJS(script->module())) {
         QMessageBox messageBox(this->mainWindow);
         messageBox.setText("Failed to load script");
-        messageBox.setInformativeText(QString("An error occurred while loading custom script file '%1'").arg(filepath));
+        messageBox.setInformativeText(QString("An error occurred while loading plugin script file '%1'").arg(filepath));
         messageBox.setDetailedText(getMostRecentError());
         messageBox.setIcon(QMessageBox::Warning);
         messageBox.addButton(QMessageBox::Ok);
@@ -69,7 +69,7 @@ void Scripting::loadScript(const QString &filepath) {
         return;
     }
 
-    logInfo(QString("Successfully loaded custom script file '%1'").arg(filepath));
+    logInfo(QString("Successfully loaded plugin script file '%1'").arg(filepath));
     this->scripts.append(script);
 }
 
@@ -145,7 +145,7 @@ bool Scripting::tryErrorJS(QJSValue js) {
     QString fileErrStr = fileName == "undefined" ? "" : QString(" '%1'").arg(fileName);
     QString lineErrStr = lineNumber == "undefined" ? "" : QString(" at line %1").arg(lineNumber);
 
-    logError(QString("Error in custom script%1%2: '%3'")
+    logError(QString("Error in plugin script%1%2: '%3'")
              .arg(fileErrStr)
              .arg(lineErrStr)
              .arg(errStr));

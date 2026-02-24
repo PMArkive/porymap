@@ -239,8 +239,8 @@ void ProjectConfig::loadFromJson(const QJsonObject& obj_) {
 
     KeyValueConfigBase::loadFromJson(obj);
 
-    // Enforce this setting for projectConfig's custom scripts
-    for (auto& settings : this->customScripts) settings.userOnly = false;
+    // Enforce this setting for projectConfig's plugins
+    for (auto& settings : this->plugins) settings.userOnly = false;
 }
 
 QJsonObject ProjectConfig::getDefaultJson() const {

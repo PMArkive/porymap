@@ -21,7 +21,7 @@ class MainWindow;
 #ifdef QT_QML_LIB
 
 // !! New callback functions or changes to existing callback function names/arguments
-//    should be synced to resources/text/script_template.txt and docsrc/manual/scripting-capabilities.rst
+//    should be synced to resources/text/plugin_template.txt and docsrc/manual/scripting-capabilities.rst
 class Scripting : public QObject
 {
     Q_OBJECT

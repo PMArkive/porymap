@@ -6,8 +6,8 @@ UserConfig userConfig;
 void UserConfig::loadFromJson(const QJsonObject& obj) {
     KeyValueConfigBase::loadFromJson(obj);
 
-    // Enforce this setting for userConfig's custom scripts
-    for (auto& settings : this->customScripts) settings.userOnly = true;
+    // Enforce this setting for userConfig's plugins
+    for (auto& settings : this->plugins) settings.userOnly = true;
 }
 
 QJsonObject UserConfig::getDefaultJson() const {

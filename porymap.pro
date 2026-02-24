@@ -81,10 +81,10 @@ SOURCES += src/config/keyvalueconfigbase.cpp \
     src/lib/collapsiblesection.cpp \
     src/lib/orderedjson.cpp \
     src/core/regionmapeditcommands.cpp \
-    src/scriptapi/apimap.cpp \
-    src/scriptapi/apioverlay.cpp \
-    src/scriptapi/apiutility.cpp \
-    src/scriptapi/scripting.cpp \
+    src/api/apimap.cpp \
+    src/api/apioverlay.cpp \
+    src/api/apiutility.cpp \
+    src/api/scripting.cpp \
     src/ui/aboutporymap.cpp \
     src/ui/checkeredbgscene.cpp \
     src/ui/colorinputwidget.cpp \
@@ -92,8 +92,8 @@ SOURCES += src/config/keyvalueconfigbase.cpp \
     src/ui/connectionslistitem.cpp \
     src/ui/customattributesdialog.cpp \
     src/ui/customattributestable.cpp \
-    src/ui/customscriptseditor.cpp \
-    src/ui/customscriptslistitem.cpp \
+    src/ui/plugineditor.cpp \
+    src/ui/pluginlistitem.cpp \
     src/ui/divingmappixmapitem.cpp \
     src/ui/eventpixmapitem.cpp \
     src/ui/bordermetatilespixmapitem.cpp \
@@ -215,8 +215,8 @@ HEADERS  += include/config/keyvalueconfigbase.h \
     include/ui/connectionslistitem.h \
     include/ui/customattributesdialog.h \
     include/ui/customattributestable.h \
-    include/ui/customscriptseditor.h \
-    include/ui/customscriptslistitem.h \
+    include/ui/plugineditor.h \
+    include/ui/pluginlistitem.h \
     include/ui/divingmappixmapitem.h \
     include/ui/edithistoryspinbox.h \
     include/ui/eventcombobox.h \
@@ -289,8 +289,8 @@ HEADERS  += include/config/keyvalueconfigbase.h \
     include/editor.h \
     include/mainwindow.h \
     include/project.h \
-    include/scripting.h \
-    include/scriptutility.h \
+    include/api/scripting.h \
+    include/api/scriptutility.h \
     include/settings.h \
     include/log.h \
     include/ui/uintspinbox.h \
@@ -329,8 +329,8 @@ FORMS    += forms/mainwindow.ui \
     forms/regionmappropertiesdialog.ui \
     forms/colorpicker.ui \
     forms/projectsettingseditor.ui \
-    forms/customscriptseditor.ui \
-    forms/customscriptslistitem.ui \
+    forms/plugineditor.ui \
+    forms/pluginlistitem.ui \
     forms/customattributesdialog.ui \
     forms/updatepromoter.ui \
     forms/wildmonchart.ui \
@@ -343,6 +343,7 @@ RESOURCES += \
     resources/text.qrc
 
 INCLUDEPATH += include
+INCLUDEPATH += include/api
 INCLUDEPATH += include/config
 INCLUDEPATH += include/core
 INCLUDEPATH += include/ui

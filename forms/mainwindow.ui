@@ -2919,7 +2919,7 @@
     <addaction name="actionProject_Settings"/>
     <addaction name="actionPreferences"/>
     <addaction name="actionShortcuts"/>
-    <addaction name="actionCustom_Scripts"/>
+    <addaction name="actionPlugins"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -3161,9 +3161,9 @@
     <string>Project Settings...</string>
    </property>
   </action>
-  <action name="actionCustom_Scripts">
+  <action name="actionPlugins">
    <property name="text">
-    <string>Custom Scripts...</string>
+    <string>Plugins...</string>
    </property>
   </action>
   <action name="actionCheck_for_Updates">

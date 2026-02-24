@@ -196,7 +196,7 @@ public:
     int metatileSelectorWidth = 8;
     QStringList globalConstantsFilepaths;
     QMap<QString,QString> globalConstants;
-    QList<ScriptSettings> customScripts;
+    QList<PluginSettings> plugins;
     QMap<Event::Group, QString> eventIconPaths;
     QMap<QString, QString> pokemonIconPaths;
     QVersionNumber minimumVersion;
@@ -248,7 +248,7 @@ public:
             m_fm->addField(&this->metatileSelectorWidth, "metatile_selector_width", 1, INT_MAX);
             m_fm->addField(&this->globalConstantsFilepaths, "global_constants_filepaths");
             m_fm->addField(&this->globalConstants, "global_constants");
-            m_fm->addField(&this->customScripts, "custom_scripts");
+            m_fm->addField(&this->plugins, "plugins");
             m_fm->addField(&this->eventIconPaths, "event_icon_paths");
             m_fm->addField(&this->pokemonIconPaths, "pokemon_icon_paths");
             m_fm->addField(&this->minimumVersion, "minimum_version");

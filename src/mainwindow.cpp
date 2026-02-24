@@ -212,7 +212,7 @@ void MainWindow::initWindow() {
 #endif
 
 #ifndef QT_QML_LIB
-    ui->actionCustom_Scripts->setVisible(false);
+    ui->actionPlugins->setVisible(false);
     missingModules.append(" 'qml'");
 #endif
 
@@ -806,7 +806,7 @@ bool MainWindow::openProject(QString dir, bool initial) {
         return false;
     }
 
-    porysplash->showLoadingMessage("custom scripts");
+    porysplash->showLoadingMessage("plugin scripts");
     Scripting::init(this);
 
     // Create the project
@@ -2405,12 +2405,12 @@ void MainWindow::connectSubEditorsToShortcutsEditor() {
                 this->regionMapEditor, &RegionMapEditor::applyUserShortcuts);
     }
 
-    if (!this->customScriptsEditor) {
-        initCustomScriptsEditor();
+    if (!this->pluginEditor) {
+        initPluginEditor();
     }
-    if (this->customScriptsEditor) {
+    if (this->pluginEditor) {
         connect(this->shortcutsEditor, &ShortcutsEditor::shortcutsSaved,
-                this->customScriptsEditor, &CustomScriptsEditor::applyUserShortcuts);
+                this->pluginEditor, &PluginEditor::applyUserShortcuts);
     }
 }
 
@@ -3107,19 +3107,19 @@ void MainWindow::onWarpBehaviorWarningClicked() {
     msgBox->open();
 }
 
-void MainWindow::on_actionCustom_Scripts_triggered() {
-    if (!this->customScriptsEditor) {
-        initCustomScriptsEditor();
+void MainWindow::on_actionPlugins_triggered() {
+    if (!this->pluginEditor) {
+        initPluginEditor();
     }
-    if (this->customScriptsEditor) {
-        Util::show(this->customScriptsEditor);
+    if (this->pluginEditor) {
+        Util::show(this->pluginEditor);
     }
 }
 
-void MainWindow::initCustomScriptsEditor() {
+void MainWindow::initPluginEditor() {
 #ifdef QT_QML_LIB
-    this->customScriptsEditor = new CustomScriptsEditor(this);
-    connect(this->customScriptsEditor, &CustomScriptsEditor::reloadScriptEngine,
+    this->pluginEditor = new PluginEditor(this);
+    connect(this->pluginEditor, &PluginEditor::reloadScriptEngine,
             this, &MainWindow::reloadScriptEngine);
 #endif
 }

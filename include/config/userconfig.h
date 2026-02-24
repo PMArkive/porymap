@@ -19,7 +19,7 @@ public:
     QString prefabsFilepath;
     bool prefabsImportPrompted = false;
     bool useEncounterJson = true;
-    QList<ScriptSettings> customScripts;
+    QList<PluginSettings> plugins;
 
 protected:
     virtual bool parseLegacyKeyValue(const QString& key, const QString& value) override;
@@ -32,7 +32,7 @@ protected:
             m_fm->addField(&this->prefabsFilepath, "prefabs_filepath");
             m_fm->addField(&this->prefabsImportPrompted, "prefabs_import_prompted");
             m_fm->addField(&this->useEncounterJson, "use_encounter_json");
-            m_fm->addField(&this->customScripts, "custom_scripts");
+            m_fm->addField(&this->plugins, "plugins");
         }
         return m_fm.get();
     }

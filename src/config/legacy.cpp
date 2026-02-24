@@ -367,7 +367,7 @@ bool ProjectConfig::parseLegacyKeyValue(const QString &key, const QString &value
 // The format is a comma-separated list of paths. Each path can be followed (before the comma)
 // by a :0 or :1 to indicate whether it should be disabled or enabled, respectively. If neither
 // follow, it's assumed the script should be enabled.
-QList<ScriptSettings> parseCustomScripts(const QString &input) {
+QList<PluginSettings> parseCustomScripts(const QString &input) {
     QMap<QString,bool> customScripts;
     const QList<QString> paths = input.split(",", Qt::SkipEmptyParts);
     for (QString path : paths) {
@@ -381,7 +381,7 @@ QList<ScriptSettings> parseCustomScripts(const QString &input) {
             customScripts.insert(path, enabled);
         }
     }
-    QList<ScriptSettings> settingsList;
+    QList<PluginSettings> settingsList;
     for (auto it = customScripts.begin(); it != customScripts.end(); it++) {
         settingsList.append({
             .path = it.key(),
@@ -398,7 +398,7 @@ bool UserConfig::parseLegacyKeyValue(const QString &key, const QString &value) {
     } else if (key == "use_encounter_json") {
         this->useEncounterJson = toBool(value);
     } else if (key == "custom_scripts") {
-        this->customScripts = parseCustomScripts(value);
+        this->plugins = parseCustomScripts(value);
     } else {
         return false;
     }

@@ -15,24 +15,24 @@ Porymap is extensible via scripting capabilities. This allows the user to write 
     If you are compiling Porymap yourself, these features will only be available if Qt's ``qml`` module is installed.
 
 
-Custom Scripts Editor
----------------------
+Plugin Editor
+-------------
 
-Your custom scripts can be managed with the Custom Scripts Editor accessible under ``Options -> Custom Scripts...``.
+Your plugins can be managed with the Plugin Editor accessible under ``Options -> Plugins...``.
 
 .. figure:: images/scripting-capabilities/custom-scripts-editor.png
-    :alt: Custom Scripts Editor
+    :alt: Plugins Editor
     :width: 60%
     :align: center
 
-    Custom Scripts Editor
+    Plugins Editor
 
 At the top there are three basic buttons for managing your scripts:
  - |button-create| Opens a prompt to create a new script file, which will be populated with a basic template.
  - |button-load| Lets you add an existing script file to Porymap that you've already created or downloaded from elsewhere.
  - |button-refresh| Any edits made to your scripts while Porymap is already open will not be reflected until you select this button.
 
-Below these buttons is a list of all the custom scripts you have loaded for your project. Each entry will have a text box showing the path of the script file. This path can be freely updated, or you can choose a new path with the |button-folder| button next to it. The |button-edit| button will open the script file in your default text editor, and the |button-remove| button will remove it from the list. The check box to the left of the filepath indicates whether your script should be running. If you'd like to temporarily disable a script you can uncheck this box.
+Below these buttons is a list of all the plugins you have loaded for your project. Each entry will have a text box showing the path of the script file. This path can be freely updated, or you can choose a new path with the |button-folder| button next to it. The |button-edit| button will open the script file in your default text editor, and the |button-remove| button will remove it from the list. The check box to the left of the filepath indicates whether your script should be running. If you'd like to temporarily disable a script you can uncheck this box.
 
 .. |button-create| image:: images/scripting-capabilities/button-create.png
    :height: 24
@@ -51,12 +51,12 @@ Below these buttons is a list of all the custom scripts you have loaded for your
    :height: 24
 
 
-Writing a Custom Script
+Writing a Plugin Script
 -----------------------
 
-Let's write a custom script that will randomize grass patterns when the user is editing the map. This is useful, since it's cumbersome to manually add randomness to grass patches. With the custom script, it will happen automatically. Whenever the user paints a grass tile onto the map, the script will overwrite the tile with a random grass tile instead.
+Let's write a plugin script that will randomize grass patterns when the user is editing the map. This is useful, since it's cumbersome to manually add randomness to grass patches. With the plugin script, it will happen automatically. Whenever the user paints a grass tile onto the map, the script will overwrite the tile with a random grass tile instead.
 
-First, open the ``Options -> Custom Scripts...`` window and select the |button-create| button. This will open a file save prompt; let's name our new script file ``my_script.js`` and save it. We've successfully added a new script! We can now see it listed in the editor.
+First, open the ``Options -> Plugins...`` window and select the |button-create| button. This will open a file save prompt; let's name our new script file ``my_script.js`` and save it. We've successfully added a new script! We can now see it listed in the editor.
 
 .. figure:: images/scripting-capabilities/new-script.png
     :alt: Our New Script
@@ -117,7 +117,7 @@ Now let's test our script! If we try to paint grass on the map, we should see ou
 Registering Script Actions
 --------------------------
 
-The grass-randomizer script above happens implicitly when the user paints on the map. However, other times we probably want to call the custom script on demand. One of the API functions Porymap provides is the ability to trigger scripting functions from the ``Tools`` menu, or a keyboard shortcut. To do this, we will usually want to register the action when the project loads. Here is an example script where some custom actions are registered.
+The grass-randomizer script above happens implicitly when the user paints on the map. However, other times we probably want to call the plugin script on demand. One of the API functions Porymap provides is the ability to trigger scripting functions from the ``Tools`` menu, or a keyboard shortcut. To do this, we will usually want to register the action when the project loads. Here is an example script where some custom actions are registered.
 
 .. code-block:: js
 
@@ -1829,11 +1829,11 @@ All settings functions are callable via the global ``utility`` object.
    :param enabled: smart paths enabled
    :type enabled: boolean
 
-.. js:function:: utility.getCustomScripts()
+.. js:function:: utility.getPluginScripts()
 
-   Gets the list of paths to custom scripts.
+   Gets the list of paths to plugin scripts.
 
-   :returns: string array of custom scripts paths
+   :returns: string array of plugin script paths
    :rtype: array
 
 .. js:function:: utility.getMainTab()
@@ -1908,7 +1908,7 @@ All settings functions are callable via the global ``utility`` object.
 Utility Functions
 ^^^^^^^^^^^^^^^^^
 
-These are some miscellaneous functions that can be very useful when building custom scripts.
+These are some miscellaneous functions that can be very useful when building plugins.
 
 All utility functions are callable via the global ``utility`` object.
 
@@ -1947,7 +1947,7 @@ All utility functions are callable via the global ``utility`` object.
 
 .. js:function:: utility.log(message)
 
-   Logs a message to the Porymap log file with the prefix ``[INFO]``. This is useful for debugging custom scripts.
+   Logs a message to the Porymap log file with the prefix ``[INFO]``. This is useful for debugging.
 
    :param message: the message to log
    :type message: string

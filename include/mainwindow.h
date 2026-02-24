@@ -16,7 +16,7 @@
 #include "preferenceeditor.h"
 #include "projectsettingseditor.h"
 #include "gridsettings.h"
-#include "customscriptseditor.h"
+#include "plugineditor.h"
 #include "wildmonchart.h"
 #include "wildmonsearch.h"
 #include "updatepromoter.h"
@@ -303,7 +303,7 @@ private slots:
     void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
     void on_actionProject_Settings_triggered();
-    void on_actionCustom_Scripts_triggered();
+    void on_actionPlugins_triggered();
     void reloadScriptEngine();
     void on_actionShow_Grid_triggered();
     void on_actionGrid_Settings_triggered();
@@ -326,7 +326,7 @@ private:
     QPointer<PreferenceEditor> preferenceEditor = nullptr;
     QPointer<ProjectSettingsEditor> projectSettingsEditor = nullptr;
     QPointer<GridSettingsDialog> gridSettingsDialog = nullptr;
-    QPointer<CustomScriptsEditor> customScriptsEditor = nullptr;
+    QPointer<PluginEditor> pluginEditor = nullptr;
 
     QPointer<FilterChildrenProxyModel> groupListProxyModel = nullptr;
     QPointer<MapGroupModel> mapGroupModel = nullptr;
@@ -454,7 +454,7 @@ private:
     bool initRegionMapEditor(bool silent = false);
     bool askToFixRegionMapEditor();
     void initShortcutsEditor();
-    void initCustomScriptsEditor();
+    void initPluginEditor();
     void connectSubEditorsToShortcutsEditor();
     void openProjectSettingsEditor(int tab);
     bool isProjectOpen();

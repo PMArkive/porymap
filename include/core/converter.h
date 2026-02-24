@@ -10,7 +10,7 @@
 
 #include "magic_enum.hpp"
 #include "orderedset.h"
-#include "scriptsettings.h"
+#include "pluginsettings.h"
 #include "gridsettings.h"
 #include "basegame.h"
 
@@ -360,16 +360,16 @@ struct Converter<QMargins> : DefaultConverter<QMargins> {
 };
 
 template <>
-struct Converter<ScriptSettings> : DefaultConverter<ScriptSettings> {
-    static QJsonValue toJson(const ScriptSettings& value) {
+struct Converter<PluginSettings> : DefaultConverter<PluginSettings> {
+    static QJsonValue toJson(const PluginSettings& value) {
         QJsonObject obj;
         obj["path"] = value.path;
         obj["enabled"] = value.enabled;
         return obj;
     }
-    static ScriptSettings fromJson(const QJsonValue& json, QStringList* errors = nullptr) {
+    static PluginSettings fromJson(const QJsonValue& json, QStringList* errors = nullptr) {
         const auto obj = Converter<QJsonObject>::fromJson(json, errors);
-        ScriptSettings settings;
+        PluginSettings settings;
         settings.path = obj.value("path").toString();
         settings.enabled = obj.value("enabled").toBool();
         return settings;

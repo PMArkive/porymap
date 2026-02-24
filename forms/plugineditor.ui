@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CustomScriptsEditor</class>
- <widget class="QMainWindow" name="CustomScriptsEditor">
+ <class>PluginEditor</class>
+ <widget class="QMainWindow" name="PluginEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Custom Scripts Editor</string>
+   <string>Plugin Editor</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -58,12 +58,12 @@
            <number>6</number>
           </property>
           <item>
-           <widget class="QPushButton" name="button_CreateNewScript">
+           <widget class="QPushButton" name="button_CreateNewPlugin">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create a new Porymap script file with a default template&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create a new Porymap plugin script file with a default template&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>Create New Script...</string>
+             <string>Create New Plugin...</string>
             </property>
             <property name="icon">
              <iconset resource="../resources/images.qrc">
@@ -72,12 +72,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="button_LoadScript">
+           <widget class="QPushButton" name="button_LoadPlugin">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add an existing script file to the list below&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add an existing plugin script file to the list below&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>Load Script...</string>
+             <string>Load Plugin...</string>
             </property>
             <property name="icon">
              <iconset resource="../resources/images.qrc">
@@ -86,12 +86,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="button_RefreshScripts">
+           <widget class="QPushButton" name="button_RefreshPlugins">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Refresh all loaded scripts to account for any recent edits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Refresh all loaded plugins to account for any recent edits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string>Refresh Scripts</string>
+             <string>Refresh Plugins</string>
             </property>
             <property name="icon">
              <iconset resource="../resources/images.qrc">
@@ -142,7 +142,7 @@
        <item>
         <widget class="QLabel" name="label_ListHeader">
          <property name="text">
-          <string>Scripts</string>
+          <string>Plugins</string>
          </property>
         </widget>
        </item>
