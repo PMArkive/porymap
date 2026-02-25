@@ -10,7 +10,7 @@ struct ScriptSettings {
     QString path;
     bool enabled = true;
 
-    // Scripts can either by specific to the project, or specific to the user.
+    // Scripts can either be specific to the project, or specific to the user.
     // This allows projects to send scripts downstream to their users,
     // while still allowing them to use their own personal scripts.
     bool userOnly = true;
