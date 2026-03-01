@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>PaletteColorSearch</class>
- <widget class="QDialog" name="PaletteColorSearch">
+ <widget class="QWidget" name="PaletteColorSearch">
   <property name="geometry">
    <rect>
     <x>0</x>

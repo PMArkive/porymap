@@ -30,7 +30,7 @@ struct ImageExporterSettings {
     QColor fillColor = Qt::transparent;
 };
 
-class MapImageExporter : public QDialog
+class MapImageExporter : public QWidget
 {
     Q_OBJECT
 

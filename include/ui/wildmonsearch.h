@@ -1,7 +1,7 @@
 #ifndef WILDMONSEARCH_H
 #define WILDMONSEARCH_H
 
-#include <QDialog>
+#include <QWidget>
 
 #include "numericsorttableitem.h"
 
@@ -11,7 +11,7 @@ namespace Ui {
 class WildMonSearch;
 }
 
-class WildMonSearch : public QDialog
+class WildMonSearch : public QWidget
 {
     Q_OBJECT
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>WildMonSearch</class>
- <widget class="QDialog" name="WildMonSearch">
+ <widget class="QWidget" name="WildMonSearch">
   <property name="geometry">
    <rect>
     <x>0</x>

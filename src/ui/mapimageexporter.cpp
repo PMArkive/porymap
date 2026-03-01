@@ -35,7 +35,7 @@ QString MapImageExporter::getDescription(ImageExporterMode mode) {
 }
 
 MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, Layout *layout, ImageExporterMode mode) :
-    QDialog(parent),
+    QWidget(parent),
     ui(new Ui::MapImageExporter),
     m_project(project),
     m_map(map),
@@ -44,6 +44,7 @@ MapImageExporter::MapImageExporter(QWidget *parent, Project *project, Map *map, 
     m_originalMode(mode)
 {
     setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::Window);
     ui->setupUi(this);
 
     m_scene = new CheckeredBgScene(QSize(8,8), this);
@@ -132,7 +133,7 @@ void MapImageExporter::showEvent(QShowEvent *event) {
 }
 
 void MapImageExporter::resizeEvent(QResizeEvent *event) {
-    QDialog::resizeEvent(event);
+    QWidget::resizeEvent(event);
     scalePreview();
 }
 

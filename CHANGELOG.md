@@ -20,6 +20,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix the tool tips for the tileset selectors always listing the same tileset size.
 - Fix event sprite names that appear in `symbol_obj_event_gfx_pointers` by value and not by name not rendering with the correct sprite.
 - Fix event sprites sometimes rendering with incorrect transparency temporarily after a sprite change.
+- Fix not being able to minimize/maximize some windows.
 
 ## [6.3.0] - 2025-12-26
 ### Added

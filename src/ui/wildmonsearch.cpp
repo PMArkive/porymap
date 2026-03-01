@@ -14,11 +14,12 @@ enum ResultsDataRole {
 };
 
 WildMonSearch::WildMonSearch(Project *project, QWidget *parent) :
-    QDialog(parent),
+    QWidget(parent),
     ui(new Ui::WildMonSearch),
     project(project)
 {
     setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::Window);
     ui->setupUi(this);
 
     // Set up species combo box

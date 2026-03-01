@@ -1,7 +1,7 @@
 #ifndef PALETTECOLORSEARCH_H
 #define PALETTECOLORSEARCH_H
 
-#include <QDialog>
+#include <QWidget>
 #include <QIcon>
 #include <QMap>
 
@@ -12,7 +12,7 @@ namespace Ui {
 class PaletteColorSearch;
 }
 
-class PaletteColorSearch : public QDialog
+class PaletteColorSearch : public QWidget
 {
     Q_OBJECT
 

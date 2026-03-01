@@ -12,17 +12,18 @@ enum ResultsDataRole {
 };
 
 PaletteColorSearch::PaletteColorSearch(Project *project, const Tileset *primaryTileset, const Tileset *secondaryTileset, QWidget *parent) :
-    QDialog(parent),
+    QWidget(parent),
     ui(new Ui::PaletteColorSearch),
     m_project(project),
     m_primaryTileset(primaryTileset),
     m_secondaryTileset(secondaryTileset)
 {
     setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::Window);
     ui->setupUi(this);
 
     ui->buttonBox->setVisible(isModal());
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::close);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 
     // Rather than try to keep track of metatile/tile changes that affect which colors are used,
     // we'll just refresh when the window is activated.

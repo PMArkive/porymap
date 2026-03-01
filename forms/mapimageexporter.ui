@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MapImageExporter</class>
- <widget class="QDialog" name="MapImageExporter">
+ <widget class="QWidget" name="MapImageExporter">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,9 +12,6 @@
   </property>
   <property name="windowTitle">
    <string>Export Map Image</string>
-  </property>
-  <property name="sizeGripEnabled">
-   <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_4" columnstretch="2,1">
    <item row="1" column="1">
