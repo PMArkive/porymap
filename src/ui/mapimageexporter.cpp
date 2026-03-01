@@ -5,8 +5,11 @@
 #include "filedialog.h"
 
 #include <QImage>
+#include <QMovie>
 #include <QPainter>
 #include <QPoint>
+#include <QShowEvent>
+#include <QTimer>
 
 QString MapImageExporter::getTitle(ImageExporterMode mode) {
     switch (mode)

@@ -12,6 +12,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QCloseEvent>
 #include <QResizeEvent>
+#include <QUndoGroup>
 
 namespace Ui {
 class RegionMapEditor;

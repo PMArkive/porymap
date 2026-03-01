@@ -3,7 +3,8 @@
 
 #include "wildmoninfo.h"
 
-#include <QtWidgets>
+#include <QPushButton>
+#include <QTableView>
 #include <QVector>
 
 class Editor;

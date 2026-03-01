@@ -1,12 +1,13 @@
 #include "maplayout.h"
 
-#include <QRegularExpression>
-
 #include "scripting.h"
 #include "imageproviders.h"
 #include "utility.h"
 #include "project.h"
 #include "layoutpixmapitem.h"
+
+#include <QDir>
+#include <QRegularExpression>
 
 QList<int> Layout::s_globalMetatileLayerOrder;
 QList<float> Layout::s_globalMetatileLayerOpacity;

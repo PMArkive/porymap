@@ -273,7 +273,7 @@ QImage TilesetEditorTileSelector::buildImage(int tileIdStart, int numTiles) {
 
     // Image is first converted using greyscale so that palettes with duplicate colors
     // are properly represented in the final image.
-    QImage indexedImage = image.convertToFormat(QImage::Format::Format_Indexed8, greyscalePalette.toVector());
+    QImage indexedImage = image.convertToFormat(QImage::Format::Format_Indexed8, greyscalePalette().toVector());
     QList<QRgb> palette = Tileset::getPalette(this->paletteId, this->primaryTileset, this->secondaryTileset, true);
     indexedImage.setColorTable(palette.toVector());
     return indexedImage;

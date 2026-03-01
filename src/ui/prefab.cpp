@@ -15,6 +15,7 @@
 #include <QDir>
 #include <QSpacerItem>
 #include <QMessageBox>
+#include <QToolTip>
 
 const QString defaultFilepath = "prefabs.json";
 

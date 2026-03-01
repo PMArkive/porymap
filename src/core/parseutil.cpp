@@ -606,7 +606,8 @@ QMap<QString, QString> ParseUtil::readNamedIndexCArray(const QString &filename, 
     QMap<QString, QString> map;
 
     QRegularExpression re_text(QString(R"(\b%1\b\s*(\[?[^\]]*\])?\s*=\s*\{([^\}]*)\})").arg(label));
-    QString arrayText = re_text.match(this->text).captured(2).replace(QRegularExpression("\\s*"), "");
+    static const QRegularExpression re_spaces("\\s*");
+    QString arrayText = re_text.match(this->text).captured(2).replace(re_spaces, "");
 
     static const QRegularExpression re_findRow("\\[(?<index>[A-Za-z0-9_]*)\\][\\s=]+(?<value>&?[A-Za-z0-9_]*)");
     QRegularExpressionMatchIterator rowIter = re_findRow.globalMatch(arrayText);

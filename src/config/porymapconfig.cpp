@@ -73,7 +73,7 @@ void PorymapConfig::saveGeometry(const QWidget* widget, const QString& keyPrefix
         if (splitter) this->savedGeometryMap.insert(stateKey, splitter->saveState());
     }
     if (recursive) {
-        for (const auto splitter : widget->findChildren<QSplitter*>()) {
+        for (const auto& splitter : widget->findChildren<QSplitter*>()) {
             saveGeometry(splitter, key + "_", false);
         }
     }
@@ -98,7 +98,7 @@ bool PorymapConfig::restoreGeometry(QWidget* widget, const QString& keyPrefix, b
         }
     }
     if (recursive) {
-        for (const auto splitter : widget->findChildren<QSplitter*>()) {
+        for (const auto& splitter : widget->findChildren<QSplitter*>()) {
             restoreGeometry(splitter, key + "_", false);
         }
     }

@@ -12,9 +12,13 @@
 #include "eventfilters.h"
 #include "utility.h"
 #include "message.h"
-#include <QDialogButtonBox>
+
+#include <QClipboard>
 #include <QCloseEvent>
+#include <QDialogButtonBox>
 #include <QImageReader>
+#include <QProgressDialog>
+#include <QToolTip>
 
 TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) :
     QMainWindow(parent),

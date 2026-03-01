@@ -7,7 +7,9 @@
 #include "filedialog.h"
 #include "eventfilters.h"
 
+#include <QDesktopServices>
 #include <QDir>
+#include <QToolTip>
 
 CustomScriptsEditor::CustomScriptsEditor(QWidget *parent) :
     QMainWindow(parent),

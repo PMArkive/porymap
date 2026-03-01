@@ -6,6 +6,7 @@
 #include "editcommands.h"
 #include "project.h"
 
+#include <QDir>
 #include <QTime>
 #include <QPainter>
 #include <QImage>

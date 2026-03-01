@@ -2081,7 +2081,7 @@ void Editor::onEventDragged(Event *event, const QPoint &oldPosition, const QPoin
     if (!this->map || !this->map_item)
         return;
 
-    this->map_item->hoverChanged(newPosition);
+    emit this->map_item->hoverChanged(newPosition);
 
     // Drag all the other selected events (if any) with it
     QList<Event*> draggedEvents;

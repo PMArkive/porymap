@@ -6,7 +6,6 @@
 #include <QGraphicsPixmapItem>
 #include <QGraphicsItemAnimation>
 
-#include <QtWidgets>
 #include <optional>
 
 #include "events.h"

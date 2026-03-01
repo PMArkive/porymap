@@ -9,15 +9,17 @@
 #include "utility.h"
 #include "eventfilters.h"
 
+#include <QColor>
 #include <QDir>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLineEdit>
-#include <QSpinBox>
-#include <QColor>
+#include <QListWidget>
 #include <QMessageBox>
+#include <QSpinBox>
 #include <QTransform>
+
 #include <math.h>
 
 RegionMapEditor::RegionMapEditor(QWidget *parent, Project *project) :

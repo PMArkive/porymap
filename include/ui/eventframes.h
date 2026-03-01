@@ -2,7 +2,10 @@
 #ifndef EVENTRAMES_H
 #define EVENTRAMES_H
 
-#include <QtWidgets>
+#include <QFrame>
+#include <QLabel>
+#include <QLineEdit>
+#include <QSpinBox>
 
 #include "edithistoryspinbox.h"
 #include "eventcombobox.h"

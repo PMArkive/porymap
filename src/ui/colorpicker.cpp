@@ -1,7 +1,12 @@
 #include "colorpicker.h"
 #include "ui_colorpicker.h"
 
-#include <QtWidgets>
+#include <QDialog>
+#include <QPainter>
+#include <QScreen>
+#include <QShortcut>
+#include <QTimer>
+#include <QWindow>
 
 const int zoom_box_dimensions = 15;
 

@@ -168,7 +168,7 @@ QImage getPalettedTileImage(uint16_t tileId, const Tileset *primaryTileset, cons
 }
 
 QImage getGreyscaleTileImage(uint16_t tileId, const Tileset *primaryTileset, const Tileset *secondaryTileset) {
-    return getColoredTileImage(tileId, primaryTileset, secondaryTileset, greyscalePalette);
+    return getColoredTileImage(tileId, primaryTileset, secondaryTileset, greyscalePalette());
 }
 
 // gbagfx allows 4bpp image data to be represented with 8bpp .png files by considering only the lower 4 bits of each pixel.
@@ -269,4 +269,26 @@ QImage getMetatileSheetImage(const Layout *layout, int numMetatilesWide, bool us
                                  layout->metatileLayerOpacity(),
                                  Metatile::pixelSize(),
                                  useTruePalettes);
+}
+
+const QList<QRgb>& greyscalePalette() {
+    static const QList<QRgb> palette = {
+        qRgb(0, 0, 0),
+        qRgb(16, 16, 16),
+        qRgb(32, 32, 32),
+        qRgb(48, 48, 48),
+        qRgb(64, 64, 64),
+        qRgb(80, 80, 80),
+        qRgb(96, 96, 96),
+        qRgb(112, 112, 112),
+        qRgb(128, 128, 128),
+        qRgb(144, 144, 144),
+        qRgb(160, 160, 160),
+        qRgb(176, 176, 176),
+        qRgb(192, 192, 192),
+        qRgb(208, 208, 208),
+        qRgb(224, 224, 224),
+        qRgb(240, 240, 240),
+    };
+    return palette;
 }

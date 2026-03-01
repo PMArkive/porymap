@@ -1,9 +1,11 @@
 #ifndef PROJECTSETTINGSEDITOR_H
 #define PROJECTSETTINGSEDITOR_H
 
-#include <QMainWindow>
 #include "project.h"
 #include "ui_projectsettingseditor.h"
+
+#include <QMainWindow>
+#include <QMessageBox>
 
 class QAbstractButton;
 

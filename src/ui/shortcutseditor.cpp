@@ -81,7 +81,7 @@ void ShortcutsEditor::resetShortcuts() {
     }
 }
 
-void ShortcutsEditor::parseObject(const QObject *object, QMap<const QObject*, QString> *objects_labels, QMap<const QObject*, QString> *objects_prefixes) {
+void ShortcutsEditor::parseObject(const QObject *object, QHash<const QObject*, QString> *objects_labels, QHash<const QObject*, QString> *objects_prefixes) {
     auto menu = dynamic_cast<const QMenu*>(object);
     if (menu) {
         // If a menu is provided we'll use it to create prefixes for any of the menu's actions,
@@ -107,8 +107,8 @@ void ShortcutsEditor::parseObject(const QObject *object, QMap<const QObject*, QS
 }
 
 void ShortcutsEditor::parseObjectList(const QObjectList &objectList) {
-    QMap<const QObject*, QString> objects_labels;
-    QMap<const QObject*, QString> objects_prefixes;
+    QHash<const QObject*, QString> objects_labels;
+    QHash<const QObject*, QString> objects_prefixes;
     for (const auto &object : objectList) {
         parseObject(object, &objects_labels, &objects_prefixes);
     }

@@ -2,7 +2,8 @@
 #ifndef GUARD_WILDMONINFO_H
 #define GUARD_WILDMONINFO_H
 
-#include <QtWidgets>
+#include <QString>
+#include <QVector>
 #include "orderedjson.h"
 
 class WildPokemon {

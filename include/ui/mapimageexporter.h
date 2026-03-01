@@ -4,6 +4,10 @@
 #include "project.h"
 #include "checkeredbgscene.h"
 
+#include <QBuffer>
+#include <QMessageBox>
+#include <QProgressDialog>
+
 class QGifImage;
 
 namespace Ui {

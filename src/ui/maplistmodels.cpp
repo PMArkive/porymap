@@ -3,8 +3,11 @@
 #include "project.h"
 #include "filterchildrenproxymodel.h"
 
-#include <QMouseEvent>
+#include <QCloseEvent>
+#include <QDesktopServices>
 #include <QLineEdit>
+#include <QMimeData>
+#include <QMouseEvent>
 
 
 

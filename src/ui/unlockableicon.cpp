@@ -19,10 +19,10 @@ bool UnlockableIcon::createDataFile(const QString& inputFilepath, const QString&
     if (inputFilepath.isEmpty() || outputFilepath.isEmpty() || key.isEmpty()) return false;
     if (key.length() >= std::numeric_limits<quint8>::max()) return false;
 
-    QByteArray key64 = key.toUtf8().toBase64();
+    const QByteArray key64 = key.toUtf8().toBase64();
     if (key64.length() >= std::numeric_limits<quint8>::max()) return false;
 
-    QImage iconImage(inputFilepath);
+    const QImage iconImage(inputFilepath);
     if (iconImage.isNull()) return false;
 
     QByteArray iconData;
@@ -32,7 +32,7 @@ bool UnlockableIcon::createDataFile(const QString& inputFilepath, const QString&
     buffer.close();
     if (iconData.length() >= std::numeric_limits<quint16>::max()) return false;
 
-    QByteArray iconData64 = iconData.toBase64();
+    const QByteArray iconData64 = iconData.toBase64();
     if (iconData64.length() >= std::numeric_limits<quint16>::max()) return false;
 
     QFile file(outputFilepath);

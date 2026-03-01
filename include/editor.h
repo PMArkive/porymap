@@ -204,7 +204,6 @@ public:
         ResizeLayoutPopup
     };
 
-public slots:
     void openMapScripts() const;
     bool openScript(const QString &scriptLabel) const;
     bool openScriptInFile(const QString &scriptLabel, const QString &filepath) const;

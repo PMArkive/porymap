@@ -14,15 +14,19 @@
 #include "scripting.h"
 
 #include <QDir>
+#include <QDirIterator>
+#include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QFile>
-#include <QTextStream>
-#include <QStandardItem>
 #include <QMessageBox>
+#include <QPixmapCache>
+#include <QProcess>
 #include <QRegularExpression>
+#include <QStandardItem>
+#include <QTextStream>
+
 #include <algorithm>
 
 int Project::num_tiles_primary = 512;

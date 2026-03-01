@@ -7,6 +7,8 @@
 #include "eventfilters.h"
 
 #include <QAbstractButton>
+#include <QCloseEvent>
+#include <QDesktopServices>
 #include <QFormLayout>
 
 /*
