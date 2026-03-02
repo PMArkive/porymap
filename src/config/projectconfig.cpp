@@ -11,132 +11,125 @@
 // TODO: This should eventually be contained by each individual Project instance.
 ProjectConfig projectConfig;
 
-const QMap<ProjectIdentifier, QPair<QString, QString>> ProjectConfig::defaultIdentifiers = {
+const QMap<ProjectIdentifier, QString> ProjectConfig::defaultIdentifiers = {
     // Symbols
-    {ProjectIdentifier::symbol_facing_directions,      {"symbol_facing_directions",      "gInitialMovementTypeFacingDirections"}},
-    {ProjectIdentifier::symbol_obj_event_gfx_pointers, {"symbol_obj_event_gfx_pointers", "gObjectEventGraphicsInfoPointers"}},
-    {ProjectIdentifier::symbol_pokemon_icon_table,     {"symbol_pokemon_icon_table",     "gMonIconTable"}},
-    {ProjectIdentifier::symbol_attribute_table,        {"symbol_attribute_table",        "sMetatileAttrMasks"}},
-    {ProjectIdentifier::symbol_tilesets_prefix,        {"symbol_tilesets_prefix",        "gTileset_"}},
-    {ProjectIdentifier::symbol_dynamic_map_name,       {"symbol_dynamic_map_name",       "Dynamic"}},
+    {ProjectIdentifier::symbol_facing_directions,      "gInitialMovementTypeFacingDirections"},
+    {ProjectIdentifier::symbol_obj_event_gfx_pointers, "gObjectEventGraphicsInfoPointers"},
+    {ProjectIdentifier::symbol_pokemon_icon_table,     "gMonIconTable"},
+    {ProjectIdentifier::symbol_attribute_table,        "sMetatileAttrMasks"},
+    {ProjectIdentifier::symbol_tilesets_prefix,        "gTileset_"},
+    {ProjectIdentifier::symbol_dynamic_map_name,       "Dynamic"},
     // Defines
-    {ProjectIdentifier::define_obj_event_count,        {"define_obj_event_count",        "OBJECT_EVENT_TEMPLATES_COUNT"}},
-    {ProjectIdentifier::define_min_level,              {"define_min_level",              "MIN_LEVEL"}},
-    {ProjectIdentifier::define_max_level,              {"define_max_level",              "MAX_LEVEL"}},
-    {ProjectIdentifier::define_max_encounter_rate,     {"define_max_encounter_rate",     "MAX_ENCOUNTER_RATE"}},
-    {ProjectIdentifier::define_tiles_primary,          {"define_tiles_primary",          "NUM_TILES_IN_PRIMARY"}},
-    {ProjectIdentifier::define_tiles_total,            {"define_tiles_total",            "NUM_TILES_TOTAL"}},
-    {ProjectIdentifier::define_metatiles_primary,      {"define_metatiles_primary",      "NUM_METATILES_IN_PRIMARY"}},
-    {ProjectIdentifier::define_pals_primary,           {"define_pals_primary",           "NUM_PALS_IN_PRIMARY"}},
-    {ProjectIdentifier::define_pals_total,             {"define_pals_total",             "NUM_PALS_TOTAL"}},
-    {ProjectIdentifier::define_tiles_per_metatile,     {"define_tiles_per_metatile",     "NUM_TILES_PER_METATILE"}},
-    {ProjectIdentifier::define_map_size,               {"define_map_size",               "MAX_MAP_DATA_SIZE"}},
-    {ProjectIdentifier::define_map_offset_width,       {"define_map_offset_width",       "MAP_OFFSET_W"}},
-    {ProjectIdentifier::define_map_offset_height,      {"define_map_offset_height",      "MAP_OFFSET_H"}},
-    {ProjectIdentifier::define_mask_metatile,          {"define_mask_metatile",          "MAPGRID_METATILE_ID_MASK"}},
-    {ProjectIdentifier::define_mask_collision,         {"define_mask_collision",         "MAPGRID_COLLISION_MASK"}},
-    {ProjectIdentifier::define_mask_elevation,         {"define_mask_elevation",         "MAPGRID_ELEVATION_MASK"}},
-    {ProjectIdentifier::define_mask_behavior,          {"define_mask_behavior",          "METATILE_ATTR_BEHAVIOR_MASK"}},
-    {ProjectIdentifier::define_mask_layer,             {"define_mask_layer",             "METATILE_ATTR_LAYER_MASK"}},
-    {ProjectIdentifier::define_attribute_behavior,     {"define_attribute_behavior",     "METATILE_ATTRIBUTE_BEHAVIOR"}},
-    {ProjectIdentifier::define_attribute_layer,        {"define_attribute_layer",        "METATILE_ATTRIBUTE_LAYER_TYPE"}},
-    {ProjectIdentifier::define_attribute_terrain,      {"define_attribute_terrain",      "METATILE_ATTRIBUTE_TERRAIN"}},
-    {ProjectIdentifier::define_attribute_encounter,    {"define_attribute_encounter",    "METATILE_ATTRIBUTE_ENCOUNTER_TYPE"}},
-    {ProjectIdentifier::define_metatile_label_prefix,  {"define_metatile_label_prefix",  "METATILE_"}},
-    {ProjectIdentifier::define_heal_locations_prefix,  {"define_heal_locations_prefix",  "HEAL_LOCATION_"}},
-    {ProjectIdentifier::define_layout_prefix,          {"define_layout_prefix",          "LAYOUT_"}},
-    {ProjectIdentifier::define_map_prefix,             {"define_map_prefix",             "MAP_"}},
-    {ProjectIdentifier::define_map_dynamic,            {"define_map_dynamic",            "MAP_DYNAMIC"}},
-    {ProjectIdentifier::define_map_empty,              {"define_map_empty",              "MAP_UNDEFINED"}},
-    {ProjectIdentifier::define_map_section_prefix,     {"define_map_section_prefix",     "MAPSEC_"}},
-    {ProjectIdentifier::define_map_section_empty,      {"define_map_section_empty",      "NONE"}},
-    {ProjectIdentifier::define_species_prefix,         {"define_species_prefix",         "SPECIES_"}},
-    {ProjectIdentifier::define_species_empty,          {"define_species_empty",          "NONE"}},
+    {ProjectIdentifier::define_obj_event_count,        "OBJECT_EVENT_TEMPLATES_COUNT"},
+    {ProjectIdentifier::define_min_level,              "MIN_LEVEL"},
+    {ProjectIdentifier::define_max_level,              "MAX_LEVEL"},
+    {ProjectIdentifier::define_max_encounter_rate,     "MAX_ENCOUNTER_RATE"},
+    {ProjectIdentifier::define_tiles_primary,          "NUM_TILES_IN_PRIMARY"},
+    {ProjectIdentifier::define_tiles_total,            "NUM_TILES_TOTAL"},
+    {ProjectIdentifier::define_metatiles_primary,      "NUM_METATILES_IN_PRIMARY"},
+    {ProjectIdentifier::define_pals_primary,           "NUM_PALS_IN_PRIMARY"},
+    {ProjectIdentifier::define_pals_total,             "NUM_PALS_TOTAL"},
+    {ProjectIdentifier::define_tiles_per_metatile,     "NUM_TILES_PER_METATILE"},
+    {ProjectIdentifier::define_map_size,               "MAX_MAP_DATA_SIZE"},
+    {ProjectIdentifier::define_map_offset_width,       "MAP_OFFSET_W"},
+    {ProjectIdentifier::define_map_offset_height,      "MAP_OFFSET_H"},
+    {ProjectIdentifier::define_mask_metatile,          "MAPGRID_METATILE_ID_MASK"},
+    {ProjectIdentifier::define_mask_collision,         "MAPGRID_COLLISION_MASK"},
+    {ProjectIdentifier::define_mask_elevation,         "MAPGRID_ELEVATION_MASK"},
+    {ProjectIdentifier::define_mask_behavior,          "METATILE_ATTR_BEHAVIOR_MASK"},
+    {ProjectIdentifier::define_mask_layer,             "METATILE_ATTR_LAYER_MASK"},
+    {ProjectIdentifier::define_attribute_behavior,     "METATILE_ATTRIBUTE_BEHAVIOR"},
+    {ProjectIdentifier::define_attribute_layer,        "METATILE_ATTRIBUTE_LAYER_TYPE"},
+    {ProjectIdentifier::define_attribute_terrain,      "METATILE_ATTRIBUTE_TERRAIN"},
+    {ProjectIdentifier::define_attribute_encounter,    "METATILE_ATTRIBUTE_ENCOUNTER_TYPE"},
+    {ProjectIdentifier::define_metatile_label_prefix,  "METATILE_"},
+    {ProjectIdentifier::define_heal_locations_prefix,  "HEAL_LOCATION_"},
+    {ProjectIdentifier::define_layout_prefix,          "LAYOUT_"},
+    {ProjectIdentifier::define_map_prefix,             "MAP_"},
+    {ProjectIdentifier::define_map_dynamic,            "MAP_DYNAMIC"},
+    {ProjectIdentifier::define_map_empty,              "MAP_UNDEFINED"},
+    {ProjectIdentifier::define_map_section_prefix,     "MAPSEC_"},
+    {ProjectIdentifier::define_map_section_empty,      "NONE"},
+    {ProjectIdentifier::define_species_prefix,         "SPECIES_"},
+    {ProjectIdentifier::define_species_empty,          "NONE"},
     // Regex
-    {ProjectIdentifier::regex_behaviors,               {"regex_behaviors",               "\\bMB_"}},
-    {ProjectIdentifier::regex_obj_event_gfx,           {"regex_obj_event_gfx",           "\\bOBJ_EVENT_GFX_"}},
-    {ProjectIdentifier::regex_items,                   {"regex_items",                   "\\bITEM_(?!(B_)?USE_)"}}, // Exclude ITEM_USE_ and ITEM_B_USE_ constants
-    {ProjectIdentifier::regex_flags,                   {"regex_flags",                   "\\bFLAG_"}},
-    {ProjectIdentifier::regex_vars,                    {"regex_vars",                    "\\bVAR_"}},
-    {ProjectIdentifier::regex_movement_types,          {"regex_movement_types",          "\\bMOVEMENT_TYPE_"}},
-    {ProjectIdentifier::regex_map_types,               {"regex_map_types",               "\\bMAP_TYPE_"}},
-    {ProjectIdentifier::regex_battle_scenes,           {"regex_battle_scenes",           "\\bMAP_BATTLE_SCENE_"}},
-    {ProjectIdentifier::regex_weather,                 {"regex_weather",                 "\\bWEATHER_"}},
-    {ProjectIdentifier::regex_coord_event_weather,     {"regex_coord_event_weather",     "\\bCOORD_EVENT_WEATHER_"}},
-    {ProjectIdentifier::regex_secret_bases,            {"regex_secret_bases",            "\\bSECRET_BASE_[\\w]+_[\\d]+"}},
-    {ProjectIdentifier::regex_sign_facing_directions,  {"regex_sign_facing_directions",  "\\bBG_EVENT_PLAYER_FACING_"}},
-    {ProjectIdentifier::regex_trainer_types,           {"regex_trainer_types",           "\\bTRAINER_TYPE_"}},
-    {ProjectIdentifier::regex_music,                   {"regex_music",                   "\\b(SE|MUS)_"}},
-    {ProjectIdentifier::regex_encounter_types,         {"regex_encounter_types",         "\\bTILE_ENCOUNTER_"}},
-    {ProjectIdentifier::regex_terrain_types,           {"regex_terrain_types",           "\\bTILE_TERRAIN_"}},
+    {ProjectIdentifier::regex_behaviors,               "\\bMB_"},
+    {ProjectIdentifier::regex_obj_event_gfx,           "\\bOBJ_EVENT_GFX_"},
+    {ProjectIdentifier::regex_items,                   "\\bITEM_(?!(B_)?USE_)"}, // Exclude ITEM_USE_ and ITEM_B_USE_ constants
+    {ProjectIdentifier::regex_flags,                   "\\bFLAG_"},
+    {ProjectIdentifier::regex_vars,                    "\\bVAR_"},
+    {ProjectIdentifier::regex_movement_types,          "\\bMOVEMENT_TYPE_"},
+    {ProjectIdentifier::regex_map_types,               "\\bMAP_TYPE_"},
+    {ProjectIdentifier::regex_battle_scenes,           "\\bMAP_BATTLE_SCENE_"},
+    {ProjectIdentifier::regex_weather,                 "\\bWEATHER_"},
+    {ProjectIdentifier::regex_coord_event_weather,     "\\bCOORD_EVENT_WEATHER_"},
+    {ProjectIdentifier::regex_secret_bases,            "\\bSECRET_BASE_[\\w]+_[\\d]+"},
+    {ProjectIdentifier::regex_sign_facing_directions,  "\\bBG_EVENT_PLAYER_FACING_"},
+    {ProjectIdentifier::regex_trainer_types,           "\\bTRAINER_TYPE_"},
+    {ProjectIdentifier::regex_music,                   "\\b(SE|MUS)_"},
+    {ProjectIdentifier::regex_encounter_types,         "\\bTILE_ENCOUNTER_"},
+    {ProjectIdentifier::regex_terrain_types,           "\\bTILE_TERRAIN_"},
     // Other
-    {ProjectIdentifier::pals_output_extension,         {"pals_output_extension",         ".gbapal"}},
-    {ProjectIdentifier::tiles_output_extension,        {"tiles_output_extension",        ".4bpp.lz"}},
+    {ProjectIdentifier::pals_output_extension,         ".gbapal"},
+    {ProjectIdentifier::tiles_output_extension,        ".4bpp.lz"},
 };
 
-const QMap<ProjectFilePath, QPair<QString, QString>> ProjectConfig::defaultPaths = {
-    {ProjectFilePath::data_map_folders,                 { "data_map_folders",                "data/maps/"}},
-    {ProjectFilePath::data_scripts_folders,             { "data_scripts_folders",            "data/scripts/"}},
-    {ProjectFilePath::data_layouts_folders,             { "data_layouts_folders",            "data/layouts/"}},
-    {ProjectFilePath::data_primary_tilesets_folders,    { "data_primary_tilesets_folders",   "data/tilesets/primary/"}},
-    {ProjectFilePath::data_secondary_tilesets_folders,  { "data_secondary_tilesets_folders", "data/tilesets/secondary/"}},
-    {ProjectFilePath::data_event_scripts,               { "data_event_scripts",              "data/event_scripts.s"}},
-    {ProjectFilePath::json_map_groups,                  { "json_map_groups",                 "data/maps/map_groups.json"}},
-    {ProjectFilePath::json_layouts,                     { "json_layouts",                    "data/layouts/layouts.json"}},
-    {ProjectFilePath::json_wild_encounters,             { "json_wild_encounters",            "src/data/wild_encounters.json"}},
-    {ProjectFilePath::json_heal_locations,              { "json_heal_locations",             "src/data/heal_locations.json"}},
-    {ProjectFilePath::json_region_map_entries,          { "json_region_map_entries",         "src/data/region_map/region_map_sections.json"}},
-    {ProjectFilePath::json_region_porymap_cfg,          { "json_region_porymap_cfg",         "src/data/region_map/porymap_config.json"}},
-    {ProjectFilePath::tilesets_headers,                 { "tilesets_headers",                "src/data/tilesets/headers.h"}},
-    {ProjectFilePath::tilesets_graphics,                { "tilesets_graphics",               "src/data/tilesets/graphics.h"}},
-    {ProjectFilePath::tilesets_metatiles,               { "tilesets_metatiles",              "src/data/tilesets/metatiles.h"}},
-    {ProjectFilePath::tilesets_headers_asm,             { "tilesets_headers_asm",            "data/tilesets/headers.inc"}},
-    {ProjectFilePath::tilesets_graphics_asm,            { "tilesets_graphics_asm",           "data/tilesets/graphics.inc"}},
-    {ProjectFilePath::tilesets_metatiles_asm,           { "tilesets_metatiles_asm",          "data/tilesets/metatiles.inc"}},
-    {ProjectFilePath::data_obj_event_gfx_pointers,      { "data_obj_event_gfx_pointers",     "src/data/object_events/object_event_graphics_info_pointers.h"}},
-    {ProjectFilePath::data_obj_event_gfx_info,          { "data_obj_event_gfx_info",         "src/data/object_events/object_event_graphics_info.h"}},
-    {ProjectFilePath::data_obj_event_pic_tables,        { "data_obj_event_pic_tables",       "src/data/object_events/object_event_pic_tables.h"}},
-    {ProjectFilePath::data_obj_event_gfx,               { "data_obj_event_gfx",              "src/data/object_events/object_event_graphics.h"}},
-    {ProjectFilePath::data_pokemon_gfx,                 { "data_pokemon_gfx",                "src/data/graphics/pokemon.h"}},
-    {ProjectFilePath::constants_global,                 { "constants_global",                "include/constants/global.h"}},
-    {ProjectFilePath::constants_items,                  { "constants_items",                 "include/constants/items.h"}},
-    {ProjectFilePath::constants_flags,                  { "constants_flags",                 "include/constants/flags.h"}},
-    {ProjectFilePath::constants_vars,                   { "constants_vars",                  "include/constants/vars.h"}},
-    {ProjectFilePath::constants_weather,                { "constants_weather",               "include/constants/weather.h"}},
-    {ProjectFilePath::constants_songs,                  { "constants_songs",                 "include/constants/songs.h"}},
-    {ProjectFilePath::constants_pokemon,                { "constants_pokemon",               "include/constants/pokemon.h"}},
-    {ProjectFilePath::constants_map_types,              { "constants_map_types",             "include/constants/map_types.h"}},
-    {ProjectFilePath::constants_trainer_types,          { "constants_trainer_types",         "include/constants/trainer_types.h"}},
-    {ProjectFilePath::constants_secret_bases,           { "constants_secret_bases",          "include/constants/secret_bases.h"}},
-    {ProjectFilePath::constants_obj_event_movement,     { "constants_obj_event_movement",    "include/constants/event_object_movement.h"}},
-    {ProjectFilePath::constants_obj_events,             { "constants_obj_events",            "include/constants/event_objects.h"}},
-    {ProjectFilePath::constants_event_bg,               { "constants_event_bg",              "include/constants/event_bg.h"}},
-    {ProjectFilePath::constants_metatile_labels,        { "constants_metatile_labels",       "include/constants/metatile_labels.h"}},
-    {ProjectFilePath::constants_metatile_behaviors,     { "constants_metatile_behaviors",    "include/constants/metatile_behaviors.h"}},
-    {ProjectFilePath::constants_species,                { "constants_species",               "include/constants/species.h"}},
-    {ProjectFilePath::constants_fieldmap,               { "constants_fieldmap",              "include/fieldmap.h"}},
-    {ProjectFilePath::global_fieldmap,                  { "global_fieldmap",                 "include/global.fieldmap.h"}},
-    {ProjectFilePath::fieldmap,                         { "fieldmap",                        "src/fieldmap.c"}},
-    {ProjectFilePath::pokemon_icon_table,               { "pokemon_icon_table",              "src/pokemon_icon.c"}},
-    {ProjectFilePath::initial_facing_table,             { "initial_facing_table",            "src/event_object_movement.c"}},
-    {ProjectFilePath::wild_encounter,                   { "wild_encounter",                  "src/wild_encounter.c"}},
-    {ProjectFilePath::pokemon_gfx,                      { "pokemon_gfx",                     "graphics/pokemon/"}},
+const QMap<ProjectFilePath, QString> ProjectConfig::defaultPaths = {
+    {ProjectFilePath::data_map_folders,                 "data/maps/"},
+    {ProjectFilePath::data_scripts_folders,             "data/scripts/"},
+    {ProjectFilePath::data_layouts_folders,             "data/layouts/"},
+    {ProjectFilePath::data_primary_tilesets_folders,    "data/tilesets/primary/"},
+    {ProjectFilePath::data_secondary_tilesets_folders,  "data/tilesets/secondary/"},
+    {ProjectFilePath::data_event_scripts,               "data/event_scripts.s"},
+    {ProjectFilePath::json_map_groups,                  "data/maps/map_groups.json"},
+    {ProjectFilePath::json_layouts,                     "data/layouts/layouts.json"},
+    {ProjectFilePath::json_wild_encounters,             "src/data/wild_encounters.json"},
+    {ProjectFilePath::json_heal_locations,              "src/data/heal_locations.json"},
+    {ProjectFilePath::json_region_map_entries,          "src/data/region_map/region_map_sections.json"},
+    {ProjectFilePath::json_region_porymap_cfg,          "src/data/region_map/porymap_config.json"},
+    {ProjectFilePath::tilesets_headers,                 "src/data/tilesets/headers.h"},
+    {ProjectFilePath::tilesets_graphics,                "src/data/tilesets/graphics.h"},
+    {ProjectFilePath::tilesets_metatiles,               "src/data/tilesets/metatiles.h"},
+    {ProjectFilePath::tilesets_headers_asm,             "data/tilesets/headers.inc"},
+    {ProjectFilePath::tilesets_graphics_asm,            "data/tilesets/graphics.inc"},
+    {ProjectFilePath::tilesets_metatiles_asm,           "data/tilesets/metatiles.inc"},
+    {ProjectFilePath::data_obj_event_gfx_pointers,      "src/data/object_events/object_event_graphics_info_pointers.h"},
+    {ProjectFilePath::data_obj_event_gfx_info,          "src/data/object_events/object_event_graphics_info.h"},
+    {ProjectFilePath::data_obj_event_pic_tables,        "src/data/object_events/object_event_pic_tables.h"},
+    {ProjectFilePath::data_obj_event_gfx,               "src/data/object_events/object_event_graphics.h"},
+    {ProjectFilePath::data_pokemon_gfx,                 "src/data/graphics/pokemon.h"},
+    {ProjectFilePath::constants_global,                 "include/constants/global.h"},
+    {ProjectFilePath::constants_items,                  "include/constants/items.h"},
+    {ProjectFilePath::constants_flags,                  "include/constants/flags.h"},
+    {ProjectFilePath::constants_vars,                   "include/constants/vars.h"},
+    {ProjectFilePath::constants_weather,                "include/constants/weather.h"},
+    {ProjectFilePath::constants_songs,                  "include/constants/songs.h"},
+    {ProjectFilePath::constants_pokemon,                "include/constants/pokemon.h"},
+    {ProjectFilePath::constants_map_types,              "include/constants/map_types.h"},
+    {ProjectFilePath::constants_trainer_types,          "include/constants/trainer_types.h"},
+    {ProjectFilePath::constants_secret_bases,           "include/constants/secret_bases.h"},
+    {ProjectFilePath::constants_obj_event_movement,     "include/constants/event_object_movement.h"},
+    {ProjectFilePath::constants_obj_events,             "include/constants/event_objects.h"},
+    {ProjectFilePath::constants_event_bg,               "include/constants/event_bg.h"},
+    {ProjectFilePath::constants_metatile_labels,        "include/constants/metatile_labels.h"},
+    {ProjectFilePath::constants_metatile_behaviors,     "include/constants/metatile_behaviors.h"},
+    {ProjectFilePath::constants_species,                "include/constants/species.h"},
+    {ProjectFilePath::constants_fieldmap,               "include/fieldmap.h"},
+    {ProjectFilePath::global_fieldmap,                  "include/global.fieldmap.h"},
+    {ProjectFilePath::fieldmap,                         "src/fieldmap.c"},
+    {ProjectFilePath::pokemon_icon_table,               "src/pokemon_icon.c"},
+    {ProjectFilePath::initial_facing_table,             "src/event_object_movement.c"},
+    {ProjectFilePath::wild_encounter,                   "src/wild_encounter.c"},
+    {ProjectFilePath::pokemon_gfx,                      "graphics/pokemon/"},
 };
 
-ProjectIdentifier ProjectConfig::reverseDefaultIdentifier(const QString& str) {
-    for (auto i = defaultIdentifiers.cbegin(), end = defaultIdentifiers.cend(); i != end; i++) {
-        if (i.value().first == str) return i.key();
-    }
-    return static_cast<ProjectIdentifier>(-1);
+std::optional<ProjectIdentifier> ProjectConfig::stringToProjectIdentifier(const QString& str) {
+    return magic_enum::enum_cast<ProjectIdentifier>(str.toStdString(), magic_enum::case_insensitive);
 }
 
-ProjectFilePath ProjectConfig::reverseDefaultPaths(const QString& str) {
-    for (auto it = defaultPaths.constKeyValueBegin(); it != defaultPaths.constKeyValueEnd(); ++it) {
-        if ((*it).second.first == str) return (*it).first;
-    }
-    return static_cast<ProjectFilePath>(-1);
+std::optional<ProjectFilePath> ProjectConfig::stringToProjectFilePath(const QString& str) {
+    return magic_enum::enum_cast<ProjectFilePath>(str.toStdString(), magic_enum::case_insensitive);
 }
-
 
 void ProjectConfig::setVersionSpecificDefaults(BaseGame::Version version) {
     this->baseGameVersion = version;
@@ -299,23 +292,25 @@ void ProjectConfig::setFilePath(ProjectFilePath pathId, const QString& path) {
     }
 }
 
-void ProjectConfig::setFilePath(const QString& pathId, const QString& path) {
-    this->setFilePath(reverseDefaultPaths(pathId), path);
+void ProjectConfig::setFilePath(const QString& pathIdString, const QString& path) {
+    std::optional<ProjectFilePath> pathId = stringToProjectFilePath(pathIdString);
+    if (pathId.has_value()) setFilePath(pathId.value(), path);
 }
 
-QString ProjectConfig::getCustomFilePath(ProjectFilePath pathId) {
+QString ProjectConfig::getCustomFilePath(ProjectFilePath pathId) const {
     return QDir::cleanPath(this->filePaths.value(pathId));
 }
 
-QString ProjectConfig::getCustomFilePath(const QString& pathId) {
-    return this->getCustomFilePath(reverseDefaultPaths(pathId));
+QString ProjectConfig::getCustomFilePath(const QString& pathIdString) const {
+    std::optional<ProjectFilePath> pathId = stringToProjectFilePath(pathIdString);
+    return (pathId.has_value()) ? getCustomFilePath(pathId.value()) : QString();
 }
 
-QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
-    QString customPath = this->getCustomFilePath(pathId);
+QString ProjectConfig::getFilePath(ProjectFilePath pathId) const {
+    QString customPath = getCustomFilePath(pathId);
     if (!customPath.isEmpty()) {
         // A custom filepath has been specified. If the file/folder exists, use that.
-        const QString baseDir = this->projectDir() + "/";
+        const QString baseDir = projectDir() + "/";
         if (customPath.startsWith(baseDir)) {
             customPath.remove(0, baseDir.length());
         }
@@ -325,7 +320,7 @@ QString ProjectConfig::getFilePath(ProjectFilePath pathId) {
             logError(QString("Custom project filepath '%1' not found. Using default.").arg(customPath));
         }
     }
-    return defaultPaths.contains(pathId) ? defaultPaths[pathId].second : QString();
+    return defaultPaths.value(pathId);
 }
 
 void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString& text) {
@@ -335,7 +330,7 @@ void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString& text) {
     if (text.isEmpty()) {
         this->identifiers.remove(id);
     } else {
-        const QString idName = defaultIdentifiers.value(id).first;
+        const QString idName = Converter<ProjectIdentifier>::toString(id);
         if (idName.startsWith("define_") || idName.startsWith("symbol_")) {
             // Validate the input for the identifier, depending on the type.
             IdentifierValidator validator;
@@ -348,21 +343,21 @@ void ProjectConfig::setIdentifier(ProjectIdentifier id, const QString& text) {
     }
 }
 
-void ProjectConfig::setIdentifier(const QString& id, const QString& text) {
-    this->setIdentifier(reverseDefaultIdentifier(id), text);
+void ProjectConfig::setIdentifier(const QString& idString, const QString& text) {
+    std::optional<ProjectIdentifier> id = stringToProjectIdentifier(idString);
+    if (id.has_value()) setIdentifier(id.value(), text);
 }
 
-QString ProjectConfig::getCustomIdentifier(ProjectIdentifier id) {
+QString ProjectConfig::getCustomIdentifier(ProjectIdentifier id) const {
     return this->identifiers.value(id);
 }
 
-QString ProjectConfig::getCustomIdentifier(const QString& id) {
-    return this->getCustomIdentifier(reverseDefaultIdentifier(id));
+QString ProjectConfig::getCustomIdentifier(const QString& idString) const {
+    std::optional<ProjectIdentifier> id = stringToProjectIdentifier(idString);
+    return (id.has_value()) ? getCustomIdentifier(id.value()) : QString();
 }
 
-QString ProjectConfig::getIdentifier(ProjectIdentifier id) {
-    const QString customText = this->getCustomIdentifier(id);
-    if (!customText.isEmpty())
-        return customText;
-    return defaultIdentifiers.contains(id) ? defaultIdentifiers[id].second : QString();
+QString ProjectConfig::getIdentifier(ProjectIdentifier id) const {
+    const QString customText = getCustomIdentifier(id);
+    return (!customText.isEmpty()) ? customText : defaultIdentifiers.value(id);
 }

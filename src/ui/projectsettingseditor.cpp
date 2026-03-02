@@ -371,53 +371,50 @@ void ProjectSettingsEditor::updateWarpBehaviorsList(bool adding) {
 }
 
 // Dynamically populate the tabs for project files and identifiers
-void ProjectSettingsEditor::createConfigTextTable(const QList<QPair<QString, QString>> configPairs, bool filesTab) {
-    for (auto pair : configPairs) {
-        const QString idName = pair.first;
-        const QString defaultText = pair.second;
+void ProjectSettingsEditor::addToConfigTextTable(const QString& idName, const QString& defaultText, bool filesTab) {
+    auto name = new QLabel();
+    name->setAlignment(Qt::AlignBottom);
+    name->setText(idName);
 
-        auto name = new QLabel();
-        name->setAlignment(Qt::AlignBottom);
-        name->setText(idName);
+    auto lineEdit = new QLineEdit();
+    lineEdit->setObjectName(idName); // Used when saving
+    lineEdit->setPlaceholderText(defaultText);
+    lineEdit->setClearButtonEnabled(true);
 
-        auto lineEdit = new QLineEdit();
-        lineEdit->setObjectName(idName); // Used when saving
-        lineEdit->setPlaceholderText(defaultText);
-        lineEdit->setClearButtonEnabled(true);
+    // Add to list
+    auto editArea = new QWidget();
+    auto layout = new QHBoxLayout(editArea);
+    layout->addWidget(lineEdit);
 
-        // Add to list
-        auto editArea = new QWidget();
-        auto layout = new QHBoxLayout(editArea);
-        layout->addWidget(lineEdit);
+    if (filesTab) {
+        // "Choose file" button
+        auto button = new QToolButton();
+        button->setIcon(QIcon(":/icons/folder.ico"));
+        connect(button, &QAbstractButton::clicked, [this, lineEdit](bool) {
+            const QString path = this->chooseProjectFile(lineEdit->placeholderText());
+            if (!path.isEmpty()) {
+                lineEdit->setText(path);
+                this->markEdited();
+            }
+        });
+        layout->addWidget(button);
 
-        if (filesTab) {
-            // "Choose file" button
-            auto button = new QToolButton();
-            button->setIcon(QIcon(":/icons/folder.ico"));
-            connect(button, &QAbstractButton::clicked, [this, lineEdit](bool) {
-                const QString path = this->chooseProjectFile(lineEdit->placeholderText());
-                if (!path.isEmpty()) {
-                    lineEdit->setText(path);
-                    this->markEdited();
-                }
-            });
-            layout->addWidget(button);
-
-            ui->layout_ProjectPaths->addRow(name, editArea);
-        } else {
-            ui->layout_Identifiers->addRow(name, editArea);
-        }
+        ui->layout_ProjectPaths->addRow(name, editArea);
+    } else {
+        ui->layout_Identifiers->addRow(name, editArea);
     }
 }
 
 void ProjectSettingsEditor::createProjectPathsTable() {
-    auto pairs = ProjectConfig::defaultPaths.values();
-    this->createConfigTextTable(pairs, true);
+    for (auto it = ProjectConfig::defaultPaths.begin(); it != ProjectConfig::defaultPaths.end(); it++) {
+        addToConfigTextTable(Converter<ProjectFilePath>::toString(it.key()), it.value(), true);
+    }
 }
 
 void ProjectSettingsEditor::createProjectIdentifiersTable() {
-    auto pairs = ProjectConfig::defaultIdentifiers.values();
-    this->createConfigTextTable(pairs, false);
+    for (auto it = ProjectConfig::defaultIdentifiers.begin(); it != ProjectConfig::defaultIdentifiers.end(); it++) {
+        addToConfigTextTable(Converter<ProjectIdentifier>::toString(it.key()), it.value(), false);
+    }
 }
 
 QString ProjectSettingsEditor::chooseProjectFile(const QString &defaultFilepath) {

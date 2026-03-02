@@ -302,15 +302,9 @@ bool ProjectConfig::parseLegacyKeyValue(const QString &key, const QString &value
     } else if (key == "enable_map_allow_flags") {
         this->mapAllowFlagsEnabled = toBool(value);
     } else if (key.startsWith("path/")) {
-        auto k = reverseDefaultPaths(key.mid(QStringLiteral("path/").length()));
-        if (k != static_cast<ProjectFilePath>(-1)) {
-            this->setFilePath(k, value);
-        }
+        this->setFilePath(key.mid(QStringLiteral("path/").length()), value);
     } else if (key.startsWith("ident/")) {
-        auto identifierId = reverseDefaultIdentifier(key.mid(QStringLiteral("ident/").length()));
-        if (identifierId != static_cast<ProjectIdentifier>(-1)) {
-            this->setIdentifier(identifierId, value);
-        }
+        this->setIdentifier(key.mid(QStringLiteral("ident/").length()), value);
     } else if (key.startsWith("global_constant/")) {
         this->globalConstants.insert(key.mid(QStringLiteral("global_constant/").length()), value);
     } else if (key == "global_constants_filepaths") {

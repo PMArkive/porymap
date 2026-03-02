@@ -53,7 +53,7 @@ private:
     void setBorderMetatileIds(bool customSize, QList<uint16_t> metatileIds);
     QList<uint16_t> getBorderMetatileIds(bool customSize);
 
-    void createConfigTextTable(const QList<QPair<QString, QString>> configPairs, bool filesTab);
+    void addToConfigTextTable(const QString& idName, const QString& defaultText, bool filesTab);
     void createProjectPathsTable();
     void createProjectIdentifiersTable();
     QString chooseProjectFile(const QString &defaultFilepath);

@@ -6,6 +6,8 @@
 #include "block.h"
 #include "events.h"
 
+#include <optional>
+
 enum ProjectIdentifier {
     symbol_facing_directions,
     symbol_obj_event_gfx_pointers,
@@ -137,18 +139,18 @@ public:
 
     void setFilePath(ProjectFilePath pathId, const QString& path);
     void setFilePath(const QString& pathId, const QString& path);
-    QString getCustomFilePath(ProjectFilePath pathId);
-    QString getCustomFilePath(const QString& pathId);
-    QString getFilePath(ProjectFilePath pathId);
+    QString getCustomFilePath(ProjectFilePath pathId) const;
+    QString getCustomFilePath(const QString& pathId) const;
+    QString getFilePath(ProjectFilePath pathId) const;
 
     void setIdentifier(ProjectIdentifier id, const QString& text);
     void setIdentifier(const QString& id, const QString& text);
-    QString getCustomIdentifier(ProjectIdentifier id);
-    QString getCustomIdentifier(const QString& id);
-    QString getIdentifier(ProjectIdentifier id);
+    QString getCustomIdentifier(ProjectIdentifier id) const;
+    QString getCustomIdentifier(const QString& id) const;
+    QString getIdentifier(ProjectIdentifier id) const;
 
-    static const QMap<ProjectIdentifier, QPair<QString, QString>> defaultIdentifiers;
-    static const QMap<ProjectFilePath, QPair<QString, QString>> defaultPaths;
+    static const QMap<ProjectIdentifier, QString> defaultIdentifiers;
+    static const QMap<ProjectFilePath, QString> defaultPaths;
 
     BaseGame::Version baseGameVersion = BaseGame::Version::none;
     bool usePoryScript = false;
@@ -263,8 +265,8 @@ protected:
     virtual void initializeFromEmpty() override;
 
 private:
-    ProjectFilePath reverseDefaultPaths(const QString& str);
-    ProjectIdentifier reverseDefaultIdentifier(const QString& str);
+    static std::optional<ProjectFilePath> stringToProjectFilePath(const QString& str);
+    static std::optional<ProjectIdentifier> stringToProjectIdentifier(const QString& str);
 
     std::shared_ptr<FieldManager> m_fm = nullptr;
     QMap<ProjectIdentifier, QString> identifiers;
