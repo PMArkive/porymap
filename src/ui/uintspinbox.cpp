@@ -58,10 +58,12 @@ void UIntSpinBox::setRange(uint32_t min, uint32_t max) {
     m_minimum = min;
     m_maximum = max;
 
+    // Clamping to % is a little cleaner than std::clamp when dealing with masks,
+    // which is the main use case for uintspinbox.
     if (m_value < min)
-        m_value %= min;
+        m_value %= min; // min can't be 0 here
     else if (m_value > max)
-        m_value %= max;
+        m_value = max ? (m_value % max) : 0;
     this->updateEdit();
 }
 

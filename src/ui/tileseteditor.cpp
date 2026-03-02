@@ -383,11 +383,9 @@ void TilesetEditor::applyUserShortcuts() {
 
 void TilesetEditor::onWindowActivated() {
     // User may have made layout edits since window was last focused, so update counts
-    if (this->metatileSelector) {
-        if (this->metatileSelector->selectorShowUnused || this->metatileSelector->selectorShowCounts) {
-            countMetatileUsage();
-            this->metatileSelector->draw();
-        }
+    if (this->metatileSelector->selectorShowUnused || this->metatileSelector->selectorShowCounts) {
+        countMetatileUsage();
+        this->metatileSelector->draw();
     }
 }
 
@@ -404,18 +402,14 @@ void TilesetEditor::refresh() {
     this->metatileSelector->setTilesets(this->primaryTileset, this->secondaryTileset);
     this->metatileSelector->select(this->getSelectedMetatileId());
 
-    if (metatileSelector) {
-        if (metatileSelector->selectorShowUnused || metatileSelector->selectorShowCounts) {
-            countMetatileUsage();
-            this->metatileSelector->draw();
-        }
+    if (this->metatileSelector->selectorShowUnused || this->metatileSelector->selectorShowCounts) {
+        countMetatileUsage();
+        this->metatileSelector->draw();
     }
 
-    if (tileSelector) {
-        if (tileSelector->showUnused) {
-            countTileUsage();
-            this->tileSelector->draw();
-        }
+    if (this->tileSelector->showUnused) {
+        countTileUsage();
+        this->tileSelector->draw();
     }
 
     this->redrawTileSelector();

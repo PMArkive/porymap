@@ -1,7 +1,9 @@
 #include "tileseteditortileselector.h"
 #include "imageproviders.h"
 #include "project.h"
+
 #include <QPainter>
+#include <QtMath>
 #include <QVector>
 
 QSize TilesetEditorTileSelector::getSelectionDimensions() const {

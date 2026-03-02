@@ -3,6 +3,9 @@
 #include "editcommands.h"
 #include "eventpixmapitem.h"
 
+#include <QCompleter>
+#include <QFileIconProvider>
+
 #include <limits>
 using std::numeric_limits;
 

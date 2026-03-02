@@ -46,22 +46,22 @@ void MapView::drawForeground(QPainter *painter, const QRectF&) {
         editor->cursorMapTileRect->paint(painter, &option, this);
 }
 
-void MapView::renderOverlay(QPainter *painter) {
 #ifdef QT_QML_LIB
+void MapView::renderOverlay(QPainter *painter) {
     for (auto outerIt = this->overlayMap.constBegin(); outerIt != this->overlayMap.constEnd(); outerIt++)
     for (auto innerIt = outerIt.value().constBegin(); innerIt != outerIt.value().constEnd(); innerIt++) {
         innerIt.value()->renderItems(painter);
     }
-#endif
 }
-
 void MapView::clearOverlay() {
-#ifdef QT_QML_LIB
     for (auto outerIt = this->overlayMap.constBegin(); outerIt != this->overlayMap.constEnd(); outerIt++)
     for (auto innerIt = outerIt.value().constBegin(); innerIt != outerIt.value().constEnd(); innerIt++) {
         delete innerIt.value();
     }
     this->overlayMap.clear();
     this->hashToPriority.clear();
-#endif
 }
+#else
+void MapView::renderOverlay(QPainter*) {}
+void MapView::clearOverlay() {}
+#endif

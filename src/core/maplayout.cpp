@@ -8,6 +8,7 @@
 
 #include <QDir>
 #include <QRegularExpression>
+#include <QtMath>
 
 QList<int> Layout::s_globalMetatileLayerOrder;
 QList<float> Layout::s_globalMetatileLayerOpacity;

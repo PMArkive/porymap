@@ -14,11 +14,15 @@
 #include "validator.h"
 #include "message.h"
 #include "eventframes.h"
+
 #include <QCheckBox>
-#include <QPainter>
-#include <QMouseEvent>
+#include <QDesktopServices>
 #include <QDir>
+#include <QMouseEvent>
+#include <QPainter>
 #include <QProcess>
+#include <QTimer>
+
 #include <math.h>
 
 static bool selectNewEvents = false;

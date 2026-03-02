@@ -26,6 +26,7 @@
 #include <QRegularExpression>
 #include <QStandardItem>
 #include <QTextStream>
+#include <QtMath>
 
 #include <algorithm>
 

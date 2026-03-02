@@ -152,7 +152,7 @@ public:
     static void cb_MainTabChanged(int, int) {};
     static void cb_MapViewTabChanged(int, int) {};
     static void cb_BorderVisibilityToggled(bool) {};
-    static QImage cb_EventSpriteLoading(const QString &, const QString &) {};
+    static QImage cb_EventSpriteLoading(const QString &, const QString &) {return QImage();}
 };
 
 #endif // QT_QML_LIB

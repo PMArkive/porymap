@@ -183,7 +183,11 @@ QAction* Scripting::registerAction(const QString &functionName, const QString &a
 
     auto menu = instance->mainWindow->ui->menuTools;
     if (instance->actionScripts.isEmpty()) {
-        instance->actionScripts.append({.action = menu->addSection("Custom Actions")});
+        instance->actionScripts.append({
+            .script = nullptr,
+            .action = menu->addSection("Custom Actions"),
+            .functionName = "",
+        });
     }
 
     const int actionIndex = instance->actionScripts.size();

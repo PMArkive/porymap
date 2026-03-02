@@ -201,7 +201,7 @@ QList<MultiKeyEdit *> ShortcutsEditor::siblings(MultiKeyEdit *multiKeyEdit) cons
 }
 
 void ShortcutsEditor::promptUserOnDuplicateFound(MultiKeyEdit *sender, MultiKeyEdit *sibling) {
-    const auto duplicateKeySequence = sender->keySequences().last();
+    const auto duplicateKeySequence = sender->keySequences().constLast();
     const auto siblingLabel = this->labels_objects.key(multiKeyEdits_objects.value(sibling));
     if (siblingLabel.isEmpty())
         return;

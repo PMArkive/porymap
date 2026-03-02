@@ -32,23 +32,28 @@
 #include "version.h"
 
 #include <QClipboard>
-#include <QDirIterator>
-#include <QStandardItemModel>
-#include <QSpinBox>
-#include <QTextEdit>
-#include <QSpacerItem>
-#include <QFont>
-#include <QScrollBar>
-#include <QPushButton>
-#include <QDialogButtonBox>
-#include <QScroller>
-#include <math.h>
-#include <QSysInfo>
 #include <QDesktopServices>
-#include <QTransform>
-#include <QSignalBlocker>
-#include <QSet>
+#include <QDialogButtonBox>
+#include <QDirIterator>
+#include <QFont>
+#include <QJsonDocument>
 #include <QLoggingCategory>
+#include <QPushButton>
+#include <QRandomGenerator>
+#include <QScreen>
+#include <QScrollBar>
+#include <QScroller>
+#include <QSet>
+#include <QSignalBlocker>
+#include <QSpacerItem>
+#include <QSpinBox>
+#include <QSysInfo>
+#include <QStandardItemModel>
+#include <QTextEdit>
+#include <QTransform>
+#include <QWindow>
+
+#include <math.h>
 
 // We only publish release binaries for Windows and macOS.
 // This is relevant for the update promoter, which alerts users of a new release.

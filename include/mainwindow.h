@@ -2,15 +2,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QString>
-#include <QModelIndex>
-#include <QMainWindow>
-#include <QStandardItemModel>
-#include <QGraphicsPixmapItem>
-#include <QGraphicsItemGroup>
-#include <QGraphicsSceneMouseEvent>
-#include <QCloseEvent>
-#include <QAbstractItemModel>
 #include "project.h"
 #include "orderedjson.h"
 #include "config.h"
@@ -35,6 +26,18 @@
 #include "message.h"
 #include "resizelayoutpopup.h"
 #include "unlockableicon.h"
+
+#include <QAbstractItemModel>
+#include <QCloseEvent>
+#include <QGraphicsItemGroup>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsSceneMouseEvent>
+#include <QModelIndex>
+#include <QMainWindow>
+#include <QStandardItemModel>
+#include <QStack>
+#include <QString>
+#include <QUndoView>
 
 #if __has_include(<QJSValue>)
 #include <QJSValue>
