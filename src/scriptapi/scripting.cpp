@@ -402,6 +402,15 @@ QImage Scripting::cb_EventSpriteLoading(const QString &gfxName, const QString &d
     return toImage(instance->invokeCallback(QStringLiteral("onEventSpriteLoading"), args));
 }
 
+QImage Scripting::cb_SpeciesIconLoading(const QString &species) {
+    if (!instance) return QImage();
+
+    QJSValueList args {
+        species,
+    };
+    return toImage(instance->invokeCallback(QStringLiteral("onSpeciesIconLoading"), args));
+}
+
 QJSValue Scripting::fromBlock(Block block) {
     QJSValue obj = instance->engine->newObject();
     obj.setProperty("metatileId", block.metatileId());

@@ -52,6 +52,7 @@ public:
     static void cb_MapViewTabChanged(int oldTab, int newTab);
     static void cb_BorderVisibilityToggled(bool visible);
     static QImage cb_EventSpriteLoading(const QString &gfxName, const QString &direction);
+    static QImage cb_SpeciesIconLoading(const QString &species);
 
     static bool tryErrorJS(QJSValue js);
     static QJSValue fromBlock(Block block);
@@ -153,6 +154,7 @@ public:
     static void cb_MapViewTabChanged(int, int) {};
     static void cb_BorderVisibilityToggled(bool) {};
     static QImage cb_EventSpriteLoading(const QString &, const QString &) {return QImage();}
+    static QImage cb_SpeciesIconLoading(const QString &) {return QImage();}
 };
 
 #endif // QT_QML_LIB

@@ -361,6 +361,8 @@ private:
     QString findSpeciesIconPath(const QStringList &names) const;
     QPixmap getEventPixmap(const QString &gfxName, int frame, bool hFlip);
 
+    QPixmap loadSpeciesIcon(const QString &species);
+
     int maxObjectEvents;
     int maxMapDataSize;
     QSize defaultMapSize;

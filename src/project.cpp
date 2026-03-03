@@ -3382,24 +3382,32 @@ QString Project::findSpeciesIconPath(const QStringList &names) const {
 QPixmap Project::getSpeciesIcon(const QString &species) {
     QPixmap pixmap;
     if (!QPixmapCache::find(species, &pixmap)) {
-        // Prefer path from config. If not present, use the path parsed from project files
-        QString path = Project::getExistingFilepath(projectConfig.pokemonIconPaths.value(species));
-        if (path.isEmpty()) {
-            path = getDefaultSpeciesIconPath(species);
-        }
-
-        QImage img(path);
-        if (img.isNull()) {
-            // No icon for this species, use placeholder
-            static const QPixmap placeholder = QPixmap(QStringLiteral(":images/pokemon_icon_placeholder.png"));
-            pixmap = placeholder;
-        } else {
-            img.setColor(0, qRgba(0, 0, 0, 0));
-            pixmap = QPixmap::fromImage(img).copy(0, 0, 32, 32);
-            QPixmapCache::insert(species, pixmap);
-        }
+        pixmap = loadSpeciesIcon(species);
+        QPixmapCache::insert(species, pixmap);
     }
     return pixmap;
+}
+
+QPixmap Project::loadSpeciesIcon(const QString &species) {
+    // Users may intercept the sprite loading with a scripting callback.
+    QImage scriptImage = Scripting::cb_SpeciesIconLoading(species);
+    if (!scriptImage.isNull()) return QPixmap::fromImage(scriptImage);
+
+    // Prefer path from config. If not present, use the path parsed from project files
+    QString path = Project::getExistingFilepath(projectConfig.pokemonIconPaths.value(species));
+    if (path.isEmpty()) {
+        path = getDefaultSpeciesIconPath(species);
+    }
+
+    QImage img(path);
+    if (img.isNull()) {
+        // No icon for this species, use placeholder
+        static const QPixmap placeholder = QPixmap(QStringLiteral(":images/pokemon_icon_placeholder.png"));
+        return placeholder;
+    }
+
+    img.setColor(0, qRgba(0, 0, 0, 0));
+    return QPixmap::fromImage(img).copy(0, 0, 32, 32);
 }
 
 int Project::getMapDataSize(int width, int height) const {
