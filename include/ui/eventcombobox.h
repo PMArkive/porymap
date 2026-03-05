@@ -11,7 +11,7 @@ class EventComboBox : public NoScrollComboBox
 public:
     explicit EventComboBox(QWidget *parent = nullptr) : NoScrollComboBox(parent) {
         // Make speed a priority when loading comboboxes.
-        setMinimumContentsLength(24);// an arbitrary limit
+        // Set combo boxes to smallest reasonable size.
         setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
 
         // In general, event combo boxes are always editable.
