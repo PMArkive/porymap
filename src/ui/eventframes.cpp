@@ -2,6 +2,7 @@
 #include "customattributesframe.h"
 #include "editcommands.h"
 #include "eventpixmapitem.h"
+#include "flowlayout.h"
 
 #include <QCompleter>
 #include <QFileIconProvider>
@@ -30,54 +31,52 @@ void EventFrame::setup() {
     ///
     /// init widgets
     ///
-    QHBoxLayout *l_layout_xyz = new QHBoxLayout();
+    auto layout_xyz = new FlowLayout();
 
     // x spinner & label
     this->spinner_x = new EditHistorySpinBox(this);
     this->spinner_x->setMinimum(numeric_limits<int16_t>::min());
     this->spinner_x->setMaximum(numeric_limits<int16_t>::max());
 
-    QLabel *l_label_x = new QLabel("x");
-
-    QHBoxLayout *l_layout_x = new QHBoxLayout();
-    l_layout_x->addWidget(l_label_x);
-    l_layout_x->addWidget(this->spinner_x);
-
-    l_layout_xyz->addLayout(l_layout_x);
+    auto widget_x = new QWidget();
+    widget_x->setLayout(new QHBoxLayout());
+    widget_x->layout()->setContentsMargins(0, 0, 8/*right*/, 0);
+    widget_x->layout()->addWidget(new QLabel("x"));
+    widget_x->layout()->addWidget(this->spinner_x);
+    layout_xyz->addWidget(widget_x);
 
     // y spinner & label
     this->spinner_y = new EditHistorySpinBox(this);
     this->spinner_y->setMinimum(numeric_limits<int16_t>::min());
     this->spinner_y->setMaximum(numeric_limits<int16_t>::max());
 
-    QLabel *l_label_y = new QLabel("y");
-
-    QHBoxLayout *l_layout_y = new QHBoxLayout();
-    l_layout_y->addWidget(l_label_y);
-    l_layout_y->addWidget(this->spinner_y);
-
-    l_layout_xyz->addLayout(l_layout_y);
+    auto widget_y = new QWidget();
+    widget_y->setLayout(new QHBoxLayout());
+    widget_y->layout()->setContentsMargins(0, 0, 8/*right*/, 0);
+    widget_y->layout()->addWidget(new QLabel("y"));
+    widget_y->layout()->addWidget(this->spinner_y);
+    layout_xyz->addWidget(widget_y);
 
     // z spinner & label
     this->spinner_z = new NoScrollSpinBox(this);
     this->spinner_z->setMinimum(numeric_limits<int16_t>::min());
     this->spinner_z->setMaximum(numeric_limits<int16_t>::max());
 
+    auto widget_z = new QWidget();
+    widget_z->setLayout(new QHBoxLayout());
     this->hideable_label_z = new QLabel("z");
+    widget_z->layout()->setContentsMargins(0, 0, 0, 0);
+    widget_z->layout()->addWidget(hideable_label_z);
+    widget_z->layout()->addWidget(this->spinner_z);
+    layout_xyz->addWidget(widget_z);
 
-    QHBoxLayout *l_layout_z = new QHBoxLayout();
-    l_layout_z->addWidget(hideable_label_z);
-    l_layout_z->addWidget(this->spinner_z);
+    layout_xyz->addItem(createSpacerH());
 
-    l_layout_xyz->addLayout(l_layout_z);
-    l_layout_xyz->addItem(createSpacerH());
-
-    QVBoxLayout *l_vbox_1 = new QVBoxLayout();
-
+    auto l_vbox_1 = new QVBoxLayout();
     this->label_id = new QLabel("event_type");
-    l_vbox_1->addWidget(this->label_id);
-    l_vbox_1->addLayout(l_layout_xyz);
     this->label_id->setText(Event::typeToString(this->event->getEventType()));
+    l_vbox_1->addWidget(this->label_id);
+    l_vbox_1->addLayout(layout_xyz);
 
     // icon / pixmap label
     this->label_icon = new QLabel(this);
@@ -87,16 +86,14 @@ void EventFrame::setup() {
     this->label_icon->setAlignment(Qt::AlignCenter);
     this->label_icon->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-    QHBoxLayout *l_hbox_1 = new QHBoxLayout();
+    auto l_hbox_1 = new QHBoxLayout();
     l_hbox_1->addWidget(this->label_icon);
     l_hbox_1->addLayout(l_vbox_1);
-
     this->layout_main->addLayout(l_hbox_1);
 
     // for derived classes to add their own ui elements
     this->layout_contents = new QVBoxLayout();
     this->layout_contents->setContentsMargins(0, 0, 0, 0);
-
     this->layout_main->addLayout(this->layout_contents);
 }
 

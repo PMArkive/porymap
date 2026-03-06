@@ -1546,47 +1546,23 @@
                        </property>
                        <item>
                         <widget class="NewEventToolButton" name="newEventToolButton">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
                          <property name="toolTip">
                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a new event to the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <property name="text">
-                          <string>New Object</string>
                          </property>
                          <property name="icon">
                           <iconset resource="../resources/images.qrc">
                            <normaloff>:/icons/add.ico</normaloff>:/icons/add.ico</iconset>
                          </property>
-                         <property name="toolButtonStyle">
-                          <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-                         </property>
                         </widget>
                        </item>
                        <item>
                         <widget class="QToolButton" name="toolButton_deleteEvent">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
                          <property name="toolTip">
                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete the selected event from the map.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
-                         <property name="text">
-                          <string>Delete</string>
                          </property>
                          <property name="icon">
                           <iconset resource="../resources/images.qrc">
                            <normaloff>:/icons/delete.ico</normaloff>:/icons/delete.ico</iconset>
-                         </property>
-                         <property name="toolButtonStyle">
-                          <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
                          </property>
                          <property name="autoRaise">
                           <bool>false</bool>
