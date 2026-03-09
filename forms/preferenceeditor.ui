@@ -123,6 +123,16 @@
                 </widget>
                </item>
                <item>
+                <widget class="QRadioButton" name="radioButton_DecimalHexadecimal">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, tile IDs and metatile IDs will be displayed as &amp;quot;&amp;lt;hexadecimal&amp;gt; (&amp;lt;decimal&amp;gt;)&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Both</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <spacer name="horizontalSpacer">
                  <property name="orientation">
                   <enum>Qt::Orientation::Horizontal</enum>

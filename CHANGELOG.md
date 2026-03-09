@@ -6,7 +6,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ## [Unreleased]
 ### Added
-- Add setting to display tile and metatile IDs in decimal instead of hexadecimal.
+- Add setting to display tile and metatile IDs in decimal instead of hexadecimal. Defaults to displaying both.
 - Add API functions for reading and writing text files.
 
 ### Changed

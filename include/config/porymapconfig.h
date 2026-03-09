@@ -6,6 +6,7 @@
 #include "block.h"
 #include "events.h"
 #include "log.h"
+#include "utility.h"
 
 #include <QColorSpace>
 #include <QFontDatabase>
@@ -73,7 +74,7 @@ public:
     bool monitorFiles = true;
     bool tilesetCheckerboardFill = true;
     bool newMapHeaderSectionExpanded = false;
-    bool displayIdsHexadecimal = true;
+    NumberSystemMode tileNumberSystem = NumberSystemMode::Both;
     QString theme = QStringLiteral("default");
     QString wildMonChartTheme;
     QString textEditorOpenFolder;
@@ -141,7 +142,7 @@ public:
             m_fm->addField(&this->monitorFiles, "monitor_files");
             m_fm->addField(&this->tilesetCheckerboardFill, "tileset_checkerboard_fill");
             m_fm->addField(&this->newMapHeaderSectionExpanded, "new_map_header_section_expanded");
-            m_fm->addField(&this->displayIdsHexadecimal, "display_ids_hexadecimal");
+            m_fm->addField(&this->tileNumberSystem, "tile_number_system");
             m_fm->addField(&this->theme, "theme");
             m_fm->addField(&this->wildMonChartTheme, "wild_mon_chart_theme");
             m_fm->addField(&this->textEditorOpenFolder, "text_editor_open_folder");

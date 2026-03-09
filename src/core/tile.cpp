@@ -1,6 +1,7 @@
 #include "tile.h"
 #include "project.h"
 #include "bitpacker.h"
+#include "utility.h"
 
 // At the moment these are fixed, and not exposed to the user.
 // We're only using them for convenience when converting between raw values.
@@ -71,7 +72,5 @@ QString Tile::toString() const {
 }
 
 QString Tile::getTileIdString(uint16_t tileId) {
-    return porymapConfig.displayIdsHexadecimal
-            ? Util::toHexString(tileId, 3)
-            : QString::number(tileId);
-}
+    return Util::getNumberSystemString(tileId, porymapConfig.tileNumberSystem, 3);
+};

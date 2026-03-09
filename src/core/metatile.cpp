@@ -45,9 +45,7 @@ QPoint Metatile::coordFromPixmapCoord(const QPointF &pixelCoord) {
 
 static int numMetatileIdChars = 4;
 QString Metatile::getMetatileIdString(uint16_t metatileId) {
-    return porymapConfig.displayIdsHexadecimal
-            ? Util::toHexString(metatileId, numMetatileIdChars)
-            : QString::number(metatileId);
+    return Util::getNumberSystemString(metatileId, porymapConfig.tileNumberSystem, numMetatileIdChars);
 };
 
 QString Metatile::getMetatileIdStrings(const QList<uint16_t> &metatileIds) {

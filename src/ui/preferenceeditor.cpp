@@ -107,10 +107,10 @@ void PreferenceEditor::updateFields() {
     ui->checkBox_StatusWarnings->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_WARN) != logTypeEnd);
     ui->checkBox_StatusInformation->setChecked(porymapConfig.statusBarLogTypes.find(LogType::LOG_INFO) != logTypeEnd);
 
-    if (porymapConfig.displayIdsHexadecimal) {
-        ui->radioButton_Hexadecimal->setChecked(true);
-    } else {
-        ui->radioButton_Decimal->setChecked(true);
+    switch (porymapConfig.tileNumberSystem) {
+    case NumberSystemMode::Hexadecimal: ui->radioButton_Hexadecimal->setChecked(true); break;
+    case NumberSystemMode::Decimal: ui->radioButton_Decimal->setChecked(true); break;
+    case NumberSystemMode::Both: ui->radioButton_DecimalHexadecimal->setChecked(true); break;
     }
 
     this->applicationFont = porymapConfig.applicationFont;
@@ -150,7 +150,10 @@ void PreferenceEditor::saveFields() {
     porymapConfig.checkForUpdates = ui->checkBox_CheckForUpdates->isChecked();
     porymapConfig.eventDeleteWarningDisabled = ui->checkBox_DisableEventWarning->isChecked();
     porymapConfig.showProjectLoadingScreen = ui->checkBox_ShowProjectLoadingScreen->isChecked();
-    porymapConfig.displayIdsHexadecimal = ui->radioButton_Hexadecimal->isChecked();
+
+    if (ui->radioButton_Hexadecimal->isChecked()) porymapConfig.tileNumberSystem = NumberSystemMode::Hexadecimal;
+    else if (ui->radioButton_Decimal->isChecked()) porymapConfig.tileNumberSystem = NumberSystemMode::Decimal;
+    else if (ui->radioButton_DecimalHexadecimal->isChecked()) porymapConfig.tileNumberSystem = NumberSystemMode::Both;
 
     porymapConfig.statusBarLogTypes.clear();
     if (ui->checkBox_StatusErrors->isChecked()) porymapConfig.statusBarLogTypes.insert(LogType::LOG_ERROR);
