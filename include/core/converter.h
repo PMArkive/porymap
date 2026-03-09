@@ -68,9 +68,17 @@ struct DefaultConverter {
     static T fromJson(const QJsonValue& json, QStringList* errors = nullptr) {
         const QVariant v = json.toVariant();
         if (!v.canConvert<T>()) {
-            if (errors) errors->append(QString("Can't convert from type '%1'").arg(v.typeName()));
-            // Failed conversion will return a default-constructed object below
+            if (errors) errors->append(QString("Can't convert from JSON to type '%1'").arg(v.typeName()));
+        } else {
+            // 'canConvert' is only true if a conversion between types is theoretically possible,
+            // not necessarily if this value can be converted. e.g. "2" can be converted to int (2),
+            // but "hello world" cannot be converted to int and becomes 0.
+            T value;
+            bool ok = QMetaType::convert(v.metaType(), v.constData(), QMetaType::fromType<T>(), &value);
+            if (ok) return value;
+            else if (errors) errors->append(QString("Failed to convert JSON value to type '%1'").arg(v.typeName()));
         }
+        // For failed conversion, return a default constructed value.
         return v.value<T>();
     }
 

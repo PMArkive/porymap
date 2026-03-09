@@ -23,6 +23,13 @@
 //    QList<QString> options = {"hello","hi there"};
 //    FieldInterface* fi = makeFieldInterface(&someField, options);
 //    fi->set(QJsonValue("5")); // someField is now "hello" (defaults to first element), error messages returned
+//
+// If a type or value is given that cannot be converted to the destination type, the field remains unchanged.
+//    int someField = 0;
+//    int min = 1, max = 4;
+//    FieldInterface* fi = makeFieldInterface(&someField, min, max);
+//    fi->set(QJsonValue()); // Cannot convert type. someField is still 0, error messages returned
+//    fi->set(QJsonValue("hi there")); // Cannot convert value. someField is still 0, error messages returned
 
 // Base class lets us use the interface without any type information.
 class FieldInterface {
