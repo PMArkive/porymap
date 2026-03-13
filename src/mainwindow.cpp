@@ -398,6 +398,7 @@ void MainWindow::initExtraSignals() {
     connect(ui->actionDuplicate_Current_Layout, &QAction::triggered, [this] {
         if (this->editor->layout) openDuplicateLayoutDialog(this->editor->layout->id);
     });
+    connect(ui->actionProject_Settings, &QAction::triggered, this, &MainWindow::openProjectSettingsEditor);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -501,8 +502,6 @@ void MainWindow::initMiscHeapObjects() {
 }
 
 void MainWindow::initMapList() {
-    ui->mapListContainer->setCurrentIndex(porymapConfig.mapListTab);
-
     auto noScrollFilter = new NoScrollFilter(this, false);
     ui->mainTabBar->installEventFilter(noScrollFilter);
     ui->mapListContainer->tabBar()->installEventFilter(noScrollFilter);
@@ -624,7 +623,7 @@ void MainWindow::initMapList() {
     connect(ui->mapListToolBar_Locations, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLocationDialog);
     connect(ui->mapListToolBar_Layouts,   &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
 
-    connect(ui->mapListContainer, &QTabWidget::currentChanged, this, &MainWindow::onMapListTabChanged);
+    connect(ui->mapListContainer, &QTabWidget::tabBarClicked, this, &MainWindow::setMapListTab);
 }
 
 void MainWindow::updateWindowTitle() {
@@ -1241,7 +1240,7 @@ bool MainWindow::userSetLayout(const QString &layoutId) {
     recordMapNavigation(prevItem);
 
     // Only the Layouts tab of the map list shows Layouts, so if we're not already on that tab we'll open it now.
-    ui->mapListContainer->setCurrentIndex(MapListTab::Layouts);
+    setMapListTab(MapListTab::Layouts);
 
     return true;
 }
@@ -1897,15 +1896,13 @@ void MainWindow::currentMetatilesSelectionChanged() {
         scrollMetatileSelectorToSelection();
 }
 
-void MainWindow::onMapListTabChanged(int index) {
+void MainWindow::setMapListTab(int index) {
     auto newToolbar = getMapListToolBar(index);
-    auto oldToolbar = getMapListToolBar(porymapConfig.mapListTab);
+    auto oldToolbar = getMapListToolBar(ui->mapListContainer->currentIndex());
+    ui->mapListContainer->setCurrentIndex(index);
     if (newToolbar && oldToolbar && newToolbar != oldToolbar) {
         newToolbar->applyFilter(oldToolbar->filterText());
     }
-
-    // Save current tab for future sessions.
-    porymapConfig.mapListTab = index;
 
     // After changing a map list tab the old tab's search widget can keep focus, which isn't helpful
     // (and might be a little confusing to the user, because they don't know that each search bar is secretly a separate object).
@@ -3072,12 +3069,8 @@ void MainWindow::openProjectSettingsEditor(int tab) {
         connect(this->projectSettingsEditor, &ProjectSettingsEditor::reloadProject,
                 this, &MainWindow::on_action_Reload_Project_triggered);
     }
-    this->projectSettingsEditor->setTab(tab);
+    if (tab >= 0) this->projectSettingsEditor->setTab(tab);
     Util::show(this->projectSettingsEditor);
-}
-
-void MainWindow::on_actionProject_Settings_triggered() {
-    this->openProjectSettingsEditor(porymapConfig.projectSettingsTab);
 }
 
 void MainWindow::onWarpBehaviorWarningClicked() {

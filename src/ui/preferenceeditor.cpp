@@ -2,6 +2,7 @@
 #include "ui_preferenceeditor.h"
 #include "message.h"
 #include "tile.h"
+#include "eventfilters.h"
 
 #include <QAbstractButton>
 #include <QRegularExpression>
@@ -36,6 +37,7 @@ PreferenceEditor::PreferenceEditor(QWidget *parent) :
 
     initFields();
     updateFields();
+    installEventFilter(new GeometrySaver(this));
 }
 
 PreferenceEditor::~PreferenceEditor()

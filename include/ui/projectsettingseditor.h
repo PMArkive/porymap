@@ -81,7 +81,6 @@ private slots:
     void updateAttributeLimits(const QString &attrSize);
     void updatePokemonIconPath(const QString &species);
     void markEdited();
-    void on_mainTabs_tabBarClicked(int index);
     void updateBlockMaskOverlapWarning();
     void updateAttributeMaskOverlapWarning();
     void updateWarpBehaviorsList(bool adding);

@@ -302,7 +302,6 @@ private slots:
     void on_actionOpen_Manual_triggered();
     void on_actionCheck_for_Updates_triggered();
     void togglePreferenceSpecificUi();
-    void on_actionProject_Settings_triggered();
     void on_actionPlugins_triggered();
     void reloadScriptEngine();
     void on_actionShow_Grid_triggered();
@@ -420,7 +419,7 @@ private:
     void setMapListSorted(MapTree *list, bool sort);
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
-    void onMapListTabChanged(int index);
+    void setMapListTab(int index);
     QString getActiveItemName();
     void recordMapNavigation(const QString &itemName);
     void resetMapNavigation();
@@ -456,7 +455,7 @@ private:
     void initShortcutsEditor();
     void initPluginEditor();
     void connectSubEditorsToShortcutsEditor();
-    void openProjectSettingsEditor(int tab);
+    void openProjectSettingsEditor(int tab = -1);
     bool isProjectOpen();
     void showExportMapImageWindow(ImageExporterMode mode);
     double getMetatilesZoomScale();

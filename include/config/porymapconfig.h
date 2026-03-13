@@ -45,7 +45,6 @@ public:
 
     bool reopenOnLaunch = true;
     bool projectManuallyClosed = false;
-    int mapListTab = 0;
     bool mapListEditGroupsEnabled = false;
     OrderedSet<int> mapListTabsHidingEmptyFolders;
     bool mapListLayoutsSorted = true;
@@ -80,7 +79,6 @@ public:
     QString textEditorOpenFolder;
     QString textEditorGotoLine;
     int paletteEditorBitDepth = 24;
-    int projectSettingsTab = 0;
     ScriptAutocompleteMode scriptAutocompleteMode = ScriptAutocompleteMode::MapOnly;
     bool warpBehaviorWarningDisabled = false;
     bool eventDeleteWarningDisabled = false;
@@ -113,7 +111,6 @@ public:
             m_fm = std::make_shared<FieldManager>();
             m_fm->addField(&this->reopenOnLaunch, "reopen_on_launch");
             m_fm->addField(&this->projectManuallyClosed, "project_manually_closed");
-            m_fm->addField(&this->mapListTab, "map_list_tab", 0, 2);
             m_fm->addField(&this->mapListEditGroupsEnabled, "map_list_edit_groups_enabled");
             m_fm->addField(&this->mapListTabsHidingEmptyFolders, "map_list_tabs_hiding_empty_folders");
             m_fm->addField(&this->mapListLayoutsSorted, "map_list_layouts_sorted");
@@ -148,7 +145,6 @@ public:
             m_fm->addField(&this->textEditorOpenFolder, "text_editor_open_folder");
             m_fm->addField(&this->textEditorGotoLine, "text_editor_goto_line");
             m_fm->addField(&this->paletteEditorBitDepth, "palette_editor_bit_depth", {24,15});
-            m_fm->addField(&this->projectSettingsTab, "project_settings_tab");
             m_fm->addField(&this->scriptAutocompleteMode, "script_autocomplete_mode");
             m_fm->addField(&this->warpBehaviorWarningDisabled, "warp_behavior_warning_disabled");
             m_fm->addField(&this->eventDeleteWarningDisabled, "event_delete_warning_disabled");
@@ -179,6 +175,11 @@ protected:
     virtual QJsonObject getDefaultJson() const override;
 
 private:
+    static QList<QWidget*> findChildrenWithStates(const QWidget* widget);
+    static QByteArray getWidgetState(const QWidget* widget);
+    static void restoreWidgetState(QWidget* widget, const QByteArray& state);
+
+
     std::shared_ptr<FieldManager> m_fm = nullptr;
     QStringList recentProjects;
     QMap<QString, QByteArray> savedGeometryMap;

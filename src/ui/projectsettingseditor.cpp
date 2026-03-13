@@ -211,14 +211,8 @@ BaseGame::Version ProjectSettingsEditor::getBaseGameVersion() const {
     return static_cast<BaseGame::Version>(ui->comboBox_BaseGameVersion->currentData().toInt());
 }
 
-// Remember the current settings tab for future sessions
-void ProjectSettingsEditor::on_mainTabs_tabBarClicked(int index) {
-    porymapConfig.projectSettingsTab = index;
-}
-
 void ProjectSettingsEditor::setTab(int index) {
     ui->mainTabs->setCurrentIndex(index);
-    porymapConfig.projectSettingsTab = index;
 }
 
 void ProjectSettingsEditor::setBorderMetatilesUi(bool customSize) {

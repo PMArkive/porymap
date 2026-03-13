@@ -89,8 +89,6 @@ bool PorymapConfig::parseLegacyKeyValue(const QString &key, const QString &value
         this->reopenOnLaunch = toBool(value);
     } else if (key == "pretty_cursors") {
         this->prettyCursors = toBool(value);
-    } else if (key == "map_list_tab") {
-        this->mapListTab = toInt(value, 0, 2, 0);
     } else if (key == "map_list_edit_groups_enabled") {
         this->mapListEditGroupsEnabled = toBool(value);
     } else if (key.startsWith("map_list_hide_empty_enabled/")) {
@@ -161,8 +159,6 @@ bool PorymapConfig::parseLegacyKeyValue(const QString &key, const QString &value
         if (bitDepth == 15 || bitDepth == 24){
             this->paletteEditorBitDepth = bitDepth;
         }
-    } else if (key == "project_settings_tab") {
-        this->projectSettingsTab = toInt(value, 0);
     } else if (key == "load_all_event_scripts") { // Old setting replaced by script_autocomplete_mode
         this->scriptAutocompleteMode = toBool(value) ? ScriptAutocompleteMode::All : ScriptAutocompleteMode::MapOnly;
     } else if (key == "script_autocomplete_mode") {

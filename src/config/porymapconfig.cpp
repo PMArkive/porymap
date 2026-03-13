@@ -58,25 +58,45 @@ const QStringList& PorymapConfig::getRecentProjects() const {
     return this->recentProjects;
 }
 
+QList<QWidget*> PorymapConfig::findChildrenWithStates(const QWidget* widget) {
+    QList<QWidget*> children;
+    for (const auto& c : widget->findChildren<QSplitter*>()) children.append(qobject_cast<QWidget*>(c));
+    for (const auto& c : widget->findChildren<QTabWidget*>()) children.append(qobject_cast<QWidget*>(c));
+    return children;
+}
+
 void PorymapConfig::saveGeometry(const QWidget* widget, const QString& keyPrefix, bool recursive) {
     if (!widget || widget->objectName().isEmpty()) return;
 
     const QString key = keyPrefix + widget->objectName();
-    this->savedGeometryMap.insert(key, widget->saveGeometry());
+    if (!widget->parentWidget()) { // Only save geometry for top-level widgets;
+        this->savedGeometryMap.insert(key, widget->saveGeometry());
+    }
 
     // In addition to geometry, some widgets have other states that can be saved/restored.
-    const QString stateKey = key + QStringLiteral("/State");
-    auto mainWindow = qobject_cast<const QMainWindow*>(widget);
-    if (mainWindow) this->savedGeometryMap.insert(stateKey, mainWindow->saveState());
-    else {
-        auto splitter = qobject_cast<const QSplitter*>(widget);
-        if (splitter) this->savedGeometryMap.insert(stateKey, splitter->saveState());
+    const QByteArray state = getWidgetState(widget);
+    if (!state.isEmpty()) {
+        this->savedGeometryMap.insert(key + QStringLiteral("/State"), state);
     }
+
     if (recursive) {
-        for (const auto& splitter : widget->findChildren<QSplitter*>()) {
-            saveGeometry(splitter, key + "_", false);
+        for (const auto& child : findChildrenWithStates(widget)) {
+            saveGeometry(child, key + "_", false);
         }
     }
+}
+
+QByteArray PorymapConfig::getWidgetState(const QWidget* widget) {
+    auto mainWindow = qobject_cast<const QMainWindow*>(widget);
+    if (mainWindow) return mainWindow->saveState();
+
+    auto splitter = qobject_cast<const QSplitter*>(widget);
+    if (splitter) return splitter->saveState();
+
+    auto tabWidget = qobject_cast<const QTabWidget*>(widget);
+    if (tabWidget) return QString::number(tabWidget->currentIndex()).toUtf8();
+
+    return QByteArray();
 }
 
 bool PorymapConfig::restoreGeometry(QWidget* widget, const QString& keyPrefix, bool recursive) const {
@@ -84,23 +104,36 @@ bool PorymapConfig::restoreGeometry(QWidget* widget, const QString& keyPrefix, b
 
     const QString key = keyPrefix + widget->objectName();
     auto it = this->savedGeometryMap.constFind(key);
-    if (it == this->savedGeometryMap.constEnd()) return false;
-    widget->restoreGeometry(it.value());
+    if (it != this->savedGeometryMap.constEnd()) {
+        widget->restoreGeometry(it.value());
+    }
 
     // In addition to geometry, some widgets have other states that can be saved/restored.
     it = this->savedGeometryMap.constFind(key + QStringLiteral("/State"));
-    if (it != this->savedGeometryMap.constEnd()) {
-        auto mainWindow = qobject_cast<QMainWindow*>(widget);
-        if (mainWindow) mainWindow->restoreState(it.value());
-        else {
-            auto splitter = qobject_cast<QSplitter*>(widget);
-            if (splitter) splitter->restoreState(it.value());
-        }
-    }
+    if (it != this->savedGeometryMap.constEnd()) restoreWidgetState(widget, it.value());
+
     if (recursive) {
-        for (const auto& splitter : widget->findChildren<QSplitter*>()) {
-            restoreGeometry(splitter, key + "_", false);
+        for (const auto& child : findChildrenWithStates(widget)) {
+            restoreGeometry(child, key + "_", false);
         }
     }
     return true;
+}
+
+void PorymapConfig::restoreWidgetState(QWidget* widget, const QByteArray& state) {
+    auto mainWindow = qobject_cast<QMainWindow*>(widget);
+    if (mainWindow) {
+        mainWindow->restoreState(state);
+        return;
+    }
+    auto splitter = qobject_cast<QSplitter*>(widget);
+    if (splitter) {
+        splitter->restoreState(state);
+        return;
+    }
+    auto tabWidget = qobject_cast<QTabWidget*>(widget);
+    if (tabWidget) {
+        tabWidget->setCurrentIndex(QString::fromUtf8(state).toInt());
+        return;
+    }
 }
