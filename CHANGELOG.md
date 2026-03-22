@@ -8,6 +8,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ### Added
 - Add setting to display tile and metatile IDs in decimal instead of hexadecimal. Defaults to displaying both.
 - Add API functions for reading and writing text files.
+- Add a warning if multiple layouts have the same data file paths.
 
 ### Changed
 - Porymap's .cfg files were replaced with .json. Any fields not listed in a config file are assumed to be the default value.

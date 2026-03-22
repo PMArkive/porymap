@@ -651,6 +651,9 @@ bool Project::readMapLayouts() {
                  .arg(layoutsLabel));
     }
 
+    QHash<QString, QString> borderPaths;
+    QHash<QString, QString> blockdataPaths;
+
     QJsonArray layouts = layoutsObj.take("layouts").toArray();
     for (int i = 0; i < layouts.size(); i++) {
         QJsonObject layoutObj = layouts[i].toObject();
@@ -690,8 +693,34 @@ bool Project::readMapLayouts() {
         }
         layout->tileset_primary_label = ParseUtil::jsonToQString(layoutObj.take("primary_tileset"));
         layout->tileset_secondary_label = ParseUtil::jsonToQString(layoutObj.take("secondary_tileset"));
+
+        // Each layout specifies a path to its blockdata and border files.
+        // Normally these paths are unique, but if for any reason they aren't Porymap does not have proper support for this,
+        // and changes to one layout can quietly overwrite any changes to the other while they're both loaded.
+        // For now, we log a warning to alert the user if this happens. In general, using non-unique paths does not seem
+        // to be a normal use case, so there's a decent chance it was a mistake the user would want to know about.
+        // Perhaps in the future this layout data can be stored in shared pointers to support this behavior.
         layout->border_path = ParseUtil::jsonToQString(layoutObj.take("border_filepath"));
+        auto it = borderPaths.constFind(layout->border_path);
+        if (it != borderPaths.constEnd()) {
+            logWarn(QString("Layouts '%1' and '%2' both share a 'border_filepath' of '%3'. This is not supported.")
+                            .arg(layout->id)
+                            .arg(it.value())
+                            .arg(layout->border_path));
+        } else {
+            borderPaths.insert(layout->border_path, layout->id);
+        }
+
         layout->blockdata_path = ParseUtil::jsonToQString(layoutObj.take("blockdata_filepath"));
+        it = blockdataPaths.constFind(layout->blockdata_path);
+        if (it != blockdataPaths.constEnd()) {
+            logWarn(QString("Layouts '%1' and '%2' both share a 'blockdata_filepath' of '%3'. This is not supported.")
+                            .arg(layout->id)
+                            .arg(it.value())
+                            .arg(layout->blockdata_path));
+        } else {
+            blockdataPaths.insert(layout->blockdata_path, layout->id);
+        }
 
         layout->customData = layoutObj;
 
