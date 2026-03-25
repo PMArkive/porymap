@@ -12,6 +12,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 
 ### Changed
 - Porymap's .cfg files were replaced with .json. Any fields not listed in a config file are assumed to be the default value.
+- The dimensions of the current metatile selection are now displayed above the metatile selector.
 - Some UI changes to prioritize horizontal space for the map.
 
 ### Fixed

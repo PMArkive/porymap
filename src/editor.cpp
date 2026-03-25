@@ -1122,7 +1122,9 @@ void Editor::onHoveredMetatileSelectionCleared() {
 }
 
 void Editor::onSelectedMetatilesChanged() {
-    this->cursorMapTileRect->updateSelectionSize(this->metatile_selector_item->getSelectionDimensions());
+    const QSize selectionSize = this->metatile_selector_item->getSelectionDimensions();
+    this->cursorMapTileRect->updateSelectionSize(selectionSize);
+    ui->groupBox_SelectedMetatiles->setTitle(QString("Selection (%1x%2)").arg(selectionSize.width()).arg(selectionSize.height()));
     this->redrawCurrentMetatilesSelection();
 }
 
