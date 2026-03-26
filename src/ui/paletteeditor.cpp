@@ -48,8 +48,8 @@ PaletteEditor::PaletteEditor(Project *project, Tileset *primaryTileset, Tileset 
 
     // Rather than try to keep track of metatile/tile changes that affect which colors are used,
     // we'll just refresh when the window is activated.
-    ActiveWindowFilter *filter = new ActiveWindowFilter(this);
-    connect(filter, &ActiveWindowFilter::activated, this, &PaletteEditor::invalidateCache);
+    auto filter = new EventSignaler(QEvent::WindowActivate, this);
+    connect(filter, &EventSignaler::triggered, this, &PaletteEditor::invalidateCache);
     this->installEventFilter(filter);
 
     this->ui->spinBox_PaletteId->setRange(0, Project::getNumPalettesTotal() - 1);

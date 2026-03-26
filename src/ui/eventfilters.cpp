@@ -18,10 +18,8 @@ bool MapSceneEventFilter::eventFilter(QObject*, QEvent *event) {
 }
 
 
-bool ActiveWindowFilter::eventFilter(QObject*, QEvent *event) {
-    if (event->type() == QEvent::WindowActivate) {
-        emit activated();
-    }
+bool EventSignaler::eventFilter(QObject*, QEvent *event) {
+    if (m_types.contains(event->type())) emit triggered();
     return false;
 }
 

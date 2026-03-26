@@ -39,8 +39,8 @@ TilesetEditor::TilesetEditor(Project *project, Layout *layout, QWidget *parent) 
     ui->actionShow_Tileset_Divider->setChecked(porymapConfig.showTilesetEditorDivider);
     ui->actionShow_Raw_Metatile_Attributes->setChecked(porymapConfig.showTilesetEditorRawAttributes);
 
-    ActiveWindowFilter *filter = new ActiveWindowFilter(this);
-    connect(filter, &ActiveWindowFilter::activated, this, &TilesetEditor::onWindowActivated);
+    auto filter = new EventSignaler(QEvent::WindowActivate, this);
+    connect(filter, &EventSignaler::triggered, this, &TilesetEditor::onWindowActivated);
     installEventFilter(filter);
 
     setTilesets(this->layout->tileset_primary_label, this->layout->tileset_secondary_label);

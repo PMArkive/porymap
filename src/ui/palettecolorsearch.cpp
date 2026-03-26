@@ -27,8 +27,8 @@ PaletteColorSearch::PaletteColorSearch(Project *project, const Tileset *primaryT
 
     // Rather than try to keep track of metatile/tile changes that affect which colors are used,
     // we'll just refresh when the window is activated.
-    ActiveWindowFilter *filter = new ActiveWindowFilter(this);
-    connect(filter, &ActiveWindowFilter::activated, this, &PaletteColorSearch::refresh);
+    auto filter = new EventSignaler(QEvent::WindowActivate, this);
+    connect(filter, &EventSignaler::triggered, this, &PaletteColorSearch::refresh);
     this->installEventFilter(filter);
 
     ui->spinBox_ColorId->setRange(0, Tileset::numColorsPerPalette() - 1);

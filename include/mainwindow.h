@@ -231,24 +231,18 @@ private slots:
     void on_actionBetter_Cursors_triggered();
     void on_actionPlayer_View_Rectangle_triggered();
     void on_actionCursor_Tile_Outline_triggered();
-    void on_actionPencil_triggered();
-    void on_actionPointer_triggered();
-    void on_actionFlood_Fill_triggered();
-    void on_actionEyedropper_triggered();
-    void on_actionMove_triggered();
-    void on_actionMap_Shift_triggered();
 
     void tryAddEventTab(QWidget * tab);
     void displayEventTabs();
     void updateSelectedEvents();
     void updateEvents();
 
-    void on_toolButton_Paint_clicked();
-    void on_toolButton_Select_clicked();
-    void on_toolButton_Fill_clicked();
-    void on_toolButton_Dropper_clicked();
-    void on_toolButton_Move_clicked();
-    void on_toolButton_Shift_clicked();
+    void activatePaintTool();
+    void activateSelectTool();
+    void activateFillTool();
+    void activatePickTool();
+    void activateMoveTool();
+    void activateShiftTool();
 
     void onOpenMapListContextMenu(const QPoint &point);
     void currentMetatilesSelectionChanged();
@@ -429,6 +423,7 @@ private:
     void initLogStatusBar();
     void initCustomUI();
     void initExtraSignals();
+    void connectToolButtons();
     void initEditor();
     void initMiscHeapObjects();
     void initMapList();

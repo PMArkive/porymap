@@ -89,7 +89,7 @@ void MainWindow::initialize() {
     this->initWindow();
     this->installEventFilter(new GeometrySaver(this));
     if (porymapConfig.reopenOnLaunch && !porymapConfig.projectManuallyClosed && this->openProject(porymapConfig.getRecentProject(), true)) {
-        on_toolButton_Paint_clicked();
+        activatePaintTool();
     }
 
     // there is a bug affecting macOS users, where the trackpad deilveres a bad touch-release gesture
@@ -390,8 +390,7 @@ void MainWindow::initExtraSignals() {
     connect(ui->actionProject_Settings, &QAction::triggered, this, &MainWindow::openProjectSettingsEditor);
     connect(ui->actionCopy, &QAction::triggered, this, &MainWindow::copy);
     connect(ui->actionPaste, &QAction::triggered, this, &MainWindow::paste);
-    connect(ui->actionChange_Map_Dimensions, &QAction::triggered, this, &MainWindow::resizeMapLayout);
-    connect(ui->toolButton_Resize, &QToolButton::clicked, this, &MainWindow::resizeMapLayout);
+    connectToolButtons();
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -2671,19 +2670,12 @@ void MainWindow::on_horizontalSlider_CollisionTransparency_valueChanged(int valu
     this->editor->collision_item->draw(true);
 }
 
-void MainWindow::on_actionPencil_triggered()     { on_toolButton_Paint_clicked(); }
-void MainWindow::on_actionPointer_triggered()    { on_toolButton_Select_clicked(); }
-void MainWindow::on_actionFlood_Fill_triggered() { on_toolButton_Fill_clicked(); }
-void MainWindow::on_actionEyedropper_triggered() { on_toolButton_Dropper_clicked(); }
-void MainWindow::on_actionMove_triggered()       { on_toolButton_Move_clicked(); }
-void MainWindow::on_actionMap_Shift_triggered()  { on_toolButton_Shift_clicked(); }
-
-void MainWindow::on_toolButton_Paint_clicked()   { editor->setEditAction(Editor::EditAction::Paint); }
-void MainWindow::on_toolButton_Select_clicked()  { editor->setEditAction(Editor::EditAction::Select); }
-void MainWindow::on_toolButton_Fill_clicked()    { editor->setEditAction(Editor::EditAction::Fill); }
-void MainWindow::on_toolButton_Dropper_clicked() { editor->setEditAction(Editor::EditAction::Pick); }
-void MainWindow::on_toolButton_Move_clicked()    { editor->setEditAction(Editor::EditAction::Move); }
-void MainWindow::on_toolButton_Shift_clicked()   { editor->setEditAction(Editor::EditAction::Shift); }
+void MainWindow::activatePaintTool()   { editor->setEditAction(Editor::EditAction::Paint); }
+void MainWindow::activateSelectTool()  { editor->setEditAction(Editor::EditAction::Select); }
+void MainWindow::activateFillTool()    { editor->setEditAction(Editor::EditAction::Fill); }
+void MainWindow::activatePickTool()    { editor->setEditAction(Editor::EditAction::Pick); }
+void MainWindow::activateMoveTool()    { editor->setEditAction(Editor::EditAction::Move); }
+void MainWindow::activateShiftTool()   { editor->setEditAction(Editor::EditAction::Shift); }
 
 void MainWindow::setEditActionUi(Editor::EditAction editAction) {
     ui->toolButton_Paint->setChecked(editAction == Editor::EditAction::Paint);
@@ -2692,6 +2684,28 @@ void MainWindow::setEditActionUi(Editor::EditAction editAction) {
     ui->toolButton_Dropper->setChecked(editAction == Editor::EditAction::Pick);
     ui->toolButton_Move->setChecked(editAction == Editor::EditAction::Move);
     ui->toolButton_Shift->setChecked(editAction == Editor::EditAction::Shift);
+}
+
+void MainWindow::connectToolButtons() {
+    auto connectToolButton = [this](QToolButton* button, QAction* action, void (MainWindow::*activateFunc)()) {
+        connect(action, &QAction::triggered, this, activateFunc);
+        connect(button, &QAbstractButton::clicked, this, activateFunc);
+
+        // When one of the tool buttons is enabled/disabled,
+        // sync this state to the corresponding menu action.
+        auto monitor = new EventSignaler(QEvent::EnabledChange, button);
+        connect(monitor, &EventSignaler::triggered, button, [action, button]{
+            action->setEnabled(button->isEnabled());
+        });
+        button->installEventFilter(monitor);
+    };
+    connectToolButton(ui->toolButton_Paint,   ui->actionPencil,                &MainWindow::activatePaintTool);
+    connectToolButton(ui->toolButton_Select,  ui->actionPointer,               &MainWindow::activateSelectTool);
+    connectToolButton(ui->toolButton_Fill,    ui->actionFlood_Fill,            &MainWindow::activateFillTool);
+    connectToolButton(ui->toolButton_Dropper, ui->actionEyedropper,            &MainWindow::activatePickTool);
+    connectToolButton(ui->toolButton_Move,    ui->actionMove,                  &MainWindow::activateMoveTool);
+    connectToolButton(ui->toolButton_Shift,   ui->actionMap_Shift,             &MainWindow::activateShiftTool);
+    connectToolButton(ui->toolButton_Resize,  ui->actionChange_Map_Dimensions, &MainWindow::resizeMapLayout);
 }
 
 void MainWindow::onOpenConnectedMap(MapConnection *connection) {

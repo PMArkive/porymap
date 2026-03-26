@@ -24,6 +24,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix event sprite names that appear in `symbol_obj_event_gfx_pointers` by value and not by name not rendering with the correct sprite.
 - Fix event sprites sometimes rendering with incorrect transparency temporarily after a sprite change.
 - Fix not being able to minimize/maximize some windows.
+- Fix some menu items under `Tools` not being disabled when their corresponding button is disabled.
 
 ## [6.3.0] - 2025-12-26
 ### Added

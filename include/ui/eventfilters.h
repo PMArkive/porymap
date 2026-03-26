@@ -17,15 +17,22 @@ public slots:
 };
 
 
-/// Emits a signal when a window gets activated / regains focus
-class ActiveWindowFilter : public QObject {
+/// Emits a signal when the given event or events occur
+class EventSignaler : public QObject {
     Q_OBJECT
 public:
-    ActiveWindowFilter(QObject *parent) : QObject(parent) {}
-    virtual ~ActiveWindowFilter() {}
+    EventSignaler(const QSet<QEvent::Type>& types, QObject *parent) : QObject(parent), m_types(types) {}
+    EventSignaler(QEvent::Type type, QObject *parent) : EventSignaler(QSet<QEvent::Type>{type}, parent) {}
+    virtual ~EventSignaler() {}
+
+    void addEventType(QEvent::Type type) { m_types.insert(type); }
+    void removeEventType(QEvent::Type type) { m_types.remove(type); }
+
     bool eventFilter(QObject *obj, QEvent *event) override;
 signals:
-    void activated();
+    void triggered();
+private:
+    QSet<QEvent::Type> m_types;
 };
 
 
