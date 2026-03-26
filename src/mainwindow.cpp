@@ -268,17 +268,6 @@ void MainWindow::initExtraShortcuts() {
     auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
     shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
     shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
-
-    copyAction = new QAction("Copy", this);
-    copyAction->setShortcut(QKeySequence("Ctrl+C"));
-    connect(copyAction, &QAction::triggered, this, &MainWindow::copy);
-    ui->menuEdit->addSeparator();
-    ui->menuEdit->addAction(copyAction);
-
-    pasteAction = new QAction("Paste", this);
-    pasteAction->setShortcut(QKeySequence("Ctrl+V"));
-    connect(pasteAction, &QAction::triggered, this, &MainWindow::paste);
-    ui->menuEdit->addAction(pasteAction);
 }
 
 QObjectList MainWindow::shortcutableObjects() const {
@@ -399,6 +388,10 @@ void MainWindow::initExtraSignals() {
         if (this->editor->layout) openDuplicateLayoutDialog(this->editor->layout->id);
     });
     connect(ui->actionProject_Settings, &QAction::triggered, this, &MainWindow::openProjectSettingsEditor);
+    connect(ui->actionCopy, &QAction::triggered, this, &MainWindow::copy);
+    connect(ui->actionPaste, &QAction::triggered, this, &MainWindow::paste);
+    connect(ui->actionChange_Map_Dimensions, &QAction::triggered, this, &MainWindow::resizeMapLayout);
+    connect(ui->toolButton_Resize, &QToolButton::clicked, this, &MainWindow::resizeMapLayout);
 }
 
 void MainWindow::on_actionCheck_for_Updates_triggered() {
@@ -449,16 +442,13 @@ void MainWindow::initEditor() {
 
     loadUserSettings();
 
-    undoAction = editor->editGroup.createUndoAction(this, tr("&Undo"));
+    QAction *undoAction = editor->editGroup.createUndoAction(this, tr("&Undo"));
     undoAction->setObjectName("action_Undo");
     undoAction->setShortcut(QKeySequence("Ctrl+Z"));
 
-    redoAction = editor->editGroup.createRedoAction(this, tr("&Redo"));
+    QAction *redoAction = editor->editGroup.createRedoAction(this, tr("&Redo"));
     redoAction->setObjectName("action_Redo");
     redoAction->setShortcuts({QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z")});
-
-    ui->menuEdit->addAction(undoAction);
-    ui->menuEdit->addAction(redoAction);
 
     this->undoView = new QUndoView(&editor->editGroup);
     this->undoView->setWindowTitle(tr("Edit History"));
@@ -470,7 +460,11 @@ void MainWindow::initEditor() {
     showHistory->setShortcut(QKeySequence("Ctrl+E"));
     connect(showHistory, &QAction::triggered, this, &MainWindow::openEditHistory);
 
-    ui->menuEdit->addAction(showHistory);
+    QAction* insertionPoint = ui->actionCopy;
+    ui->menuEdit->insertAction(insertionPoint, undoAction);
+    ui->menuEdit->insertAction(insertionPoint, redoAction);
+    ui->menuEdit->insertAction(insertionPoint, showHistory);
+    ui->menuEdit->insertSeparator(insertionPoint);
 
     // Toggle an asterisk in the window title when the undo state is changed
     connect(&editor->editGroup, &QUndoGroup::indexChanged, this, &MainWindow::updateWindowTitle);
@@ -2906,7 +2900,7 @@ void MainWindow::setSecondaryTileset(const QString &tilesetLabel) {
     ui->comboBox_SecondaryTileset->setTextItem(this->editor->layout->tileset_secondary_label);
 }
 
-void MainWindow::on_pushButton_ChangeDimensions_clicked() {
+void MainWindow::resizeMapLayout() {
     if (this->resizeLayoutPopup || !this->editor->layout || !this->editor->project) return;
 
     this->resizeLayoutPopup = new ResizeLayoutPopup(this->ui->graphicsView_Map, this->editor->layout, this->editor->project);

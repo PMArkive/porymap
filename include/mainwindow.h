@@ -261,7 +261,6 @@ private slots:
     void on_pushButton_AddConnection_clicked();
     void on_button_OpenDiveMap_clicked();
     void on_button_OpenEmergeMap_clicked();
-    void on_pushButton_ChangeDimensions_clicked();
 
     void resetMapViewScale();
 
@@ -344,9 +343,6 @@ private:
     QPointer<WildMonSearch> wildMonSearch = nullptr;
     QPointer<QuestionMessage> fileWatcherWarning = nullptr;
     QPointer<ResizeLayoutPopup> resizeLayoutPopup = nullptr;
-
-    QAction *undoAction = nullptr;
-    QAction *redoAction = nullptr;
     QPointer<QUndoView> undoView = nullptr;
 
     struct MapNavigation {
@@ -358,9 +354,6 @@ private:
     bool ignoreNavigationRecords = false;
 
     UnlockableIcon unlockableMainTabIcon;
-
-    QAction *copyAction = nullptr;
-    QAction *pasteAction = nullptr;
 
     MapHeaderForm *mapHeaderForm = nullptr;
 
@@ -476,6 +469,7 @@ private:
     void setSmartPathsEnabled(bool enabled);
     void setBorderVisibility(bool visible);
     void setMirrorConnectionsEnabled(bool enabled);
+    void resizeMapLayout();
 };
 
 // These are namespaced in a struct to avoid colliding with e.g. class Map.

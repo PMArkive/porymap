@@ -175,7 +175,7 @@ void Editor::setEditMode(EditMode editMode) {
     this->editGroup.setActiveStack(editStack);
     this->ui->toolButton_Fill->setEnabled(editingLayout);
     this->ui->toolButton_Dropper->setEnabled(editingLayout);
-    this->ui->pushButton_ChangeDimensions->setEnabled(editingLayout);
+    this->ui->toolButton_Resize->setEnabled(editingLayout);
     this->ui->checkBox_smartPaths->setEnabled(editingLayout);
 
     if (this->editMode != oldEditMode) {
