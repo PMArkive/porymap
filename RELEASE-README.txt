@@ -1,11 +1,22 @@
-Version: 6.3.0
-Date: December 26th, 2025
+Version: 6.3.1
+Date: April 12th, 2026
 
 Official Porymap documentation: https://huderlem.github.io/porymap/
 
 Please report any issues on GitHub: [https://github.com/huderlem/porymap/issues](https://github.com/huderlem/porymap/issues)
 
 -------------------------
+
+## [6.3.1] - 2026-04-12
+### Added
+- Add support for `INCGFX` (see https://github.com/pret/pokeemerald/pull/2283 for details).
+- The regular expression for parsing `INCBIN` / `INCGFX` is now available under `Project Settings`.
+
+### Fixed
+- Fix degraded image quality in exported timelapse gifs.
+- Fix custom top-level data in the `encounters` object of `wild_encounters.json` being discarded if no `fields` data is present.
+- Fix event sprites sometimes rendering with incorrect transparency temporarily after a sprite change.
+- Fix event sprite names that appear in `symbol_obj_event_gfx_pointers` by value and not by name not rendering with the correct sprite.
 
 ## [6.3.0] - 2025-12-26
 ### Added

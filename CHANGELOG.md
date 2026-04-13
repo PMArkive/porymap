@@ -17,14 +17,21 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Some UI changes to prioritize horizontal space for the map.
 
 ### Fixed
-- Fix degraded image quality in exported timelapse gifs.
-- Fix custom top-level data in the `encounters` object of `wild_encounters.json` being discarded if no `fields` data is present.
 - Fix actions triggered with the use of `utility.registerAction` calling all functions across plug-ins with the registered name, rather than just the function in the script that registered it.
 - Fix the tool tips for the tileset selectors always listing the same tileset size.
-- Fix event sprite names that appear in `symbol_obj_event_gfx_pointers` by value and not by name not rendering with the correct sprite.
-- Fix event sprites sometimes rendering with incorrect transparency temporarily after a sprite change.
 - Fix not being able to minimize/maximize some windows.
 - Fix some menu items under `Tools` not being disabled when their corresponding button is disabled.
+
+## [6.3.1] - 2026-04-12
+### Added
+- Add support for `INCGFX` (see https://github.com/pret/pokeemerald/pull/2283 for details).
+- The regular expression for parsing `INCBIN` / `INCGFX` is now available under `Project Settings`.
+
+### Fixed
+- Fix degraded image quality in exported timelapse gifs.
+- Fix custom top-level data in the `encounters` object of `wild_encounters.json` being discarded if no `fields` data is present.
+- Fix event sprites sometimes rendering with incorrect transparency temporarily after a sprite change.
+- Fix event sprite names that appear in `symbol_obj_event_gfx_pointers` by value and not by name not rendering with the correct sprite.
 
 ## [6.3.0] - 2025-12-26
 ### Added
@@ -729,7 +736,8 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 ## [1.0.0] - 2018-10-26
 This was the initial release.
 
-[Unreleased]: https://github.com/huderlem/porymap/compare/6.3.0...HEAD
+[Unreleased]: https://github.com/huderlem/porymap/compare/6.3.1...HEAD
+[6.3.1]: https://github.com/huderlem/porymap/compare/6.3.0...6.3.1
 [6.3.0]: https://github.com/huderlem/porymap/compare/6.2.0...6.3.0
 [6.2.0]: https://github.com/huderlem/porymap/compare/6.1.0...6.2.0
 [6.1.0]: https://github.com/huderlem/porymap/compare/6.0.0...6.1.0

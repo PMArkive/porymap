@@ -5,6 +5,7 @@
 #include "log.h"
 #include "orderedjson.h"
 #include "orderedmap.h"
+#include "regex.h"
 
 #include <QString>
 #include <QList>
@@ -73,6 +74,8 @@ public:
     bool tryParseJsonFile(QJsonDocument *out, const QString &filepath, QString *error = nullptr);
     bool tryParseOrderedJsonFile(poryjson::Json::object *out, const QString &filepath, QString *error = nullptr);
 
+    void setIncbinPattern(const QString& pattern);
+
     static int getJsonLineNumber(const QString &filepath, const QString &searchText);
 
     // Returns the 1-indexed line number for the definition of scriptLabel in the scripts file at filePath.
@@ -101,6 +104,10 @@ private:
     QString curDefine;
     QHash<QString, QString> fileCache;
     QHash<QString, QStringList> errorMap;
+
+    QString incbinPattern = Regex::Pattern_INCBIN;
+    std::unique_ptr<QRegularExpression> incbinRegex = nullptr;
+    std::unique_ptr<QRegularExpression> incbinArrayRegex = nullptr;
 
     // The maps of define names to values/expressions that are available while parsing C defines.
     // As the parser reads and evaluates more defines it will update these maps accordingly.
@@ -140,7 +147,6 @@ private:
     static const QRegularExpression re_poryScriptLabel;
     static const QRegularExpression re_globalPoryScriptLabel;
     static const QRegularExpression re_poryRawSection;
-    static const QString incbinRegexText;
 };
 
 #endif // PARSEUTIL_H

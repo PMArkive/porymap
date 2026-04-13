@@ -43,7 +43,7 @@ win32 {
 
 DEFINES += PORYMAP_LATEST_COMMIT=\\\"$$LATEST_COMMIT\\\"
 
-VERSION = 6.3.0
+VERSION = 6.3.1
 DEFINES += PORYMAP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += src/config/keyvalueconfigbase.cpp \

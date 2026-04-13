@@ -1,4 +1,5 @@
 #include "projectconfig.h"
+#include "regex.h"
 #include "utility.h"
 #include "validator.h"
 
@@ -69,6 +70,7 @@ const QMap<ProjectIdentifier, QString> ProjectConfig::defaultIdentifiers = {
     {ProjectIdentifier::regex_music,                   "\\b(SE|MUS)_"},
     {ProjectIdentifier::regex_encounter_types,         "\\bTILE_ENCOUNTER_"},
     {ProjectIdentifier::regex_terrain_types,           "\\bTILE_TERRAIN_"},
+    {ProjectIdentifier::regex_incbin,                  Regex::Pattern_INCBIN},
     // Other
     {ProjectIdentifier::pals_output_extension,         ".gbapal"},
     {ProjectIdentifier::tiles_output_extension,        ".4bpp.lz"},

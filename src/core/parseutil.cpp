@@ -16,7 +16,6 @@ const QRegularExpression ParseUtil::re_globalIncScriptLabel("\\b(?<label>[\\w_][
 const QRegularExpression ParseUtil::re_poryScriptLabel("\\b(script)(\\((global|local)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_globalPoryScriptLabel("\\b(script)(\\((global)\\))?\\s*\\b(?<label>[\\w_][\\w\\d_]*)");
 const QRegularExpression ParseUtil::re_poryRawSection("\\b(raw)\\s*`(?<raw_script>[^`]*)");
-const QString ParseUtil::incbinRegexText(R"(INCBIN_[US][0-9][0-9]?\s*\(\s*\"(?<path>[^\"]*)\"[^\)]*\))");
 
 ParseUtil::ParseUtil() {
     resetCDefines();
@@ -330,6 +329,15 @@ int ParseUtil::evaluatePostfix(const QList<Token> &postfix) {
     return stack.size() ? stack.pop().value.toInt(nullptr, 0) : 0;
 }
 
+void ParseUtil::setIncbinPattern(const QString& pattern) {
+    this->incbinPattern = pattern;
+
+    // We need to regenerate regular expressions that depend on this pattern.
+    // We'll wait until the next time they're needed to do that.
+    this->incbinRegex = nullptr;
+    this->incbinArrayRegex = nullptr;
+}
+
 QString ParseUtil::readCIncbin(const QString &filename, const QString &label) {
     return !label.isEmpty() ? readCIncbinMulti(filename).value(label) : QString();
 }
@@ -340,9 +348,11 @@ QMap<QString, QString> ParseUtil::readCIncbinMulti(const QString &filename) {
     this->file = filename;
     this->text = loadTextFile(filename);
 
-    static const QRegularExpression regex(QString(R"((?<label>[\w]+)\s*(?:\[[^\]]*\])?\s*=\s*%1)").arg(this->incbinRegexText));
+    if (!this->incbinArrayRegex) {
+        this->incbinArrayRegex = std::make_unique<QRegularExpression>(QString(R"((?<label>[\w]+)\s*(?:\[[^\]]*\])?\s*=\s*%1)").arg(this->incbinPattern));
+    }
 
-    QRegularExpressionMatchIterator iter = regex.globalMatch(this->text);
+    QRegularExpressionMatchIterator iter = this->incbinArrayRegex->globalMatch(this->text);
     while (iter.hasNext()) {
         QRegularExpressionMatch match = iter.next();
         QString label = match.captured("label");
@@ -382,8 +392,10 @@ QStringList ParseUtil::readCIncbinArray(const QString &filename, const QString &
     }
 
     // Extract incbin paths from the array
-    static const QRegularExpression re_incbin(this->incbinRegexText);
-    QRegularExpressionMatchIterator iter = re_incbin.globalMatch(arrayText);
+    if (!this->incbinRegex) {
+        this->incbinRegex = std::make_unique<QRegularExpression>(this->incbinPattern);
+    }
+    QRegularExpressionMatchIterator iter = this->incbinRegex->globalMatch(arrayText);
     while (iter.hasNext()) {
         paths.append(iter.next().captured("path"));
     }

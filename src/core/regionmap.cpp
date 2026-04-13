@@ -172,8 +172,7 @@ bool RegionMap::loadLayout(poryjson::Json layoutJson) {
         }
         case LayoutFormat::CArray:
         {
-            ParseUtil parser;
-            QString text = parser.readTextFile(fullPath(this->layout_path));
+            QString text = ParseUtil::readTextFile(fullPath(this->layout_path));
 
             static const QRegularExpression re("(?<qual_1>static)?\\s?(?<qual_2>const)?\\s?(?<type>[A-Za-z0-9_]+)?\\s+(?<label>[A-Za-z0-9_]+)"
                 "(\\[(?<const_1>[A-Za-z0-9_]+)\\])(\\[(?<const_2>[A-Za-z0-9_]+)\\])(\\[(?<const_3>[A-Za-z0-9_]+)\\])\\s+=");
