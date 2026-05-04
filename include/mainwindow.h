@@ -406,6 +406,7 @@ private:
     void updateMapList();
     void openMapListItem(const QModelIndex &index);
     void setMapListTab(int index);
+    void onMapListTabClicked(int index);
     QString getActiveItemName();
     void recordMapNavigation(const QString &itemName);
     void resetMapNavigation();

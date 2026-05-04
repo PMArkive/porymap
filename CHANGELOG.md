@@ -21,6 +21,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix the tool tips for the tileset selectors always listing the same tileset size.
 - Fix not being able to minimize/maximize some windows.
 - Fix some menu items under `Tools` not being disabled when their corresponding button is disabled.
+- Fix the map list search bar stealing keyboard focus whenever a map layout was opened.
 
 ## [6.3.1] - 2026-04-12
 ### Added

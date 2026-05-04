@@ -605,7 +605,7 @@ void MainWindow::initMapList() {
     connect(ui->mapListToolBar_Locations, &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLocationDialog);
     connect(ui->mapListToolBar_Layouts,   &MapListToolBar::addFolderClicked, this, &MainWindow::openNewLayoutDialog);
 
-    connect(ui->mapListContainer, &QTabWidget::tabBarClicked, this, &MainWindow::setMapListTab);
+    connect(ui->mapListContainer, &QTabWidget::tabBarClicked, this, &MainWindow::onMapListTabClicked);
 }
 
 void MainWindow::updateWindowTitle() {
@@ -1878,6 +1878,16 @@ void MainWindow::currentMetatilesSelectionChanged() {
         scrollMetatileSelectorToSelection();
 }
 
+void MainWindow::onMapListTabClicked(int index) {
+    setMapListTab(index);
+
+    // After changing a map list tab the old tab's search widget can keep focus, which isn't helpful
+    // (and might be a little confusing to the user, because they don't know that each search bar is secretly a separate object).
+    // When we change tabs we'll automatically focus in on the search bar. This should also make finding maps a little quicker.
+    auto toolbar = getMapListToolBar(index);
+    if (toolbar) toolbar->setSearchFocus();
+}
+
 void MainWindow::setMapListTab(int index) {
     auto newToolbar = getMapListToolBar(index);
     auto oldToolbar = getMapListToolBar(ui->mapListContainer->currentIndex());
@@ -1885,11 +1895,6 @@ void MainWindow::setMapListTab(int index) {
     if (newToolbar && oldToolbar && newToolbar != oldToolbar) {
         newToolbar->applyFilter(oldToolbar->filterText());
     }
-
-    // After changing a map list tab the old tab's search widget can keep focus, which isn't helpful
-    // (and might be a little confusing to the user, because they don't know that each search bar is secretly a separate object).
-    // When we change tabs we'll automatically focus in on the search bar. This should also make finding maps a little quicker.
-    if (newToolbar) newToolbar->setSearchFocus();
 }
 
 void MainWindow::openMapListItem(const QModelIndex &index) {
