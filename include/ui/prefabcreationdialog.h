@@ -24,6 +24,8 @@ private:
     Layout *layout = nullptr;
     Ui::PrefabCreationDialog *ui;
     MetatileSelection selection;
+
+    void validate();
 };
 
 #endif // PREFABCREATIONDIALOG_H

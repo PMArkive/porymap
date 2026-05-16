@@ -34,6 +34,18 @@ struct MetatileSelection
     bool hasCollision;
     QList<MetatileSelectionItem> metatileItems;
     QList<CollisionSelectionItem> collisionItems;
+
+    bool isEmpty() const {
+        for (const auto& metatileItem : metatileItems) {
+            if (metatileItem.enabled) return false;
+        }
+        if (hasCollision) {
+            for (const auto& collisionItem : collisionItems) {
+                if (collisionItem.enabled) return false;
+            }
+        }
+        return true;
+    };
 };
 
 class MetatileSelector: public SelectablePixmapItem {

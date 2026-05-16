@@ -5,6 +5,7 @@
 #include "prefab.h"
 
 #include <QObject>
+#include <QPushButton>
 
 PrefabCreationDialog::PrefabCreationDialog(QWidget *parent, MetatileSelector *metatileSelector, Layout *layout) :
     QDialog(parent),
@@ -36,14 +37,24 @@ PrefabCreationDialog::PrefabCreationDialog(QWidget *parent, MetatileSelector *me
             this->selection.collisionItems[index].enabled = toggledState;
         }
         pixmapItem->setPixmap(drawMetatileSelection(this->selection, layout));
+        validate();
     });
 
     connect(this, &PrefabCreationDialog::accepted, this, &PrefabCreationDialog::savePrefab);
+
+    validate();
 }
 
 PrefabCreationDialog::~PrefabCreationDialog()
 {
     delete ui;
+}
+
+void PrefabCreationDialog::validate() {
+    bool valid = !this->selection.isEmpty();
+
+    QPushButton* okButton = ui->buttonBox->button(QDialogButtonBox::Ok);
+    if (okButton) okButton->setEnabled(valid);
 }
 
 void PrefabCreationDialog::savePrefab() {

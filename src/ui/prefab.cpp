@@ -82,6 +82,7 @@ void Prefab::loadPrefabs() {
             selection.metatileItems[index].enabled = true;
             selection.collisionItems[index].enabled = true;
         }
+        if (selection.isEmpty()) continue;
 
         this->items.append(PrefabItem{QUuid::createUuid(), name, primaryTileset, secondaryTileset, selection});
     }
