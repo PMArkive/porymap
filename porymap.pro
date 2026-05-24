@@ -179,6 +179,7 @@ HEADERS  += include/config/keyvalueconfigbase.h \
     include/config/projectconfig.h \
     include/config/shortcutsconfig.h \
     include/config/userconfig.h \
+    include/core/assert_return.h \
     include/core/advancemapparser.h \
     include/core/block.h \
     include/core/bitpacker.h \
