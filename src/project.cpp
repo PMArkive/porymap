@@ -983,8 +983,10 @@ bool Project::saveRegionMapSections() {
         mapSectionArray.append(mapSectionObj);
     }
 
+    const QString mapSectionsKey = projectConfig.getIdentifier(ProjectIdentifier::key_region_map_sections);
+
     OrderedJson::object object;
-    object["map_sections"] = mapSectionArray;
+    object[mapSectionsKey] = mapSectionArray;
     OrderedJson::append(&object, this->customMapSectionsData);
 
     ignoreWatchedFileTemporarily(filepath);
@@ -2549,8 +2551,10 @@ bool Project::readRegionMapSections() {
     }
     watchFile(filepath);
 
+    const QString mapSectionsKey = projectConfig.getIdentifier(ProjectIdentifier::key_region_map_sections);
+
     QJsonObject mapSectionsGlobalObj = doc.object();
-    QJsonArray mapSections = mapSectionsGlobalObj.take("map_sections").toArray();
+    QJsonArray mapSections = mapSectionsGlobalObj.take(mapSectionsKey).toArray();
     for (int i = 0; i < mapSections.size(); i++) {
         QJsonObject mapSectionObj = mapSections.at(i).toObject();
 

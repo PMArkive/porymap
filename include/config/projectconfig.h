@@ -66,6 +66,7 @@ enum ProjectIdentifier {
     regex_incbin,
     pals_output_extension,
     tiles_output_extension,
+    key_region_map_sections,
 };
 
 enum ProjectFilePath {
