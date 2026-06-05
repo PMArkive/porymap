@@ -71,6 +71,8 @@ const QMap<ProjectIdentifier, QString> ProjectConfig::defaultIdentifiers = {
     {ProjectIdentifier::regex_encounter_types,         "\\bTILE_ENCOUNTER_"},
     {ProjectIdentifier::regex_terrain_types,           "\\bTILE_TERRAIN_"},
     {ProjectIdentifier::regex_incbin,                  Regex::Pattern_INCBIN},
+    // JSON keys
+    {ProjectIdentifier::key_region_map_sections,       "map_sections"},
     // Other
     {ProjectIdentifier::pals_output_extension,         ".gbapal"},
     {ProjectIdentifier::tiles_output_extension,        ".4bpp.lz"},
