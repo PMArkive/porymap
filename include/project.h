@@ -323,8 +323,8 @@ private:
     QStringList groupNames;
     QMap<QString, QStringList> groupNameToMapNames;
 
-    bool hasUnsavedDataChanges = false;
     bool hasUnsavedMapGroupChanges = false;
+    bool hasUnsavedMapsecChanges = false;
 
     struct EventGraphics
     {

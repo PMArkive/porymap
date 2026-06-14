@@ -960,6 +960,8 @@ bool Project::saveMapGroups() {
 }
 
 bool Project::saveRegionMapSections() {
+    if (!this->hasUnsavedMapsecChanges) return true;
+
     const QString filepath = QString("%1/%2").arg(this->root).arg(projectConfig.getFilePath(ProjectFilePath::json_region_map_entries));
     QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly)) {
@@ -1000,6 +1002,8 @@ bool Project::saveRegionMapSections() {
     OrderedJsonDoc jsonDoc(&json);
     jsonDoc.dump(&file);
     file.close();
+
+    this->hasUnsavedMapsecChanges = false;
     return true;
 }
 
@@ -1496,11 +1500,7 @@ bool Project::saveGlobalData() {
     if (!saveHealLocations()) success = false;
     if (!saveWildMonData()) success = false;
     if (!saveConfig()) success = false;
-    if (!success)
-        return false;
-
-    this->hasUnsavedDataChanges = false;
-    return true;
+    return success;
 }
 
 bool Project::saveConfig() {
@@ -2644,6 +2644,7 @@ void Project::setRegionMapEntries(const QHash<QString, MapSectionEntry> &entries
     for (auto it = this->locationData.keyBegin(); it != this->locationData.keyEnd(); it++) {
         this->locationData[*it].map = entries.value(*it);
     }
+    this->hasUnsavedMapsecChanges = true;
 }
 
 QHash<QString, MapSectionEntry> Project::getRegionMapEntries() const {
@@ -2688,7 +2689,7 @@ bool Project::addNewMapsec(const QString &idName, const QString &displayName) {
     this->mapSectionIdNames.append(idName);
     Util::numericalModeSort(this->mapSectionIdNames);
 
-    this->hasUnsavedDataChanges = true;
+    this->hasUnsavedMapsecChanges = true;
 
     emit mapSectionAdded(idName);
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
@@ -2702,7 +2703,7 @@ void Project::removeMapsec(const QString &idName) {
 
     this->mapSectionIdNames.removeOne(idName);
     this->mapSectionIdNamesSaveOrder.removeOne(idName);
-    this->hasUnsavedDataChanges = true;
+    this->hasUnsavedMapsecChanges = true;
     emit mapSectionIdNamesChanged(this->mapSectionIdNames);
 }
 
@@ -2710,7 +2711,7 @@ void Project::setMapsecDisplayName(const QString &idName, const QString &display
     if (getMapsecDisplayName(idName) == displayName)
         return;
     this->locationData[idName].displayName = displayName;
-    this->hasUnsavedDataChanges = true;
+    this->hasUnsavedMapsecChanges = true;
     emit mapSectionDisplayNameChanged(idName, displayName);
 }
 
@@ -3562,7 +3563,7 @@ void Project::applyParsedLimits() {
 }
 
 bool Project::hasUnsavedChanges() {
-    if (this->hasUnsavedDataChanges || this->hasUnsavedMapGroupChanges)
+    if (this->hasUnsavedMapsecChanges || this->hasUnsavedMapGroupChanges)
         return true;
 
     // Check layouts for unsaved changes
