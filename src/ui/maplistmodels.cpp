@@ -213,9 +213,9 @@ MapGroupModel::MapGroupModel(Project *project, QObject *parent) : MapListModel(p
     this->folderTypeName = "map_group";
     this->editable = true;
 
-    for (const auto &groupName : this->project->groupNames) {
+    for (const auto &groupName : this->project->mapGroups()) {
         insertMapFolderItem(groupName);
-        for (const auto &mapName : this->project->groupNameToMapNames.value(groupName)) {
+        for (const auto &mapName : this->project->mapNamesInMapGroup(groupName)) {
             insertMapItem(mapName, groupName);
         }
     }
@@ -376,7 +376,6 @@ bool MapGroupModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
 void MapGroupModel::updateProject() {
     if (!this->project) return;
 
-    // Temporary objects in case of failure, so we won't modify the project unless it succeeds.
     QStringList groupNames;
     QMap<QString, QStringList> groupNameToMapNames;
 
@@ -394,10 +393,7 @@ void MapGroupModel::updateProject() {
             groupNameToMapNames[groupName].append(mapName);
         }
     }
-
-    this->project->groupNames = groupNames;
-    this->project->groupNameToMapNames = groupNameToMapNames;
-    this->project->hasUnsavedDataChanges = true;
+    this->project->setMapGroups(groupNames, groupNameToMapNames);
 }
 
 void MapGroupModel::removeItem(QStandardItem *item) {

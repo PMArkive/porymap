@@ -558,6 +558,8 @@ Map *Project::createNewMap(const Project::NewMapSettings &settings, const Map* t
     addNewMapsec(map->header()->location());
 
     this->groupNameToMapNames[settings.group].append(map->name());
+    // We don't mark that map groups has been edited until the new map is saved
+
     this->mapConstantsToMapNames.insert(map->constantName(), map->name());
     this->alphabeticalMapNames.append(map->name());
     Util::numericalModeSort(this->alphabeticalMapNames);
@@ -916,6 +918,8 @@ void Project::resetFileWatcher() {
 }
 
 bool Project::saveMapGroups() {
+    if (!this->hasUnsavedMapGroupChanges) return true;
+
     QString mapGroupsFilepath = QString("%1/%2").arg(root).arg(projectConfig.getFilePath(ProjectFilePath::json_map_groups));
     QFile mapGroupsFile(mapGroupsFilepath);
     if (!mapGroupsFile.open(QIODevice::WriteOnly)) {
@@ -950,6 +954,8 @@ bool Project::saveMapGroups() {
     OrderedJsonDoc jsonDoc(&mapGroupJson);
     jsonDoc.dump(&mapGroupsFile);
     mapGroupsFile.close();
+
+    this->hasUnsavedMapGroupChanges = false;
     return true;
 }
 
@@ -1361,6 +1367,9 @@ bool Project::saveMap(Map *map, bool skipLayout) {
             text += QString("\t.include \"%1/text.inc\"\n").arg(folderPath);
         }
         appendTextFile(root + "/" + projectConfig.getFilePath(ProjectFilePath::data_event_scripts), text);
+
+        // First time saving this map, we need to update the map groups data
+        this->hasUnsavedMapGroupChanges = true;
     }
 
     // Create map.json for map data.
@@ -2032,9 +2041,15 @@ void Project::addNewMapGroup(const QString &groupName) {
 
     this->groupNames.append(groupName);
     this->groupNameToMapNames.insert(groupName, QStringList());
-    this->hasUnsavedDataChanges = true;
+    this->hasUnsavedMapGroupChanges = true;
 
     emit mapGroupAdded(groupName);
+}
+
+void Project::setMapGroups(const QStringList& orderedGroupNames, const QMap<QString, QStringList>& groupNameToMapNames) {
+    this->groupNames = orderedGroupNames;
+    this->groupNameToMapNames = groupNameToMapNames;
+    this->hasUnsavedMapGroupChanges = true;
 }
 
 QString Project::mapNameToMapGroup(const QString &mapName) const {
@@ -3547,7 +3562,7 @@ void Project::applyParsedLimits() {
 }
 
 bool Project::hasUnsavedChanges() {
-    if (this->hasUnsavedDataChanges)
+    if (this->hasUnsavedDataChanges || this->hasUnsavedMapGroupChanges)
         return true;
 
     // Check layouts for unsaved changes

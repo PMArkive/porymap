@@ -41,7 +41,7 @@ NewMapDialog::NewMapDialog(Project *project, const Map *mapToCopy, QWidget *pare
     settings->layout.id = project->toUniqueIdentifier(Layout::layoutConstantFromName(settings->name));
 
     ui->newLayoutForm->initUi(project);
-    ui->comboBox_Group->addItems(project->groupNames);
+    ui->comboBox_Group->addItems(project->mapGroups());
     ui->comboBox_LayoutID->addItems(project->layoutIds());
 
     auto validator = new IdentifierValidator(this);
@@ -176,7 +176,7 @@ bool NewMapDialog::validateGroup(bool allowEmpty) {
     QString errorText;
     if (groupName.isEmpty()) {
         if (!allowEmpty) errorText = QString("%1 cannot be empty.").arg(ui->label_Group->text());
-    } else if (!this->project->groupNames.contains(groupName) && !this->project->isIdentifierUnique(groupName)) {
+    } else if (!this->project->isMapGroup(groupName) && !this->project->isIdentifierUnique(groupName)) {
         errorText = QString("%1 must either be the name of an existing map group, or a unique identifier for a new map group.").arg(ui->label_Group->text());
     }
 

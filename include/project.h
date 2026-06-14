@@ -31,8 +31,6 @@ public:
 
 public:
     QString root;
-    QStringList groupNames;
-    QMap<QString, QStringList> groupNameToMapNames;
     QStringList healLocationSaveOrder;
     QMap<QString, QList<HealLocationEvent*>> healLocations;
     QMap<QString, QString> mapConstantsToMapNames;
@@ -75,6 +73,11 @@ public:
     bool isErroredMap(const QString &mapName) const { return this->erroredMaps.contains(mapName); }
     bool isLoadedMap(const QString &mapName) const { return this->loadedMapNames.contains(mapName); }
     bool isUnsavedMap(const QString &mapName) const;
+
+    const QStringList& mapGroups() const { return this->groupNames; }
+    QStringList mapNamesInMapGroup(const QString& mapGroupName) const { return this->groupNameToMapNames.value(mapGroupName); }
+    void setMapGroups(const QStringList& orderedGroupNames, const QMap<QString, QStringList>& groupNameToMapNames);
+    bool isMapGroup(const QString &mapGroupName) const { return this->groupNames.contains(mapGroupName); }
 
     // Note: This does not guarantee the map is loaded.
     Map* getMap(const QString &mapName) { return this->maps.value(mapName); }
@@ -163,7 +166,6 @@ public:
     void setMapsecDisplayName(const QString &idName, const QString &displayName);
 
     bool hasUnsavedChanges();
-    bool hasUnsavedDataChanges = false;
 
     bool loadMapEvent(Map *map, QJsonObject json, Event::Type defaultType = Event::Type::None);
     bool loadMapData(Map*);
@@ -316,8 +318,13 @@ private:
 
     QSet<QString> failedFileWatchPaths;
 
-    const QRegularExpression re_gbapalExtension;
-    const QRegularExpression re_bppExtension;
+    // TODO: Unless it makes a worthwhile performance difference, these should really be
+    // combined into a single OrderedMap<QString, QStringList>.
+    QStringList groupNames;
+    QMap<QString, QStringList> groupNameToMapNames;
+
+    bool hasUnsavedDataChanges = false;
+    bool hasUnsavedMapGroupChanges = false;
 
     struct EventGraphics
     {
