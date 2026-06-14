@@ -128,22 +128,18 @@ QStandardItem *MapListModel::insertMapItem(const QString &mapName, const QString
         return nullptr;
 
     QStandardItem *map = createMapItem(mapName);
-
-    QStandardItem *folder = this->mapFolderItems[folderName];
-    if (!folder) {
-        // Folder doesn't exist yet, add it.
-        folder = insertMapFolderItem(folderName);
-    }
-    // If folder is still nullptr here it's because we failed to create it.
-    if (folder) {
-        folder->appendRow(map);
-    }
+    QStandardItem *folder = insertMapFolderItem(folderName);
+    if (folder) folder->appendRow(map);
     return map;
 }
 
 QStandardItem *MapListModel::insertMapFolderItem(const QString &folderName) {
     if (folderName.isEmpty())
         return nullptr;
+
+    // If the folder has already been inserted, don't insert it again.
+    auto search = this->mapFolderItems.constFind(folderName);
+    if (search != this->mapFolderItems.constEnd()) return search.value();
 
     QStandardItem *item = createMapFolderItem(folderName);
     this->root->appendRow(item);

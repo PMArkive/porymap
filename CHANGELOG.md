@@ -25,6 +25,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - Fix some menu items under `Tools` not being disabled when their corresponding button is disabled.
 - Fix the map list search bar stealing keyboard focus whenever a map layout was opened.
 - Disallow creating prefabs with no metatiles.
+- Fix new `Location` names created via the `Header` tab temporarily appearing twice after saving.
 
 ## [6.3.1] - 2026-04-12
 ### Added
