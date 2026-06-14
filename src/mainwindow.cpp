@@ -257,6 +257,10 @@ void MainWindow::initExtraShortcuts() {
     shortcutCollapse_All->setObjectName("shortcutCollapse_All");
     shortcutCollapse_All->setWhatsThis("Map List: Collapse all folders");
 
+    auto *shortcutMap_Search = new Shortcut(QKeySequence("Ctrl+F"), this, SLOT(mapListShortcut_EditSearch()));
+    shortcutMap_Search->setObjectName("shortcutMap_Search");
+    shortcutMap_Search->setWhatsThis("Map List: Edit Search Bar");
+
     auto *shortcut_Open_Scripts = new Shortcut(QKeySequence(), ui->toolButton_Open_Scripts, SLOT(click()));
     shortcut_Open_Scripts->setObjectName("shortcut_Open_Scripts");
     shortcut_Open_Scripts->setWhatsThis("Open Map Scripts");
@@ -3015,6 +3019,11 @@ void MainWindow::mapListShortcut_CollapseAll() {
 void MainWindow::mapListShortcut_ToggleEmptyFolders() {
     auto toolbar = getCurrentMapListToolBar();
     if (toolbar) toolbar->toggleEmptyFolders();
+}
+
+void MainWindow::mapListShortcut_EditSearch() {
+    auto toolbar = getCurrentMapListToolBar();
+    if (toolbar) toolbar->setSearchFocus();
 }
 
 void MainWindow::on_actionAbout_Porymap_triggered()

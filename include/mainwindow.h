@@ -276,6 +276,7 @@ private slots:
     void mapListShortcut_ToggleEmptyFolders();
     void mapListShortcut_ExpandAll();
     void mapListShortcut_CollapseAll();
+    void mapListShortcut_EditSearch();
 
     void on_actionAbout_Porymap_triggered();
     void on_actionOpen_Log_File_triggered();
