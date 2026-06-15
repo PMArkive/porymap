@@ -20,7 +20,10 @@ void logInit();
 void logInfo(const QString &message);
 void logWarn(const QString &message);
 void logError(const QString &message);
-void log(const QString &message, LogType type);
+
+template <typename T>
+void log(const QString &message, T type);
+
 QString getLogPath();
 QString getMostRecentError();
 void addLogStatusBar(QStatusBar *statusBar, const QSet<LogType> &types = {});

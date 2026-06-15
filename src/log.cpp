@@ -7,12 +7,15 @@
 #include <QPointer>
 #include <QTimer>
 
+#include <iostream>
+
 namespace Log {
     static QString mostRecentError;
     static QString path;
     static QFile file;
     static QTextStream textStream;
     static bool initialized = false;
+    static QtMessageHandler originalHandler = nullptr;
 
     struct Display {
         QPointer<QStatusBar> statusBar;
@@ -38,34 +41,69 @@ namespace Log {
     #define CLEAR_COLOR   "\033[0m"
 #endif
 
-void logInfo(const QString &message) {
-    log(message, LogType::LOG_INFO);
-}
-
-void logWarn(const QString &message) {
-    log(message, LogType::LOG_WARN);
-}
-
-void logError(const QString &message) {
-    Log::mostRecentError = message;
-    log(message, LogType::LOG_ERROR);
+QString colorizeTypeName(const QString &message, const QString &typeName, const QString &colorFormat) {
+    QString colorized = message;
+    return colorized.replace(typeName, colorFormat + typeName + CLEAR_COLOR);
 }
 
 QString colorizeMessage(const QString &message, LogType type) {
-    QString colorized = message;
     switch (type)
     {
-    case LogType::LOG_INFO:
-        colorized = colorized.replace("INFO", INFO_COLOR "INFO" CLEAR_COLOR);
-        break;
-    case LogType::LOG_WARN:
-        colorized = colorized.replace("WARN", WARNING_COLOR "WARN" CLEAR_COLOR);
-        break;
-    case LogType::LOG_ERROR:
-        colorized = colorized.replace("ERROR", ERROR_COLOR "ERROR" CLEAR_COLOR);
-        break;
+    case LogType::LOG_INFO:  return colorizeTypeName(message, "INFO", INFO_COLOR);
+    case LogType::LOG_WARN:  return colorizeTypeName(message, "WARN", WARNING_COLOR);
+    case LogType::LOG_ERROR: return colorizeTypeName(message, "ERROR", ERROR_COLOR);
     }
-    return colorized;
+}
+
+QString colorizeMessage(const QString &message, QtMsgType type) {
+    switch (type)
+    {
+    case QtDebugMsg:    return colorizeTypeName(message, "QT DEBUG", INFO_COLOR);
+    case QtInfoMsg:     return colorizeTypeName(message, "QT INFO", INFO_COLOR);
+    case QtWarningMsg:  return colorizeTypeName(message, "QT WARN", WARNING_COLOR);
+    case QtCriticalMsg: return colorizeTypeName(message, "QT ERROR", ERROR_COLOR);
+    case QtFatalMsg:    return colorizeTypeName(message, "QT FATAL", ERROR_COLOR);
+    }
+}
+
+std::ostream& stream(LogType type) {
+    switch (type) {
+    case LogType::LOG_INFO:
+        return std::cout;
+    case LogType::LOG_WARN:
+    case LogType::LOG_ERROR:
+        return std::cerr;
+    }
+}
+
+std::ostream& stream(QtMsgType type) {
+    switch (type) {
+    case QtDebugMsg:
+    case QtInfoMsg:
+        return std::cout;
+    case QtWarningMsg:
+    case QtCriticalMsg:
+    case QtFatalMsg:
+        return std::cerr;
+    }
+}
+
+QString prefix(LogType type) {
+    switch (type) {
+    case LogType::LOG_INFO:  return QStringLiteral("    [INFO]");
+    case LogType::LOG_WARN:  return QStringLiteral("    [WARN]");
+    case LogType::LOG_ERROR: return QStringLiteral("   [ERROR]");
+    }
+}
+
+QString prefix(QtMsgType type) {
+    switch (type) {
+    case QtDebugMsg:         return QStringLiteral("[QT DEBUG]");
+    case QtInfoMsg:          return QStringLiteral(" [QT INFO]");
+    case QtWarningMsg:       return QStringLiteral(" [QT WARN]");
+    case QtCriticalMsg:      return QStringLiteral("[QT ERROR]");
+    case QtFatalMsg:         return QStringLiteral("[QT FATAL]");
+    }
 }
 
 void addLogStatusBar(QStatusBar *statusBar, const QSet<LogType> &acceptedTypes) {
@@ -115,6 +153,10 @@ void pruneLogDisplays() {
     }
 }
 
+void updateLogDisplays(const QString &/*message*/, QtMsgType /*type*/) {
+    // Don't send Qt messages to status bar
+}
+
 void updateLogDisplays(const QString &message, LogType type) {
     static const QMap<LogType, QPixmap> icons = {
         {LogType::LOG_INFO,  QPixmap(QStringLiteral(":/icons/information.ico"))},
@@ -146,34 +188,46 @@ void clearLogDisplays() {
     }
 }
 
-void log(const QString &message, LogType type) {
-    QString now = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
-    QString typeString = "";
-    switch (type)
-    {
-    case LogType::LOG_INFO:
-        typeString = QStringLiteral(" [INFO]");
-        break;
-    case LogType::LOG_WARN:
-        typeString = QStringLiteral(" [WARN]");
-        break;
-    case LogType::LOG_ERROR:
-        typeString = QStringLiteral("[ERROR]");
-        break;
-    }
+template <typename T>
+void logToConsole(const QString &message, T type) {
+    stream(type) << colorizeMessage(message, type).toStdString() << std::endl;
+}
 
-    QString fullMessage = QString("%1 %2 %3").arg(now).arg(typeString).arg(message);
+template <typename T>
+QString toPrefixedMessage(const QString &message, T type) {
+    const QString now = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
+    return QString("%1 %2 %3").arg(now).arg(prefix(type)).arg(message);
+}
 
-    qDebug().noquote() << colorizeMessage(fullMessage, type);
+template <typename T>
+void log(const QString &message, T type) {
+    const QString fullMessage = toPrefixedMessage(message, type);
+    logToConsole(fullMessage, type);
 
-    if (!Log::initialized) {
-        return;
-    }
+    if (!Log::initialized) return;
 
     updateLogDisplays(message, type);
 
     Log::textStream << fullMessage << Qt::endl;
     Log::file.flush();
+}
+
+void logQt(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+    log(qFormatLogMessage(type, context, msg), type);
+    if (Log::originalHandler) Log::originalHandler(type, context, msg);
+}
+
+void logInfo(const QString &message) {
+    log(message, LogType::LOG_INFO);
+}
+
+void logWarn(const QString &message) {
+    log(message, LogType::LOG_WARN);
+}
+
+void logError(const QString &message) {
+    Log::mostRecentError = message;
+    log(message, LogType::LOG_ERROR);
 }
 
 QString getLogPath() {
@@ -189,6 +243,8 @@ bool cleanupLargeLog() {
 }
 
 void logInit() {
+    if (Log::initialized) return;
+
     QString settingsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir dir(settingsPath);
     if (!dir.exists())
@@ -201,6 +257,8 @@ void logInit() {
     QObject::connect(&Log::displayClearTimer, &QTimer::timeout, [=] {
         clearLogDisplays();
     });
+
+    qInstallMessageHandler(logQt);
 
     Log::initialized = true;
 
