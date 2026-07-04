@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QStack>
+#include <QSet>
 
 #include "lib/fex/lexer.h"
 #include "lib/fex/parser.h"

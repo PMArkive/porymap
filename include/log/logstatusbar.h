@@ -6,6 +6,7 @@
 
 #include <QLabel>
 #include <QStatusBar>
+#include <QSet>
 #include <QTimer>
 
 class LogStatusBar : public QStatusBar

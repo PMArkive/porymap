@@ -1,9 +1,11 @@
 #include "paletteutil.h"
 #include "advancemapparser.h"
 #include "log.h"
+
 #include <QFileInfo>
 #include <QRegularExpression>
 #include <QString>
+#include <QTextStream>
 
 QList<QRgb> parsePal(QString filepath, bool *error);
 QList<QRgb> parseJASC(QString filepath, bool *error);

@@ -1,6 +1,8 @@
 #include "logstatusbar.h"
 #include "logsignaler.h"
 
+#include <QMap>
+
 LogStatusBar::LogStatusBar(QWidget* parent) : QStatusBar(parent) {
     addWidget(&m_icon);
     addWidget(&m_message);

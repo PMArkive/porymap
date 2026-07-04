@@ -29,6 +29,7 @@ QString colorizeMessage(const QString &message, LogType type) {
     case LogType::LOG_WARN:  return colorizeTypeName(message, "WARN", WARNING_COLOR);
     case LogType::LOG_ERROR: return colorizeTypeName(message, "ERROR", ERROR_COLOR);
     }
+    return QString();
 }
 
 QString colorizeMessage(const QString &message, QtMsgType type) {
@@ -39,6 +40,7 @@ QString colorizeMessage(const QString &message, QtMsgType type) {
     case QtCriticalMsg: return colorizeTypeName(message, "QT ERROR", ERROR_COLOR);
     case QtFatalMsg:    return colorizeTypeName(message, "QT FATAL", ERROR_COLOR);
     }
+    return QString();
 }
 
 std::ostream& consoleStream(LogType type) {
@@ -49,6 +51,7 @@ std::ostream& consoleStream(LogType type) {
     case LogType::LOG_ERROR:
         return std::cerr;
     }
+    return std::cout;
 }
 
 std::ostream& consoleStream(QtMsgType type) {
@@ -61,6 +64,7 @@ std::ostream& consoleStream(QtMsgType type) {
     case QtFatalMsg:
         return std::cerr;
     }
+    return std::cout;
 }
 
 QString prefix(LogType type) {
@@ -69,6 +73,7 @@ QString prefix(LogType type) {
     case LogType::LOG_WARN:  return QStringLiteral("    [WARN]");
     case LogType::LOG_ERROR: return QStringLiteral("   [ERROR]");
     }
+    return QString();
 }
 
 QString prefix(QtMsgType type) {
@@ -79,6 +84,7 @@ QString prefix(QtMsgType type) {
     case QtCriticalMsg:      return QStringLiteral("[QT ERROR]");
     case QtFatalMsg:         return QStringLiteral("[QT FATAL]");
     }
+    return QString();
 }
 
 
