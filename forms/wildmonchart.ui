@@ -92,7 +92,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QChartView" name="chartView_SpeciesDistribution">
+        <widget class="SpeciesChartView" name="chartView_SpeciesDistribution">
          <property name="renderHints">
           <set>QPainter::Antialiasing</set>
          </property>
@@ -216,7 +216,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QChartView" name="chartView_LevelDistribution">
+        <widget class="SpeciesChartView" name="chartView_LevelDistribution">
          <property name="renderHints">
           <set>QPainter::Antialiasing</set>
          </property>
@@ -230,9 +230,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QChartView</class>
-   <extends>QGraphicsView</extends>
-   <header>QtCharts</header>
+   <class>SpeciesChartView</class>
+   <extends>QChartView</extends>
+   <header>specieschartview.h</header>
   </customwidget>
   <customwidget>
    <class>NoScrollComboBox</class>

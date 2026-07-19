@@ -8,6 +8,8 @@
 #if __has_include(<QtCharts>)
 #include <QtCharts>
 
+class Project;
+
 namespace Ui {
 class WildMonChart;
 }
@@ -16,7 +18,7 @@ class WildMonChart : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WildMonChart(QWidget *parent, const EncounterTableModel *table);
+    explicit WildMonChart(QWidget *parent, const EncounterTableModel *table, Project *project);
     ~WildMonChart();
 
 public slots:
@@ -27,6 +29,7 @@ public slots:
 private:
     Ui::WildMonChart *ui;
     const EncounterTableModel *table;
+    Project *project = nullptr;
 
     QStringList groupNames;
     QStringList groupNamesReversed;

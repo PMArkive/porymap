@@ -2839,7 +2839,7 @@ void MainWindow::on_pushButton_DeleteWildMonGroup_clicked() {
 
 void MainWindow::on_pushButton_SummaryChart_clicked() {
     if (!this->wildMonChart) {
-        this->wildMonChart = new WildMonChart(this, this->editor->getCurrentWildMonTable());
+        this->wildMonChart = new WildMonChart(this, this->editor->getCurrentWildMonTable(), this->editor->project);
         connect(this->editor, &Editor::wildMonTableOpened, this->wildMonChart, &WildMonChart::setTable);
         connect(this->editor, &Editor::wildMonTableClosed, this->wildMonChart, &WildMonChart::clearTable);
         connect(this->editor, &Editor::wildMonTableEdited, this->wildMonChart, &WildMonChart::refresh);

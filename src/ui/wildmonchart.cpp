@@ -19,9 +19,10 @@ static const QList<QPair<QString, QChart::ChartTheme>> themes = {
     {"Qt",            QChart::ChartThemeQt},
 };
 
-WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table) :
+WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table, Project *project) :
     QWidget(parent),
-    ui(new Ui::WildMonChart)
+    ui(new Ui::WildMonChart),
+    project(project)
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -109,7 +110,7 @@ void WildMonChart::readTable() {
         this->groupNames.append(QString());
         this->groupNamesReversed.append(QString());
     }
-    
+
     // Read data from the table, combining data for duplicate entries
     const QVector<double> tableFrequencies = this->table->percentages();
     const QVector<WildPokemon> tablePokemon = this->table->encounterData().wildPokemon;
@@ -180,7 +181,11 @@ void WildMonChart::refresh() {
 void WildMonChart::refreshSpeciesDistributionChart() {
     if (ui->chartView_SpeciesDistribution->chart())
         ui->chartView_SpeciesDistribution->chart()->deleteLater();
-    ui->chartView_SpeciesDistribution->setChart(createSpeciesDistributionChart());
+
+    QChart *chart = createSpeciesDistributionChart();
+    ui->chartView_SpeciesDistribution->setChart(chart);
+    ui->chartView_SpeciesDistribution->setProject(this->project);
+    ui->chartView_SpeciesDistribution->setSpecies(this->speciesInLegendOrder);
     if (ui->tabWidget->currentWidget() == ui->tabSpecies)
         limitChartAnimation();
 }
@@ -223,64 +228,85 @@ bool WildMonChart::usesGroupLabels() const {
     return this->groupNames.length() > 1;
 }
 
+struct SpeciesFrequency
+{
+    QString name;
+    double frequency;
+};
+
 QChart* WildMonChart::createSpeciesDistributionChart() {
     QList<QBarSet*> barSets;
+    QStringList categories;
+    QList<SpeciesFrequency> speciesList;
+
     for (const auto &species : getSpeciesNamesAlphabetical()) {
-        // Add encounter chance data
-        auto set = new QBarSet(species);
-        for (auto groupName : this->groupNamesReversed)
-            set->append(getSpeciesFrequency(species, groupName) * 100);
-
-        // We order the bar sets from lowest to highest total, left-to-right.
-        for (int i = 0; i < barSets.length() + 1; i++){
-            if (i >= barSets.length() || barSets.at(i)->sum() > set->sum()) {
-                barSets.insert(i, set);
-                break;
-            }
+        for (auto groupName : this->groupNamesReversed) {
+            speciesList.append({species, getSpeciesFrequency(species, groupName) * 100.0});
         }
-
-        // Show species name and % when hovering over a bar set. This covers some shortfalls in our ability to control the chart design
-        // (i.e. bar segments may be too narrow to see the % label, or colors may be hard to match to the legend).
-        connect(set, &QBarSet::hovered, [set] (bool on, int i) {
-            QString text = on ? QString("%1 (%2%)").arg(set->label()).arg(set->at(i)) : "";
-            QToolTip::showText(QCursor::pos(), text);
-        });
     }
 
-    // Preserve the order we set earlier so that the legend isn't shuffling around for the other all-species charts.
-    this->speciesInLegendOrder.clear();
-    for (auto set : barSets)
-        this->speciesInLegendOrder.append(set->label());
+    std::sort(speciesList.begin(), speciesList.end(), [](const auto &a, const auto &b) {
+            return a.frequency < b.frequency;
+    });
+
+    auto *set = new QBarSet("Encounter Rates");
+    for (const auto &entry : speciesList) {
+        set->append(entry.frequency);
+        categories.append(entry.name);
+    }
+
+    barSets.append(set);
+
+    // Show species name and % when hovering over a bar set. This covers some shortfalls in our ability to control the chart design
+    // (i.e. bar segments may be too narrow to see the % label).
+    connect(set, &QBarSet::hovered, [set] (bool on, int i) {
+        QString text = on ? QString("%1 (%2%)").arg(set->label()).arg(set->at(i)) : "";
+        QToolTip::showText(QCursor::pos(), text);
+    });
+
+    // Reverse the order for specieschartview
+    this->speciesInLegendOrder = categories;
+    std::reverse(speciesInLegendOrder.begin(),
+                 speciesInLegendOrder.end());
 
     // Set up series
-    auto series = new QHorizontalPercentBarSeries();
+    auto series = new QHorizontalBarSeries();
     series->setLabelsVisible();
     series->append(barSets);
+    series->setBarWidth(0.8);
 
     // Set up chart
     auto chart = new QChart();
     chart->addSeries(series);
     chart->setTheme(currentTheme());
     chart->setAnimationOptions(QChart::SeriesAnimations);
-    chart->legend()->setVisible(true);
-    chart->legend()->setShowToolTips(true);
-    chart->legend()->setAlignment(Qt::AlignBottom);
-    saveSpeciesColors(barSets);
+    chart->legend()->hide();
+
+    QFontMetrics fm(chart->font());
+
+    int maxTextWidth = 0;
+    for (const QString &category : categories) {
+        maxTextWidth = std::max(maxTextWidth, fm.horizontalAdvance(category));
+    }
+
+    int labelWidth = maxTextWidth + SpeciesChartView::IconSize + SpeciesChartView::Spacing;
+    int leftMargin = labelWidth + 2 * SpeciesChartView::Padding;
+    chart->setMargins(QMargins(leftMargin, 20, 20, 20));
 
     // X-axis is the % frequency. We're already showing percentages on the bar, so we just display 0/50/100%
     auto axisX = new QValueAxis();
+    axisX->setRange(0, 100);
     axisX->setLabelFormat("%u%%");
-    axisX->setTickCount(3);
+    axisX->setTickCount(6);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
-    // Y-axis is the names of encounter groups (e.g. Old Rod, Good Rod...)
-    if (usesGroupLabels()) {
-        auto axisY = new QBarCategoryAxis();
-        axisY->setCategories(this->groupNamesReversed);
-        chart->addAxis(axisY, Qt::AlignLeft);
-        series->attachAxis(axisY);
-    }
+    // Y-axis is species names + icons
+    auto axisY = new QBarCategoryAxis();
+    axisY->setCategories(categories);
+    axisY->setLabelsVisible(false); // handled in specieschartview.c/h
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisY);
 
     return chart;
 }
@@ -351,7 +377,6 @@ QChart* WildMonChart::createLevelDistributionChart() {
     chart->legend()->setVisible(true);
     chart->legend()->setShowToolTips(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
-    applySpeciesColors(barSets); // Has to happen after theme is set
 
     // X-axis is the level range.
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
@@ -389,11 +414,12 @@ void WildMonChart::updateTheme() {
     if (!chart || chart->series().isEmpty())
         return;
     chart->setTheme(theme);
-    saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 
     chart = ui->chartView_LevelDistribution->chart();
     if (!chart || chart->series().isEmpty())
         return;
+
+    saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
     chart->setTheme(theme);
     applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
 }
