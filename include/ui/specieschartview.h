@@ -1,7 +1,7 @@
 #ifndef SPECIESCHARTVIEW_H
 #define SPECIESCHARTVIEW_H
 
-#if __has_include(<QtCharts>)
+#if QT_CHARTS_LIB
 #include <QtCharts/QChartView>
 QT_CHARTS_USE_NAMESPACE
 
