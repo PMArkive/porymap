@@ -77,11 +77,13 @@ private:
 
 #else
 
+class Project;
+
 class WildMonChart : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WildMonChart(QWidget *, const EncounterTableModel *) {};
+    explicit WildMonChart(QWidget *, const EncounterTableModel *, Project *) {};
     ~WildMonChart() {};
 
 public slots:

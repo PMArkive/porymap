@@ -35,6 +35,7 @@ WildMonChart::WildMonChart(QWidget *parent, const EncounterTableModel *table, Pr
     connect(ui->groupBox_Species, &QGroupBox::clicked, this, &WildMonChart::refreshLevelDistributionChart);
     connect(ui->comboBox_Species, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
     connect(ui->comboBox_Group, &QComboBox::currentTextChanged, this, &WildMonChart::refreshLevelDistributionChart);
+    connect(ui->comboBox_speciesDistributionGroup, &QComboBox::currentTextChanged, this, &WildMonChart::refreshSpeciesDistributionChart);
 
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &WildMonChart::limitChartAnimation);
 
@@ -82,10 +83,14 @@ void WildMonChart::clearTableData() {
 
     const QSignalBlocker blocker1(ui->comboBox_Species);
     const QSignalBlocker blocker2(ui->comboBox_Group);
+    const QSignalBlocker blocker3(ui->comboBox_speciesDistributionGroup);
     ui->comboBox_Species->clear();
     ui->comboBox_Group->clear();
     ui->comboBox_Group->setEnabled(false);
+    ui->comboBox_speciesDistributionGroup->clear();
+    ui->comboBox_speciesDistributionGroup->setEnabled(false);
     ui->label_Group->setEnabled(false);
+    ui->label_speciesDistributionGroup->setEnabled(false);
 }
 
 // Extract all the data from the table that we need for the charts
@@ -150,20 +155,27 @@ void WildMonChart::readTable() {
     // Populate combo boxes
     const QSignalBlocker blocker1(ui->comboBox_Species);
     const QSignalBlocker blocker2(ui->comboBox_Group);
+    const QSignalBlocker blocker3(ui->comboBox_speciesDistributionGroup);
     ui->comboBox_Species->clear();
     ui->comboBox_Species->addItems(getSpeciesNamesAlphabetical());
     ui->comboBox_Group->clear();
     ui->comboBox_Group->addItems(this->groupNames);
+    ui->comboBox_speciesDistributionGroup->clear();
+    ui->comboBox_speciesDistributionGroup->addItems(this->groupNames);
     bool enableGroupSelection = usesGroupLabels();
     ui->comboBox_Group->setEnabled(enableGroupSelection);
+    ui->comboBox_speciesDistributionGroup->setEnabled(enableGroupSelection);
     ui->label_Group->setEnabled(enableGroupSelection);
+    ui->label_speciesDistributionGroup->setEnabled(enableGroupSelection);
 }
 
 void WildMonChart::refresh() {
     const QSignalBlocker blocker1(ui->comboBox_Species);
     const QSignalBlocker blocker2(ui->comboBox_Group);
+    const QSignalBlocker blocker3(ui->comboBox_speciesDistributionGroup);
     const QString oldSpecies = ui->comboBox_Species->currentText();
     const QString oldGroup = ui->comboBox_Group->currentText();
+    const QString oldSpeciesGroup = ui->comboBox_speciesDistributionGroup->currentText();
 
     readTable();
 
@@ -173,6 +185,9 @@ void WildMonChart::refresh() {
 
     index = ui->comboBox_Group->findText(oldGroup);
     if (index >= 0) ui->comboBox_Group->setCurrentIndex(index);
+
+    index = ui->comboBox_speciesDistributionGroup->findText(oldSpeciesGroup);
+    if (index >= 0) ui->comboBox_speciesDistributionGroup->setCurrentIndex(index);
 
     refreshSpeciesDistributionChart();
     refreshLevelDistributionChart();
@@ -235,14 +250,13 @@ struct SpeciesFrequency
 };
 
 QChart* WildMonChart::createSpeciesDistributionChart() {
+    const QString groupName = ui->comboBox_speciesDistributionGroup->currentText();
     QList<QBarSet*> barSets;
     QStringList categories;
     QList<SpeciesFrequency> speciesList;
 
     for (const auto &species : getSpeciesNamesAlphabetical()) {
-        for (auto groupName : this->groupNamesReversed) {
-            speciesList.append({species, getSpeciesFrequency(species, groupName) * 100.0});
-        }
+        speciesList.append({species, getSpeciesFrequency(species, groupName) * 100.0});
     }
 
     std::sort(speciesList.begin(), speciesList.end(), [](const auto &a, const auto &b) {
@@ -251,8 +265,10 @@ QChart* WildMonChart::createSpeciesDistributionChart() {
 
     auto *set = new QBarSet("Encounter Rates");
     for (const auto &entry : speciesList) {
-        set->append(entry.frequency);
-        categories.append(entry.name);
+        if (entry.frequency > 0.0) {
+            set->append(entry.frequency);
+            categories.append(entry.name);
+        }
     }
 
     barSets.append(set);
@@ -359,7 +375,7 @@ QChart* WildMonChart::createLevelDistributionChart() {
         levelRange = getLevelRange(species, groupName);
     } else {
         // Species box is inactive, we display data for all species in the table.
-        for (const auto &species : this->speciesInLegendOrder)
+        for (const auto &species : getSpeciesNamesAlphabetical())
             barSets.append(createLevelDistributionBarSet(species, groupName, false));
         levelRange = this->groupedLevelRanges.value(groupName);
     }

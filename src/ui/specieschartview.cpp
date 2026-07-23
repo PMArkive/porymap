@@ -1,7 +1,7 @@
+#ifdef QT_CHARTS_LIB
+
 #include "specieschartview.h"
-
 #include "project.h"
-
 #include <QPainter>
 
 SpeciesChartView::SpeciesChartView(QWidget *parent)
@@ -98,3 +98,5 @@ void SpeciesChartView::paintEvent(QPaintEvent *event)
         painter.drawPixmap(iconRect, entry.icon);
     }
 }
+
+#endif // QT_CHARTS_LIB

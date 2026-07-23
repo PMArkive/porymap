@@ -1,6 +1,7 @@
 #ifndef SPECIESCHARTVIEW_H
 #define SPECIESCHARTVIEW_H
 
+#if __has_include(<QtCharts>)
 #include <QtCharts/QChartView>
 
 class Project;
@@ -34,4 +35,6 @@ private:
     int m_maxTextWidth = 0;
 };
 
-#endif
+#endif // __has_include(<QtCharts>)
+
+#endif // SPECIESCHARTVIEW_H
