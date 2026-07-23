@@ -3,6 +3,7 @@
 
 #if __has_include(<QtCharts>)
 #include <QtCharts/QChartView>
+QT_CHARTS_USE_NAMESPACE
 
 class Project;
 
