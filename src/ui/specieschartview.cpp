@@ -23,7 +23,8 @@ void SpeciesChartView::setSpecies(const QStringList &species)
     {
         m_maxTextWidth = std::max(m_maxTextWidth, fm.horizontalAdvance(name));
 
-        QPixmap icon = m_project->getSpeciesIcon(speciesPrefix + name);
+        QPixmap icon;
+        if (m_project) icon = m_project->getSpeciesIcon(speciesPrefix + name);
 
         m_speciesEntries.push_back({
             name,
@@ -33,6 +34,10 @@ void SpeciesChartView::setSpecies(const QStringList &species)
                 Qt::KeepAspectRatio,
                 Qt::SmoothTransformation)
         });
+    }
+
+    if (m_maxTextWidth > MaxLabelWidth) {
+        m_maxTextWidth = MaxLabelWidth;
     }
 
     viewport()->update();

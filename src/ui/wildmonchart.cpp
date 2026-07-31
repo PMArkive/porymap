@@ -78,7 +78,6 @@ void WildMonChart::clearTableData() {
     this->tableIndexToGroupName.clear();
     this->groupedLevelRanges.clear();
     this->speciesToGroupedData.clear();
-    this->speciesToColor.clear();
     setWindowTitle(baseWindowTitle);
 
     const QSignalBlocker blocker1(ui->comboBox_Species);
@@ -303,13 +302,18 @@ QChart* WildMonChart::createSpeciesDistributionChart() {
     int maxTextWidth = 0;
     for (const QString &category : categories) {
         maxTextWidth = std::max(maxTextWidth, fm.horizontalAdvance(category));
+
+        if (maxTextWidth > SpeciesChartView::MaxLabelWidth) {
+            maxTextWidth = SpeciesChartView::MaxLabelWidth;
+            break;
+        }
     }
 
     int labelWidth = maxTextWidth + SpeciesChartView::IconSize + SpeciesChartView::Spacing;
     int leftMargin = labelWidth + 2 * SpeciesChartView::Padding;
     chart->setMargins(QMargins(leftMargin, 20, 20, 20));
 
-    // X-axis is the % frequency. We're already showing percentages on the bar, so we just display 0/50/100%
+    // X-axis is the % frequency.
     auto axisX = new QValueAxis();
     axisX->setRange(0, 100);
     axisX->setLabelFormat("%u%%");
@@ -435,20 +439,7 @@ void WildMonChart::updateTheme() {
     if (!chart || chart->series().isEmpty())
         return;
 
-    saveSpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
     chart->setTheme(theme);
-    applySpeciesColors(static_cast<QAbstractBarSeries*>(chart->series().at(0))->barSets());
-}
-
-void WildMonChart::saveSpeciesColors(const QList<QBarSet*> &barSets) {
-    this->speciesToColor.clear();
-    for (auto set : barSets)
-        this->speciesToColor.insert(set->label(), set->color());
-}
-
-void WildMonChart::applySpeciesColors(const QList<QBarSet*> &barSets) {
-    for (auto set : barSets)
-        set->setColor(this->speciesToColor.value(set->label()));
 }
 
 // Turn off the chart animation once it's played, otherwise it replays any time the window changes size.

@@ -5,10 +5,10 @@
 
 #include <QWidget>
 
+class Project;
+
 #if __has_include(<QtCharts>)
 #include <QtCharts>
-
-class Project;
 
 namespace Ui {
 class WildMonChart;
@@ -49,8 +49,6 @@ private:
     typedef QMap<QString, Summary> GroupedData;
 
     QMap<QString, GroupedData> speciesToGroupedData;
-    QMap<QString, QColor> speciesToColor;
-
 
     QStringList getSpeciesNamesAlphabetical() const;
     double getSpeciesFrequency(const QString&, const QString&) const;
@@ -66,8 +64,6 @@ private:
     void refreshSpeciesDistributionChart();
     void refreshLevelDistributionChart();
 
-    void saveSpeciesColors(const QList<QBarSet*> &);
-    void applySpeciesColors(const QList<QBarSet*> &);
     QChart::ChartTheme currentTheme() const;
     void updateTheme();
     void limitChartAnimation();
@@ -76,8 +72,6 @@ private:
 };
 
 #else
-
-class Project;
 
 class WildMonChart : public QWidget
 {

@@ -25,6 +25,7 @@ public:
     static constexpr int IconVerticalOffset = -2;
     static constexpr int Spacing = 6;
     static constexpr int Padding = 10;
+    static constexpr int MaxLabelWidth = 230;
     explicit SpeciesChartView(QWidget *parent = nullptr);
 
     void setSpecies(const QStringList &species);
