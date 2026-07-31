@@ -17,6 +17,7 @@ and this project somewhat adheres to [Semantic Versioning](https://semver.org/sp
 - The 'Change Dimensions' button was replaced with a Resize tool button. Resizing is also now available under the `Edit` menu, and can be assigned a shortcut.
 - Some UI changes to prioritize horizontal space for the map.
 - `map_groups.json` is only saved when relevant changes are made, which should improve the average project compile time after saving with Porymap.
+- The key for the `Species Distribution` charts now uses the species' icons.
 
 ### Fixed
 - Fix actions triggered with the use of `utility.registerAction` calling all functions across plug-ins with the registered name, rather than just the function in the script that registered it.
