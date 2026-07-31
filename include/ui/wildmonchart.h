@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+class Project;
+
 #if __has_include(<QtCharts>)
 #include <QtCharts>
 
@@ -16,7 +18,7 @@ class WildMonChart : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WildMonChart(QWidget *parent, const EncounterTableModel *table);
+    explicit WildMonChart(QWidget *parent, const EncounterTableModel *table, Project *project);
     ~WildMonChart();
 
 public slots:
@@ -27,6 +29,7 @@ public slots:
 private:
     Ui::WildMonChart *ui;
     const EncounterTableModel *table;
+    Project *project = nullptr;
 
     QStringList groupNames;
     QStringList groupNamesReversed;
@@ -46,8 +49,6 @@ private:
     typedef QMap<QString, Summary> GroupedData;
 
     QMap<QString, GroupedData> speciesToGroupedData;
-    QMap<QString, QColor> speciesToColor;
-
 
     QStringList getSpeciesNamesAlphabetical() const;
     double getSpeciesFrequency(const QString&, const QString&) const;
@@ -63,8 +64,6 @@ private:
     void refreshSpeciesDistributionChart();
     void refreshLevelDistributionChart();
 
-    void saveSpeciesColors(const QList<QBarSet*> &);
-    void applySpeciesColors(const QList<QBarSet*> &);
     QChart::ChartTheme currentTheme() const;
     void updateTheme();
     void limitChartAnimation();
@@ -78,7 +77,7 @@ class WildMonChart : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WildMonChart(QWidget *, const EncounterTableModel *) {};
+    explicit WildMonChart(QWidget *, const EncounterTableModel *, Project *) {};
     ~WildMonChart() {};
 
 public slots:

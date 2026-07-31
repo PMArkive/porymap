@@ -144,6 +144,7 @@ SOURCES += src/config/keyvalueconfigbase.cpp \
     src/ui/palettecolorsearch.cpp \
     src/ui/paletteeditor.cpp \
     src/ui/selectablepixmapitem.cpp \
+    src/ui/specieschartview.cpp \
     src/ui/tileseteditor.cpp \
     src/ui/tileseteditormetatileselector.cpp \
     src/ui/tileseteditortileselector.cpp \
@@ -275,6 +276,7 @@ HEADERS  += include/config/keyvalueconfigbase.h \
     include/ui/palettecolorsearch.h \
     include/ui/paletteeditor.h \
     include/ui/selectablepixmapitem.h \
+    include/ui/specieschartview.h \
     include/ui/tileseteditor.h \
     include/ui/tileseteditormetatileselector.h \
     include/ui/tileseteditortileselector.h \

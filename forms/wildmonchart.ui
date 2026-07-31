@@ -17,10 +17,10 @@
    <item>
     <widget class="QFrame" name="frame_TopBar">
      <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
+      <enum>QFrame::Shadow::Plain</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="leftMargin">
@@ -48,7 +48,7 @@
       <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -85,6 +85,9 @@
        <property name="leftMargin">
         <number>0</number>
        </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
@@ -92,11 +95,55 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QChartView" name="chartView_SpeciesDistribution">
-         <property name="renderHints">
-          <set>QPainter::Antialiasing</set>
+        <widget class="QFrame" name="frame_speciesDistribution">
+         <property name="frameShape">
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
+         <property name="frameShadow">
+          <enum>QFrame::Shadow::Plain</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_speciesDistribution">
+          <property name="topMargin">
+           <number>12</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_speciesDistributionGroup">
+            <property name="text">
+             <string>Group</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="NoScrollComboBox" name="comboBox_speciesDistributionGroup">
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::SizeAdjustPolicy::AdjustToMinimumContentsLengthWithIcon</enum>
+            </property>
+            <property name="minimumContentsLength">
+             <number>8</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_speciesDistribution">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
+       </item>
+       <item>
+        <widget class="SpeciesChartView" name="chartView_SpeciesDistribution" native="true"/>
        </item>
       </layout>
      </widget>
@@ -120,10 +167,10 @@
        <item>
         <widget class="QFrame" name="frame">
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::Shape::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
+          <enum>QFrame::Shadow::Plain</enum>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <property name="topMargin">
@@ -142,7 +189,7 @@
           <item>
            <widget class="NoScrollComboBox" name="comboBox_Group">
             <property name="sizeAdjustPolicy">
-             <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+             <enum>QComboBox::SizeAdjustPolicy::AdjustToMinimumContentsLengthWithIcon</enum>
             </property>
             <property name="minimumContentsLength">
              <number>8</number>
@@ -152,7 +199,7 @@
           <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -199,10 +246,10 @@
                 <bool>true</bool>
                </property>
                <property name="insertPolicy">
-                <enum>QComboBox::NoInsert</enum>
+                <enum>QComboBox::InsertPolicy::NoInsert</enum>
                </property>
                <property name="sizeAdjustPolicy">
-                <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                <enum>QComboBox::SizeAdjustPolicy::AdjustToMinimumContentsLengthWithIcon</enum>
                </property>
                <property name="minimumContentsLength">
                 <number>12</number>
@@ -216,7 +263,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QChartView" name="chartView_LevelDistribution">
+        <widget class="SpeciesChartView" name="chartView_LevelDistribution">
          <property name="renderHints">
           <set>QPainter::Antialiasing</set>
          </property>
@@ -230,14 +277,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QChartView</class>
-   <extends>QGraphicsView</extends>
-   <header>QtCharts</header>
-  </customwidget>
-  <customwidget>
    <class>NoScrollComboBox</class>
    <extends>QComboBox</extends>
    <header>noscrollwidgets.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SpeciesChartView</class>
+   <extends>QWidget</extends>
+   <header>specieschartview.h</header>
   </customwidget>
  </customwidgets>
  <resources>
